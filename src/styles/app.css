@@ -1,0 +1,503 @@
+/* Journie app: Persian night + genie. Tokens come from @theme in index.css. */
+
+/* ───────── Girih tile (eight-pointed khatam lattice) ───────── */
+
+.girih-drift {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='%23f6cb5a' stroke-opacity='.2' stroke-width='1'><path d='M58 32 44.9 37.4 50.4 50.4 37.4 44.9 32 58 26.6 44.9 13.6 50.4 19.1 37.4 6 32 19.1 26.6 13.6 13.6 26.6 19.1 32 6 37.4 19.1 50.4 13.6 44.9 26.6Z'/><path d='M0 0h5L0 5ZM64 0h-5l5 5ZM0 64h5L0 59ZM64 64h-5l5-5Z'/></svg>");
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 38%, #000 10%, transparent 78%);
+  animation: girih-slide 60s linear infinite;
+  will-change: transform;
+}
+
+.girih-ink {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='%2325399b' stroke-opacity='.08' stroke-width='1'><path d='M58 32 44.9 37.4 50.4 50.4 37.4 44.9 32 58 26.6 44.9 13.6 50.4 19.1 37.4 6 32 19.1 26.6 13.6 13.6 26.6 19.1 32 6 37.4 19.1 50.4 13.6 44.9 26.6Z'/><path d='M0 0h5L0 5ZM64 0h-5l5 5ZM0 64h5L0 59ZM64 64h-5l5-5Z'/></svg>");
+}
+
+.girih-gold {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='%23f6cb5a' stroke-opacity='.16' stroke-width='1'><path d='M58 32 44.9 37.4 50.4 50.4 37.4 44.9 32 58 26.6 44.9 13.6 50.4 19.1 37.4 6 32 19.1 26.6 13.6 13.6 26.6 19.1 32 6 37.4 19.1 50.4 13.6 44.9 26.6Z'/><path d='M0 0h5L0 5ZM64 0h-5l5 5ZM0 64h5L0 59ZM64 64h-5l5-5Z'/></svg>");
+}
+
+@keyframes girih-slide {
+  to { transform: translate3d(64px, 64px, 0); }
+}
+
+/* ───────── Buttons and chips ───────── */
+
+.btn-gold,
+.btn-night,
+.btn-ghost {
+  position: relative;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  overflow: hidden;
+  isolation: isolate;
+  padding-inline: 1.25rem;
+  border-radius: 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms ease,
+    background-color 240ms ease,
+    color 240ms ease,
+    border-color 240ms ease,
+    opacity 200ms ease;
+}
+
+.btn-gold:disabled,
+.btn-night:disabled,
+.btn-ghost:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #fbdc7e, var(--color-gold) 45%, #eaa93a);
+  color: var(--color-night);
+  box-shadow: 0 10px 24px -14px rgba(240, 185, 75, 0.95), inset 0 -2px 0 rgba(120, 70, 0, 0.18);
+}
+
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-130%) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transition: transform 760ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-gold:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -14px rgba(240, 185, 75, 1), inset 0 -2px 0 rgba(120, 70, 0, 0.18);
+}
+
+.btn-gold:not(:disabled):hover::after {
+  transform: translateX(130%) skewX(-18deg);
+}
+
+.btn-gold:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-night {
+  background: var(--color-midnight);
+  color: var(--color-paper);
+  box-shadow: inset 0 0 0 1px rgba(246, 203, 90, 0.35);
+}
+
+.btn-night:not(:disabled):hover {
+  background: var(--color-lapis);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  border: 1px solid color-mix(in srgb, var(--color-forest) 25%, transparent);
+  color: var(--color-ink);
+}
+
+.btn-ghost:not(:disabled):hover {
+  border-color: var(--color-lapis);
+  color: var(--color-lapis);
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  min-height: 2.25rem;
+  padding-inline: 0.85rem;
+  font-size: 0.78rem;
+}
+
+.chip {
+  display: inline-flex;
+  min-height: 2.1rem;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--color-forest) 22%, transparent);
+  border-radius: 999px;
+  padding-inline: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-ink) 78%, transparent);
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chip:hover {
+  border-color: var(--color-lapis);
+  color: var(--color-lapis);
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
+
+.chip-on {
+  background: var(--color-lapis);
+  border-color: var(--color-lapis);
+  color: var(--color-paper);
+}
+
+.chip-on:hover {
+  color: var(--color-paper);
+  background: var(--color-midnight);
+}
+
+.demo-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px dashed color-mix(in srgb, var(--color-lapis) 45%, transparent);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  color: var(--color-lapis);
+  transition: background-color 240ms ease, border-color 240ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.demo-chip strong {
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.demo-chip small {
+  display: block;
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--color-ink) 58%, transparent);
+}
+
+.demo-chip:not(:disabled):hover {
+  border-style: solid;
+  background: color-mix(in srgb, var(--color-lapis) 7%, transparent);
+  transform: translateY(-2px);
+}
+
+.demo-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ───────── Night scene ───────── */
+
+.night-sky {
+  background:
+    radial-gradient(ellipse 60% 45% at 78% 8%, rgba(37, 57, 155, 0.55), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 12% 70%, rgba(46, 196, 182, 0.14), transparent 70%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(194, 51, 93, 0.22), transparent 70%),
+    linear-gradient(180deg, #060924 0%, #0b1040 45%, #121a58 100%);
+}
+
+.night-aurora {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.night-aurora-a {
+  left: -10%;
+  top: 6%;
+  width: 60vw;
+  height: 34vh;
+  background: radial-gradient(ellipse, rgba(46, 196, 182, 0.22), transparent 68%);
+  animation: scene-drift 26s ease-in-out infinite alternate;
+}
+
+.night-aurora-b {
+  right: -12%;
+  top: 28%;
+  width: 55vw;
+  height: 30vh;
+  background: radial-gradient(ellipse, rgba(169, 156, 245, 0.2), transparent 68%);
+  animation: scene-drift 32s ease-in-out -8s infinite alternate;
+}
+
+.night-moon {
+  filter: drop-shadow(0 0 22px rgba(246, 203, 90, 0.35));
+  animation: float-slow 9s ease-in-out infinite alternate;
+}
+
+.night-shoot {
+  position: absolute;
+  top: 16%;
+  left: 36%;
+  width: 7rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 240, 190, 0.95));
+  opacity: 0;
+  transform: rotate(22deg);
+  animation: night-shoot 9s ease-in 2.5s infinite;
+}
+
+@keyframes night-shoot {
+  0% { transform: translate3d(0, 0, 0) rotate(22deg); opacity: 0; }
+  2% { opacity: 1; }
+  10% { transform: translate3d(28vw, 12vw, 0) rotate(22deg); opacity: 0; }
+  100% { transform: translate3d(28vw, 12vw, 0) rotate(22deg); opacity: 0; }
+}
+
+.constellation-line {
+  stroke-dashoffset: 1;
+  animation: constellation-draw 7s cubic-bezier(0.5, 0, 0.2, 1) 0.8s forwards;
+}
+
+@keyframes constellation-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.constellation-star,
+.constellation-halo,
+.constellation-label {
+  opacity: 0;
+  animation: constellation-in 1.2s ease-out calc(0.9s + var(--delay, 0s)) forwards;
+}
+
+.constellation-star {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.constellation-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    constellation-in 1.2s ease-out calc(0.9s + var(--delay, 0s)) forwards,
+    scene-pulse 3.4s ease-in-out calc(2s + var(--delay, 0s)) infinite alternate;
+}
+
+@keyframes constellation-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ───────── Jinnie ───────── */
+
+.genie-float {
+  animation: genie-float 6.5s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes genie-float {
+  from { transform: translate3d(0, 4px, 0); }
+  to { transform: translate3d(0, -10px, 0); }
+}
+
+.genie-tail {
+  transform-box: view-box;
+  transform-origin: 270px 404px;
+  animation: genie-sway 4.6s ease-in-out infinite alternate;
+}
+
+@keyframes genie-sway {
+  from { transform: rotate(-2.2deg) skewX(2deg); }
+  to { transform: rotate(2.4deg) skewX(-2.4deg); }
+}
+
+.genie-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 80%;
+  animation: genie-flicker 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes genie-flicker {
+  from { transform: scale(0.85, 0.9); opacity: 0.8; }
+  to { transform: scale(1.15, 1.25); opacity: 1; }
+}
+
+.genie-sparkle {
+  transform-box: view-box;
+  opacity: 0;
+  animation: genie-twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes genie-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
+.genie-eyes {
+  transform-box: view-box;
+  transform-origin: 180px 124px;
+  animation: genie-blink 5.5s ease-in-out infinite;
+}
+
+@keyframes genie-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
+}
+
+.genie-drop {
+  animation: genie-drop 1.8s ease-in 0.3s both;
+}
+
+@keyframes genie-drop {
+  from { transform: translateY(-6px); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translateY(14px); opacity: 0.2; }
+}
+
+/* flying carpet the lamp rests on */
+.carpet {
+  position: relative;
+  height: 2.6rem;
+  width: 112%;
+  margin: -2.1rem -6% 0;
+  transform: perspective(560px) rotateX(64deg);
+  border-radius: 5px;
+  border: 3px solid var(--color-gold);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.22)),
+    linear-gradient(180deg, #d63f6d, #9d2149);
+  box-shadow:
+    inset 0 0 0 4px #7d1a3b,
+    inset 0 0 0 5px rgba(246, 203, 90, 0.55),
+    0 30px 40px -8px rgba(0, 0, 0, 0.6);
+  animation: carpet-bob 6.5s ease-in-out infinite alternate;
+}
+
+.carpet::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 64 64' fill='none' stroke='%23f6cb5a' stroke-opacity='.7' stroke-width='3'><path d='M58 32 44.9 37.4 50.4 50.4 37.4 44.9 32 58 26.6 44.9 13.6 50.4 19.1 37.4 6 32 19.1 26.6 13.6 13.6 26.6 19.1 32 6 37.4 19.1 50.4 13.6 44.9 26.6Z'/></svg>");
+  background-size: 22px 22px;
+  opacity: 0.8;
+}
+
+.carpet::after {
+  content: '';
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  bottom: -13px;
+  height: 11px;
+  background: repeating-linear-gradient(90deg, var(--color-gold) 0 2px, transparent 2px 7px);
+  mask-image: linear-gradient(180deg, #000, transparent);
+}
+
+@keyframes carpet-bob {
+  from { transform: perspective(560px) rotateX(64deg) translateZ(0) translateY(0); }
+  to { transform: perspective(560px) rotateX(64deg) translateZ(0) translateY(-8px); }
+}
+
+/* Jinnie's speech bubble */
+.speech-bubble {
+  position: relative;
+  margin-bottom: 0.75rem;
+  max-width: 19rem;
+  border-radius: 1.1rem;
+  background: var(--color-paper);
+  padding: 0.8rem 1.1rem;
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.4;
+  box-shadow: 0 18px 36px -18px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(246, 203, 90, 0.55);
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%) rotate(45deg);
+  background: var(--color-paper);
+  box-shadow: -1px 1px 0 rgba(246, 203, 90, 0.55);
+}
+
+@media (min-width: 1024px) {
+  .speech-bubble {
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  .speech-bubble::after {
+    top: auto;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    box-shadow: 1px 1px 0 rgba(246, 203, 90, 0.55);
+  }
+}
+
+/* ───────── Persian arch doorway ───────── */
+
+.arch-card {
+  filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.55));
+}
+
+.arch-cap {
+  display: block;
+  width: calc(100% - 2.5px);
+  height: 5.25rem;
+  margin: 0 1.25px -1px;
+  overflow: visible;
+}
+
+.arch-fill {
+  fill: var(--color-paper);
+}
+
+.arch-edge {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 2.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.arch-inner {
+  fill: none;
+  stroke: var(--color-lapis);
+  stroke-opacity: 0.4;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.arch-jewel {
+  position: absolute;
+  left: 50%;
+  top: 2.35rem;
+  z-index: 1;
+  transform: translateX(-50%);
+  color: var(--color-pomegranate);
+}
+
+.arch-body {
+  position: relative;
+  border: 2.5px solid var(--color-gold);
+  border-top: 0;
+  border-radius: 0 0 1.5rem 1.5rem;
+  background-color: var(--color-paper);
+  background-image: radial-gradient(ellipse 90% 40% at 50% 0, rgba(46, 196, 182, 0.12), transparent 70%);
+  box-shadow: inset 0 0 0 5px var(--color-paper), inset 0 0 0 6px rgba(37, 57, 155, 0.4);
+  padding-top: 1.5rem;
+}
+
+.arch-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.9;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' fill='none' stroke='%2325399b' stroke-opacity='.06' stroke-width='1'><path d='M58 32 44.9 37.4 50.4 50.4 37.4 44.9 32 58 26.6 44.9 13.6 50.4 19.1 37.4 6 32 19.1 26.6 13.6 13.6 26.6 19.1 32 6 37.4 19.1 50.4 13.6 44.9 26.6Z'/></svg>");
+}
+
+.arch-body > * {
+  position: relative;
+}
+
+.portal-wipe {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(46, 196, 182, 0.35), transparent 55%),
+    linear-gradient(160deg, #0b1040, #25399b 55%, #131a4d);
+  will-change: clip-path;
+}
