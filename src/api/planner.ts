@@ -1,7 +1,7 @@
 import { isRainy, weatherFor } from '../domain/conditions'
 import { extractIntent, type Intent } from '../domain/nlp'
 import { planTrip, type PlanInput } from '../domain/planner'
-import { poisByCity } from '../domain/pois'
+import { cityById, poisByCity } from '../domain/pois'
 import { scorePoi } from '../domain/scoring'
 import { hm, todayIso } from '../domain/time'
 import type { Pace, Trip, TransportPref, Weather } from '../domain/types'
@@ -21,6 +21,7 @@ export type PlanReport = {
 export type PlanRequest = {
   text: string
   userId: string
+  lang?: 'vi' | 'en'
   profile: Profile
   /** Values the traveler edited in the form; they win over what the text said. */
   overrides: Partial<{ city: PlanInput['city']; days: number; startDate: string; budget: number; pace: Pace; transport: TransportPref }>
@@ -39,7 +40,11 @@ export function buildInput(request: PlanRequest, intent: Intent): PlanInput {
   const budget = overrides.budget ?? intent.budget ?? profile.budgetPerDay * days
   const weather = weatherFor(city, startDate)
   const interests = { ...profile.interests, ...intent.interests }
+  const en = request.lang === 'en'
+  const paceWord = { slow: en ? 'relaxed' : 'chậm rãi', balanced: en ? 'full' : 'trọn vẹn', fast: en ? 'explorer' : 'khám phá' }[pace]
+  const cityLabel = en ? cityById[city].nameEn : cityById[city].name
   return {
+    title: `${cityLabel} ${paceWord} · ${days} ${en ? (days > 1 ? 'days' : 'day') : 'ngày'}`,
     userId: request.userId,
     request: request.text,
     city,

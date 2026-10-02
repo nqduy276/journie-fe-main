@@ -171,6 +171,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
             name="email"
             autoComplete="email"
             inputMode="email"
+            spellCheck={false}
             placeholder="ten@vi-du.com"
             icon={<Mail size={17} />}
             value={email}

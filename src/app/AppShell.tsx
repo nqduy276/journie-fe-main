@@ -207,7 +207,7 @@ export function AppShell() {
 
       <aside className="sidebar fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col px-5 py-6 lg:flex">
         <Link to={user.role === 'admin' ? '/app/analytics' : '/app'} className="group flex items-center gap-3" aria-label="Journie">
-          <img src={siteConfig.logoLockupLight} alt="" className="h-[5.5rem] w-auto -ml-2 transition-transform duration-500 group-hover:-rotate-3" />
+          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="h-[5.5rem] w-auto -ml-2 transition-transform duration-500 group-hover:-rotate-3" />
           <span className="sr-only">Journie</span>
         </Link>
 
@@ -236,7 +236,7 @@ export function AppShell() {
 
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-forest/10 bg-paper/90 px-4 lg:hidden">
         <Link to={user.role === 'admin' ? '/app/analytics' : '/app'} className="flex items-center gap-2" aria-label="Journie">
-          <img src={siteConfig.logoMark} alt="" className="h-10 w-auto" />
+          <img src={siteConfig.logoMark} alt="" width="384" height="512" className="h-10 w-auto" />
           <span className="h-display text-xl text-forest">Journie</span>
         </Link>
         <div className="flex items-center gap-1">

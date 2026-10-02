@@ -763,3 +763,19 @@ input[type='range'].range:active::-webkit-slider-thumb {
 :where(.grid) > * {
   min-width: 0;
 }
+
+/* Touch and typography polish */
+button,
+a,
+[role='button'],
+[role='tab'],
+select,
+summary {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.h-display,
+.section-title {
+  text-wrap: balance;
+}
