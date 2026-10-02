@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, CalendarClock, CloudRain, Compass, MapPin, Navigation, Send, Sparkles, Sun, Cloud } from 'lucide-react'
+import { ArrowRight, CalendarClock, Compass, MapPin, Navigation, Send, Sparkles } from 'lucide-react'
 import { readProfile } from '../../api/profile'
 import { useProfile, useTrips } from '../../api/queries'
-import { GenieAvatar } from '../../components/auth/GenieAvatar'
+import { WeatherIcon } from '../../components/icons'
+import { JoAvatar } from '../../components/mascot/JoAvatar'
 import { CityCover } from '../../components/CityCover'
 import { CountUp } from '../../components/motion/CountUp'
 import { EmptyState, Skeleton, SolverBadge } from '../../components/ui/primitives'
@@ -18,9 +19,9 @@ import { tripSpend, tripStopCount } from '../../domain/planner'
 import { formatVnd } from '../../domain/time'
 
 const PLACEHOLDERS: [string, string][] = [
-  ['Ba ngày ở Hội An, đi thật chậm, ăn nhiều món địa phương…', 'Three slow days in Hoi An, lots of local food…'],
-  ['Cuối tuần Đà Lạt, săn mây và cà phê view đẹp…', 'A weekend in Da Lat, clouds and coffee with a view…'],
-  ['Một ngày Sài Gòn: bảo tàng, phở và cà phê, ngân sách 1,5 triệu…', 'One day in Saigon: museums, pho and coffee, budget 1.5 million…'],
+  ['Ba ngày Hội An, đi chậm, ăn món địa phương…', 'Three slow days in Hoi An, local food…'],
+  ['Cuối tuần Đà Lạt, săn mây và cà phê view đẹp…', 'Da Lat weekend, clouds and views…'],
+  ['Một ngày Sài Gòn, bảo tàng và phở, 1,5 triệu…', 'One day in Saigon, museums and pho, 1.5M…'],
 ]
 
 function greeting(hour: number, tr: (vi: string, en: string) => string) {
@@ -33,8 +34,7 @@ function greeting(hour: number, tr: (vi: string, en: string) => string) {
 const dayDiff = (iso: string) => Math.round((new Date(`${iso}T00:00:00`).getTime() - new Date(`${todayIso()}T00:00:00`).getTime()) / 86_400_000)
 
 function WeatherGlyph({ condition }: { condition: ReturnType<typeof weatherFor>['condition'] }) {
-  const Icon = condition === 'sunny' ? Sun : condition === 'cloudy' ? Cloud : CloudRain
-  return <Icon size={18} aria-hidden="true" />
+  return <WeatherIcon kind={condition} size={26} />
 }
 
 export function Dashboard() {
@@ -80,10 +80,10 @@ export function Dashboard() {
           </h1>
           <p className="mt-3 max-w-lg text-[0.98rem] leading-relaxed text-paper/70">
             {live
-              ? tr(`Chuyến “${live.title}” đang diễn ra. Jinnie đang theo dõi giao thông và thời tiết giúp bạn.`, `“${live.title}” is under way. Jinnie is watching traffic and weather for you.`)
+              ? tr(`Chuyến “${live.title}” đang diễn ra. Jo đang theo dõi giao thông và thời tiết giúp bạn.`, `“${live.title}” is under way. Jo is watching traffic and weather for you.`)
               : upcoming.length
-                ? tr(`Bạn có ${upcoming.length} chuyến sắp tới. Muốn thêm một điều ước nữa?`, `You have ${upcoming.length} trip(s) coming up. Another wish?`)
-                : tr('Bạn muốn đi đâu tiếp theo? Hãy kể, Jinnie sẽ dựng lịch trình.', 'Where to next? Tell Jinnie and the itinerary appears.')}
+                ? tr(`Bạn có ${upcoming.length} chuyến sắp tới. Muốn thêm một chuyến nữa?`, `You have ${upcoming.length} trip(s) coming up. Another trip?`)
+                : tr('Bạn muốn đi đâu tiếp theo? Hãy kể, Jo sẽ dựng lịch trình.', 'Where to next? Tell Jo and the itinerary appears.')}
           </p>
 
           <form
@@ -94,7 +94,7 @@ export function Dashboard() {
             }}
           >
             <label htmlFor="quick-wish" className="sr-only">
-              {tr('Điều ước du lịch', 'Travel wish')}
+              {tr('Kể cho Jo nghe chuyến đi', 'Tell Jo about your trip')}
             </label>
             <div className="group relative flex items-center rounded-2xl border border-gold/35 bg-night/45 pr-2 transition-[border-color,box-shadow] duration-300 focus-within:border-gold focus-within:shadow-[0_0_0_4px_rgba(246,203,90,0.14)]">
               <Sparkles size={19} className="ml-4 shrink-0 text-gold" aria-hidden="true" />
@@ -114,9 +114,9 @@ export function Dashboard() {
                   </AnimatePresence>
                 )}
               </div>
-              <button type="submit" className="btn-gold btn-sm shrink-0" aria-label={tr('Gửi điều ước', 'Send wish')}>
+              <button type="submit" className="btn-gold btn-sm shrink-0" aria-label={tr('Gửi cho Jo', 'Send to Jo')}>
                 <Send size={16} aria-hidden="true" />
-                <span className="hidden sm:inline">{tr('Ước', 'Wish')}</span>
+                <span className="hidden sm:inline">{tr('Lên lịch', 'Plan')}</span>
               </button>
             </div>
           </form>
@@ -124,8 +124,8 @@ export function Dashboard() {
 
         <div className="relative hidden items-end justify-center lg:flex">
           <div className="w-[min(100%,15rem)]">
-            <GenieAvatar mood={live ? 'joy' : 'idle'} className="aspect-[360/470] w-full" />
-            <div className="carpet !mt-[-1.6rem]" aria-hidden="true" />
+            <JoAvatar mood={live ? 'joy' : 'idle'} className="aspect-[300/340] w-full" />
+            
           </div>
         </div>
       </section>
@@ -172,11 +172,11 @@ export function Dashboard() {
       ) : (
         <EmptyState
           title={tr('Chưa có chuyến đi nào', 'No trips yet')}
-          body={tr('Gửi điều ước đầu tiên ở khung phía trên, Jinnie sẽ dựng một lịch trình hoàn chỉnh trong vài giây.', 'Send your first wish above and Jinnie builds a full itinerary in seconds.')}
+          body={tr('Kể chuyến đi đầu tiên ở khung phía trên, Jo sẽ dựng một lịch trình hoàn chỉnh trong vài giây.', 'Describe your first trip above and Jo builds a full itinerary in seconds.')}
           action={
             <Link to="/app/plan" className="btn-gold">
               <Sparkles size={17} aria-hidden="true" />
-              {tr('Ước chuyến đầu tiên', 'Make my first wish')}
+              {tr('Lên chuyến đầu tiên', 'Plan my first trip')}
             </Link>
           }
         />

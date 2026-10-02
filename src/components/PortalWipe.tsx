@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { Khatam } from './art/Khatam'
+import { siteConfig } from '../content/site'
 import { useMotionPrefs } from '../hooks/useMotionPrefs'
 import { usePortalStore } from '../store/portalStore'
 
 /**
- * The page-to-page genie transition: a ring of lamp-light grows from the genie until it fills the
+ * The page-to-page transition: a wash of forest green grows from Jo until it fills the
  * screen, the route changes underneath it, then the light fades to reveal the new page.
  */
 export function PortalWipe() {
@@ -55,15 +55,13 @@ export function PortalWipe() {
         }
       }}
     >
-      <div className="girih-drift absolute -inset-16 opacity-60" />
       <div className="absolute inset-0 grid place-items-center">
         <motion.div
           initial={{ scale: 0.4, rotate: -40, opacity: 0 }}
           animate={{ scale: [0.4, 1.1, 1], rotate: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-          className="text-gold"
         >
-          <Khatam size={96} />
+          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="h-44 w-auto sm:h-56" />
         </motion.div>
       </div>
     </motion.div>

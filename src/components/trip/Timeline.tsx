@@ -44,7 +44,7 @@ function Leg({ stop }: { stop: Stop }) {
         {stop.travelCost > 0 && ` · ${formatVnd(stop.travelCost, true)}`}
       </span>
       {stop.wait > 0 && (
-        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-sun/20 px-2 py-0.5 text-[#8a5a00]">
+        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-sun/20 px-2 py-0.5 text-sun-ink">
           <Hourglass size={11} aria-hidden="true" />
           {tr(`Chờ mở cửa ${stop.wait} phút`, `Wait ${stop.wait} min for opening`)}
         </span>
@@ -164,7 +164,7 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
           <span className="tabular">
             {fmtTime(poi.open)}–{fmtTime(poi.close)}
           </span>
-          {!poi.indoor && <span className="rounded-full bg-firuze/12 px-2 py-0.5 text-[0.68rem] font-semibold text-[#0b7f75]">{tr('Ngoài trời', 'Outdoor')}</span>}
+          {!poi.indoor && <span className="rounded-full bg-firuze/12 px-2 py-0.5 text-[0.68rem] font-semibold text-jade-ink">{tr('Ngoài trời', 'Outdoor')}</span>}
           {stop.locked && <span className="rounded-full bg-lapis/10 px-2 py-0.5 text-[0.68rem] font-semibold text-lapis">{tr('Bắt buộc', 'Must visit')}</span>}
         </div>
 

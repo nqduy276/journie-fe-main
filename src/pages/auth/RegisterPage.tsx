@@ -2,32 +2,34 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
-import { Eye, EyeOff, KeyRound, Mail, UserRound } from 'lucide-react'
+import { KeyRound, Mail, UserRound } from 'lucide-react'
+import { saveOnboarding } from '../../api/profile'
 import { register } from '../../api/auth'
 import { ApiError } from '../../api/http'
-import { ArchCard } from '../../components/auth/ArchCard'
-import { AuthShell } from '../../components/auth/AuthShell'
-import { useGenie } from '../../components/auth/genie-context'
-import { useGenieField } from '../../components/auth/useGenieField'
 import { Khatam } from '../../components/art/Khatam'
+import { AuthShell } from '../../components/auth/AuthShell'
+import { LampBeam, LampToggle } from '../../components/auth/LampToggle'
+import { useMascotField } from '../../components/auth/useMascotField'
+import { CategoryIcon } from '../../components/icons'
+import { useMascot } from '../../components/mascot/mascot-context'
 import { Field } from '../../components/ui/Field'
 import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
 import { usePortalStore } from '../../store/portalStore'
-import { saveOnboarding } from '../../api/profile'
+import type { CategoryId } from '../../domain/types'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const STYLES = [
+const STYLES: { id: CategoryId; vi: string; en: string }[] = [
   { id: 'food', vi: 'Ăn ngon', en: 'Food' },
   { id: 'culture', vi: 'Văn hóa', en: 'Culture' },
   { id: 'nature', vi: 'Thiên nhiên', en: 'Nature' },
   { id: 'beach', vi: 'Biển', en: 'Beach' },
   { id: 'cafe', vi: 'Cà phê', en: 'Cafés' },
   { id: 'adventure', vi: 'Phiêu lưu', en: 'Adventure' },
-] as const
+]
 
-/** 0-4: length plus character variety. Drives the five stars that light up like a lamp. */
+/** 0-5: length plus character variety. Drives the five stars that light up. */
 function strengthOf(password: string) {
   let score = 0
   if (password.length >= 6) score += 1
@@ -43,13 +45,13 @@ export function RegisterPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const lines = {
-    idle: tr('Chào bạn mới! Cho tôi biết tên để tôi còn gọi chứ.', "A new traveler! Tell me your name so I can greet you."),
-    watching: tr('Tuyệt, tôi ghi nhớ rồi.', 'Lovely, I will remember that.'),
-    hiding: tr('Chọn mật khẩu mạnh nhé, tôi không nhìn đâu.', "Pick a strong one. I'm not looking."),
-    peeking: tr('Chỉ một con mắt thôi, hứa!', 'One eye only, promise!'),
-    thinking: tr('Đang thắp một ngọn đèn mới cho bạn…', 'Lighting a new lamp for you…'),
-    error: formError ?? tr('Ối, kiểm tra lại giúp tôi nhé.', 'Oops, please check that again.'),
-    joy: tr('Chào mừng đến Journie! Hành trình đầu tiên đang chờ.', 'Welcome to Journie! Your first journey awaits.'),
+    idle: tr('Bạn mới à? Cho mình biết tên để còn gọi nhé!', 'A new traveler! Tell me your name so I can greet you.'),
+    watching: tr('Hay quá, mình nhớ rồi.', 'Lovely, I will remember that.'),
+    hiding: tr('Chọn mật khẩu mạnh nhé, mình không nhìn đâu.', "Pick a strong one. I'm not looking."),
+    peeking: tr('Đèn sáng rồi, mình liếc một chút thôi!', 'The lamp is on. Just one peek!'),
+    thinking: tr('Đang chuẩn bị tấm bản đồ riêng cho bạn…', 'Drawing your own map…'),
+    error: formError ?? tr('Ối, kiểm tra lại giúp mình nhé.', 'Oops, please check that again.'),
+    joy: tr('Chào mừng đến Journie! Đi thôi nào!', "Welcome to Journie! Let's go!"),
   }
 
   return (
@@ -61,30 +63,23 @@ export function RegisterPage() {
 
 function RegisterForm({ onFormError }: { onFormError: (message: string | null) => void }) {
   const { tr } = useTr()
-  const { setMood, originRef } = useGenie()
+  const { setMood, originRef } = useMascot()
   const signIn = useAuthStore((state) => state.signIn)
   const openPortal = usePortalStore((state) => state.open)
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [reveal, setReveal] = useState(false)
+  const [lamp, setLamp] = useState(false)
   const [styles, setStyles] = useState<string[]>([])
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({})
   const [done, setDone] = useState(false)
 
-  const nameField = useGenieField('text')
-  const emailField = useGenieField('text')
-  const passwordField = useGenieField('secret', reveal)
+  const nameField = useMascotField('text')
+  const emailField = useMascotField('text')
+  const passwordField = useMascotField('secret', lamp)
   const strength = strengthOf(password)
-  const strengthLabel = [
-    tr('Quá ngắn', 'Too short'),
-    tr('Yếu', 'Weak'),
-    tr('Tạm được', 'Fair'),
-    tr('Khá tốt', 'Good'),
-    tr('Mạnh', 'Strong'),
-    tr('Rất mạnh', 'Excellent'),
-  ][password ? Math.max(1, strength) : 0]
+  const strengthLabel = [tr('Quá ngắn', 'Too short'), tr('Yếu', 'Weak'), tr('Tạm được', 'Fair'), tr('Khá tốt', 'Good'), tr('Mạnh', 'Strong'), tr('Rất mạnh', 'Excellent')][password ? Math.max(1, strength) : 0]
 
   const mutation = useMutation({
     mutationFn: register,
@@ -97,7 +92,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
       setMood('joy')
       setDone(true)
       const rect = originRef.current?.getBoundingClientRect()
-      const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.35 } : undefined
+      const origin = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height * 0.4 } : undefined
       window.setTimeout(() => {
         signIn(user)
         openPortal('/app', origin)
@@ -105,9 +100,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
     },
     onError: (error) => {
       const taken = error instanceof ApiError && error.code === 'email_taken'
-      const message = taken
-        ? tr('Email này đã có tài khoản. Hãy đăng nhập thay vì đăng ký.', 'This email already has an account. Sign in instead.')
-        : tr('Không kết nối được máy chủ.', 'Could not reach the server.')
+      const message = taken ? tr('Email này đã có tài khoản. Hãy đăng nhập thay vì đăng ký.', 'This email already has an account. Sign in instead.') : tr('Không kết nối được máy chủ.', 'Could not reach the server.')
       if (taken) setErrors({ email: message })
       onFormError(taken ? tr('Email này có người dùng rồi!', 'That email is already taken!') : message)
       setMood('error')
@@ -121,7 +114,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
     event.preventDefault()
     if (busy) return
     const next: typeof errors = {}
-    if (name.trim().length < 2) next.name = tr('Cho Jinnie biết tên bạn (ít nhất 2 ký tự).', 'Tell Jinnie your name (2+ characters).')
+    if (name.trim().length < 2) next.name = tr('Cho Jo biết tên bạn (ít nhất 2 ký tự).', 'Tell Jo your name (2+ characters).')
     if (!EMAIL_PATTERN.test(email.trim())) next.email = tr('Email cần có dạng ten@vi-du.com.', 'Email should look like name@example.com.')
     if (password.length < 6) next.password = tr('Mật khẩu cần ít nhất 6 ký tự.', 'Password needs at least 6 characters.')
     setErrors(next)
@@ -135,142 +128,114 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
   }
 
   return (
-    <ArchCard className="mx-auto w-full max-w-[28rem]">
-      <form onSubmit={submit} noValidate className="px-6 pb-7 pt-2 sm:px-9">
-        <div className="text-center">
-          <h1 className="font-display text-[2rem] font-medium leading-[1.05] tracking-[-0.03em] text-forest sm:text-[2.35rem]">
-            {tr('Thắp ngọn đèn của bạn', 'Light your own lamp')}
-          </h1>
-          <p className="mx-auto mt-2 max-w-[19rem] text-sm leading-relaxed text-ink/65">
-            {tr('Tạo tài khoản để Jinnie lập lịch trình hợp gu bạn.', 'Create an account so Jinnie can plan trips that fit you.')}
-          </p>
-        </div>
+    <form onSubmit={submit} noValidate>
+      <h1 className="h-display text-[2.1rem] text-[color:var(--a-ink)] sm:text-[2.5rem]">{tr('Tạo tài khoản', 'Create account')}</h1>
+      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[color:var(--a-muted)]">{tr('Để Jo lập lịch trình hợp gu bạn.', 'So Jo can plan trips that fit you.')}</p>
 
-        <div className="mt-5">
-          <Field
-            label={tr('Tên của bạn', 'Your name')}
-            name="name"
-            autoComplete="name"
-            placeholder={tr('Nguyễn Minh Anh', 'Alex Nguyen')}
-            icon={<UserRound size={17} />}
-            value={name}
-            error={errors.name}
-            inputRef={nameField.ref}
-            onFocus={nameField.onFocus}
-            onBlur={nameField.onBlur}
-            onChange={(event) => {
-              setName(event.target.value)
-              setErrors((current) => ({ ...current, name: undefined }))
-              nameField.track()
-            }}
-            disabled={busy}
-          />
-          <Field
-            label="Email"
-            type="email"
-            name="email"
-            autoComplete="email"
-            inputMode="email"
-            spellCheck={false}
-            placeholder="ten@vi-du.com"
-            icon={<Mail size={17} />}
-            value={email}
-            error={errors.email}
-            inputRef={emailField.ref}
-            onFocus={emailField.onFocus}
-            onBlur={emailField.onBlur}
-            onChange={(event) => {
-              setEmail(event.target.value)
-              setErrors((current) => ({ ...current, email: undefined }))
-              emailField.track()
-            }}
-            disabled={busy}
-          />
-          <Field
-            label={tr('Mật khẩu', 'Password')}
-            type={reveal ? 'text' : 'password'}
-            name="new-password"
-            autoComplete="new-password"
-            placeholder={tr('Ít nhất 6 ký tự', 'At least 6 characters')}
-            icon={<KeyRound size={17} />}
-            value={password}
-            error={errors.password}
-            inputRef={passwordField.ref}
-            onFocus={passwordField.onFocus}
-            onBlur={passwordField.onBlur}
-            onChange={(event) => {
-              setPassword(event.target.value)
-              setErrors((current) => ({ ...current, password: undefined }))
-              passwordField.track()
-            }}
-            disabled={busy}
-            trailing={
-              <button
-                type="button"
-                className="grid size-9 place-items-center text-ink/50 transition-colors hover:text-lapis"
-                aria-label={reveal ? tr('Ẩn mật khẩu', 'Hide password') : tr('Hiện mật khẩu', 'Show password')}
-                aria-pressed={reveal}
-                onClick={() => setReveal((value) => !value)}
-              >
-                {reveal ? <EyeOff size={17} /> : <Eye size={17} />}
+      <div className="mt-5">
+        <Field
+          label={tr('Tên của bạn', 'Your name')}
+          name="name"
+          autoComplete="name"
+          placeholder={tr('Nguyễn Minh Anh', 'Alex Nguyen')}
+          icon={<UserRound size={17} />}
+          value={name}
+          error={errors.name}
+          inputRef={nameField.ref}
+          onFocus={nameField.onFocus}
+          onBlur={nameField.onBlur}
+          onChange={(event) => {
+            setName(event.target.value)
+            setErrors((current) => ({ ...current, name: undefined }))
+            nameField.track()
+          }}
+          disabled={busy}
+        />
+        <Field
+          label="Email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          inputMode="email"
+          spellCheck={false}
+          placeholder="ten@vi-du.com"
+          icon={<Mail size={17} />}
+          value={email}
+          error={errors.email}
+          inputRef={emailField.ref}
+          onFocus={emailField.onFocus}
+          onBlur={emailField.onBlur}
+          onChange={(event) => {
+            setEmail(event.target.value)
+            setErrors((current) => ({ ...current, email: undefined }))
+            emailField.track()
+          }}
+          disabled={busy}
+        />
+        <Field
+          label={tr('Mật khẩu', 'Password')}
+          type={lamp ? 'text' : 'password'}
+          name="new-password"
+          autoComplete="new-password"
+          placeholder={tr('Ít nhất 6 ký tự', 'At least 6 characters')}
+          icon={<KeyRound size={17} />}
+          value={password}
+          error={errors.password}
+          inputRef={passwordField.ref}
+          inputClassName={lamp ? 'font-mono lit-text' : ''}
+          onFocus={passwordField.onFocus}
+          onBlur={passwordField.onBlur}
+          onChange={(event) => {
+            setPassword(event.target.value)
+            setErrors((current) => ({ ...current, password: undefined }))
+            passwordField.track()
+          }}
+          disabled={busy}
+          trailing={<LampToggle on={lamp} onToggle={() => setLamp((value) => !value)} labelOn={tr('Tắt đèn, ẩn mật khẩu', 'Turn the lamp off and hide the password')} labelOff={tr('Bật đèn để xem mật khẩu', 'Turn the lamp on to see the password')} />}
+          beam={<LampBeam on={lamp} />}
+        />
+        <div className="-mt-2 mb-3 flex items-center gap-3" aria-live="polite">
+          <div className="flex gap-1" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((index) => (
+              <motion.span key={index} animate={{ scale: strength > index ? [1, 1.35, 1] : 1, rotate: strength > index ? 45 : 0 }} transition={{ duration: 0.4 }} className={strength > index ? 'text-sun drop-shadow-[0_0_6px_rgba(240,185,75,0.9)]' : 'text-[color:var(--a-ink)] opacity-20'}>
+                <Khatam size={15} />
+              </motion.span>
+            ))}
+          </div>
+          <span className="text-xs font-medium text-[color:var(--a-muted)]">{strengthLabel}</span>
+        </div>
+      </div>
+
+      <fieldset className="mb-5">
+        <legend className="mb-2 text-[0.78rem] font-semibold text-[color:var(--a-ink)]">{tr('Bạn thích đi kiểu nào? (không bắt buộc)', 'What kind of traveler are you? (optional)')}</legend>
+        <div className="flex flex-wrap gap-2">
+          {STYLES.map((style) => {
+            const active = styles.includes(style.id)
+            return (
+              <button key={style.id} type="button" aria-pressed={active} onClick={() => setStyles((current) => (active ? current.filter((id) => id !== style.id) : [...current, style.id]))} className="auth-chip">
+                <CategoryIcon cat={style.id} size={20} />
+                {tr(style.vi, style.en)}
               </button>
-            }
-          />
-          <div className="-mt-2 mb-3 flex items-center gap-3" aria-live="polite">
-            <div className="flex gap-1" aria-hidden="true">
-              {[0, 1, 2, 3, 4].map((index) => (
-                <motion.span
-                  key={index}
-                  animate={{ scale: strength > index ? [1, 1.35, 1] : 1, rotate: strength > index ? 45 : 0 }}
-                  transition={{ duration: 0.4 }}
-                  className={strength > index ? 'text-gold drop-shadow-[0_0_6px_rgba(246,203,90,0.9)]' : 'text-ink/15'}
-                >
-                  <Khatam size={16} />
-                </motion.span>
-              ))}
-            </div>
-            <span className="text-xs font-medium text-ink/60">{strengthLabel}</span>
-          </div>
+            )
+          })}
         </div>
+      </fieldset>
 
-        <fieldset className="mb-5">
-          <legend className="mb-2 text-[0.78rem] font-semibold text-ink/80">
-            {tr('Bạn thích đi kiểu nào? (không bắt buộc)', 'What kind of traveler are you? (optional)')}
-          </legend>
-          <div className="flex flex-wrap gap-2">
-            {STYLES.map((style) => {
-              const active = styles.includes(style.id)
-              return (
-                <button
-                  key={style.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setStyles((current) => (active ? current.filter((id) => id !== style.id) : [...current, style.id]))}
-                  className={`chip ${active ? 'chip-on' : ''}`}
-                >
-                  {tr(style.vi, style.en)}
-                </button>
-              )
-            })}
-          </div>
-        </fieldset>
+      <button type="submit" className="auth-btn" disabled={busy}>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span key={done ? 'd' : mutation.isPending ? 'l' : 'i'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2">
+            {mutation.isPending && <Khatam size={16} className="!animate-[spin-slow_2.4s_linear_infinite]" />}
+            {done ? tr('Chào mừng!', 'Welcome!') : mutation.isPending ? tr('Đang chuẩn bị…', 'Getting ready…') : tr('Tạo tài khoản', 'Create account')}
+          </motion.span>
+        </AnimatePresence>
+      </button>
 
-        <button type="submit" className="btn-gold w-full" disabled={busy}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span key={done ? 'd' : mutation.isPending ? 'l' : 'i'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2">
-              {mutation.isPending && <Khatam size={16} className="!animate-[spin-slow_2.4s_linear_infinite]" />}
-              {done ? tr('Chào mừng!', 'Welcome!') : mutation.isPending ? tr('Đang thắp đèn…', 'Lighting the lamp…') : tr('Tạo tài khoản', 'Create account')}
-            </motion.span>
-          </AnimatePresence>
-        </button>
-
-        <p className="mt-5 text-center text-[0.84rem] text-ink/65">
-          {tr('Đã có tài khoản?', 'Already have an account?')}{' '}
-          <Link to="/login" className="font-bold text-lapis underline-offset-4 hover:underline">
-            {tr('Đăng nhập', 'Sign in')}
-          </Link>
-        </p>
-      </form>
-    </ArchCard>
+      <p className="mt-5 text-center text-[0.84rem] text-[color:var(--a-muted)]">
+        {tr('Đã có tài khoản?', 'Already have an account?')}{' '}
+        <Link to="/login" className="font-bold text-[color:var(--a-accent)] underline-offset-4 hover:underline">
+          {tr('Đăng nhập', 'Sign in')}
+        </Link>
+      </p>
+    </form>
   )
 }

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useGenie } from './genie-context'
+import { useMascot } from '../mascot/mascot-context'
 
 /**
- * Wires an input to the genie: it looks along the text while you type, and covers its eyes
- * (or peeks, when the password is revealed) on secret fields.
+ * Wires an input to Jo: it looks along the text while you type, and covers its eyes
+ * (or peeks, when the lamp reveals the password) on secret fields.
  */
-export function useGenieField(kind: 'text' | 'secret', revealed = false) {
-  const { setMood, setFocusPoint } = useGenie()
+export function useMascotField(kind: 'text' | 'secret', revealed = false) {
+  const { setMood, setFocusPoint } = useMascot()
   const ref = useRef<HTMLInputElement>(null)
   const focused = useRef(false)
   const mood = kind === 'secret' ? (revealed ? 'peeking' : 'hiding') : 'watching'

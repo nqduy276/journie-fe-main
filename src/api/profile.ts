@@ -17,7 +17,8 @@ export function readOnboarding(userId: string): string[] {
 export type Profile = {
   userId: string
   name: string
-  goals: string[]
+  /** The traveler's own words about how they like to travel; Jo reads interests and "avoid" out of it. */
+  about: string
   pace: Pace
   budgetPerDay: number
   interests: Interests
@@ -27,15 +28,6 @@ export type Profile = {
   saved: string[]
 }
 
-export const goalOptions = [
-  { id: 'relax', vi: 'Thư giãn', en: 'Unwind' },
-  { id: 'discover', vi: 'Khám phá văn hóa', en: 'Discover culture' },
-  { id: 'foodie', vi: 'Ăn khắp nơi', en: 'Eat everywhere' },
-  { id: 'photo', vi: 'Chụp ảnh đẹp', en: 'Great photos' },
-  { id: 'family', vi: 'Đi cùng gia đình', en: 'Family trip' },
-  { id: 'budget', vi: 'Tiết kiệm', en: 'Save money' },
-] as const
-
 function defaults(userId: string, name: string): Profile {
   const picked = readOnboarding(userId)
   const interests: Interests = {}
@@ -43,7 +35,7 @@ function defaults(userId: string, name: string): Profile {
   return {
     userId,
     name,
-    goals: [],
+    about: '',
     pace: 'balanced',
     budgetPerDay: 900_000,
     interests,
@@ -56,7 +48,7 @@ function defaults(userId: string, name: string): Profile {
 
 export const readProfile = (userId: string, name: string): Profile => {
   const all = readStore<Record<string, Profile>>(PROFILE_KEY, {})
-  return all[userId] ?? defaults(userId, name)
+  return { ...defaults(userId, name), ...all[userId] }
 }
 
 export const getProfile = (userId: string, name: string) => latency(() => readProfile(userId, name), 200, 420)

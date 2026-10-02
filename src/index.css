@@ -9,14 +9,17 @@
   --color-sun: #f0b94b;
   --color-jade: #4fb8a4;
   --color-dusk: #705cc4;
-  /* Persian night + genie palette used by the signed-in app */
-  --color-night: #090d2b;
-  --color-midnight: #131a4d;
-  --color-lapis: #25399b;
-  --color-firuze: #2ec4b6;
-  --color-pomegranate: #c2335d;
-  --color-gold: #f6cb5a;
-  --color-smoke: #a99cf5;
+  /* App tokens, all derived from the landing palette above */
+  --color-night: #0d2822;
+  --color-midnight: #173f35;
+  --color-lapis: #1f5a4b;
+  --color-firuze: #4fb8a4;
+  --color-pomegranate: #c4452b;
+  --color-gold: #f0b94b;
+  --color-smoke: #8d7fd6;
+  --color-sage: #aebfb3;
+  --color-jade-ink: #0a6a5c;
+  --color-sun-ink: #7a4f00;
   --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Lora', ui-serif, Georgia, serif;
 }

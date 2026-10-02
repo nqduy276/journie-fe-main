@@ -1,41 +1,21 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
-import {
-  Coffee,
-  Landmark,
-  Moon,
-  Mountain,
-  Store,
-  TreePine,
-  UtensilsCrossed,
-  Waves,
-  type LucideIcon,
-} from 'lucide-react'
 import { categories } from '../../domain/categories'
 import type { CategoryId, SolverStatus } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
+import { CategoryIcon } from '../icons'
+import { JoAvatar } from '../mascot/JoAvatar'
 
-const ICONS: Record<CategoryId, LucideIcon> = {
-  culture: Landmark,
-  food: UtensilsCrossed,
-  cafe: Coffee,
-  nature: TreePine,
-  beach: Waves,
-  market: Store,
-  nightlife: Moon,
-  adventure: Mountain,
-}
-
+/** A category "sticker": the hand-drawn icon on a tinted paper chip with a hairline edge. */
 export function CategoryGlyph({ cat, size = 36 }: { cat: CategoryId; size?: number }) {
-  const Icon = ICONS[cat]
   const color = categories[cat].color
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-[0.7rem]"
-      style={{ width: size, height: size, background: `${color}1f`, color }}
+      className="grid shrink-0 place-items-center rounded-[0.5rem] border"
+      style={{ width: size, height: size, background: `color-mix(in srgb, ${color} 13%, #fbf5e6)`, borderColor: `color-mix(in srgb, ${color} 32%, transparent)`, color: '#173f35' }}
       aria-hidden="true"
     >
-      <Icon size={size * 0.5} strokeWidth={2} />
+      <CategoryIcon cat={cat} size={Math.round(size * 0.74)} />
     </span>
   )
 }
@@ -46,8 +26,8 @@ export function CategoryName({ cat }: { cat: CategoryId }) {
 }
 
 const STATUS_STYLE: Record<SolverStatus, string> = {
-  OPTIMAL: 'bg-firuze/15 text-[#0b7f75] ring-firuze/40',
-  FEASIBLE: 'bg-sun/20 text-[#8a5a00] ring-sun/50',
+  OPTIMAL: 'bg-firuze/15 text-jade-ink ring-firuze/40',
+  FEASIBLE: 'bg-sun/20 text-sun-ink ring-sun/50',
   INFEASIBLE: 'bg-pomegranate/12 text-pomegranate ring-pomegranate/40',
 }
 
@@ -77,18 +57,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
     <div className="panel flex flex-col items-center px-6 py-12 text-center">
-      <motion.svg
-        viewBox="0 0 64 64"
-        className="size-16 text-gold"
-        aria-hidden="true"
-        animate={{ rotate: [0, 6, -6, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <path d="M10 40c0 8 12 10 24 10s20-2 22-10c2-6 6-8 10-9-6 0-12 1-18 2-8 1-18 0-24-3Z" fill="currentColor" opacity=".9" />
-        <path d="M24 32c0-6 4-9 8-9s8 3 8 9Z" fill="currentColor" />
-        <circle cx="32" cy="19" r="3" fill="currentColor" />
-        <path d="M46 28c4-6 0-10 4-16" stroke="#2ec4b6" strokeWidth="3" strokeLinecap="round" fill="none" strokeDasharray="1 6" />
-      </motion.svg>
+      <JoAvatar mood="thinking" trail={false} className="aspect-[300/340] w-24" />
       <h3 className="h-display mt-3 text-xl text-forest">{title}</h3>
       <p className="mt-1.5 max-w-sm text-sm text-ink/60">{body}</p>
       {action && <div className="mt-5">{action}</div>}
@@ -108,7 +77,7 @@ export function Segmented<T extends string>({
   label: string
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-1.5 rounded-xl bg-forest/6 p-1">
+    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-1.5 rounded-[0.4rem] bg-forest/6 p-1">
       {options.map((option) => {
         const active = option.value === value
         return (
@@ -118,10 +87,10 @@ export function Segmented<T extends string>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(option.value)}
-            className={`relative rounded-lg px-3 py-2 text-[0.8rem] font-semibold transition-colors ${active ? 'text-paper' : 'text-ink/65 hover:text-ink'}`}
+            className={`relative rounded-[0.3rem] px-3 py-2 text-[0.8rem] font-semibold transition-colors ${active ? 'text-paper' : 'text-ink/65 hover:text-ink'}`}
           >
             {active && (
-              <motion.span layoutId={`seg-${label}`} className="absolute inset-0 rounded-lg bg-lapis" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
+              <motion.span layoutId={`seg-${label}`} className="absolute inset-0 rounded-[0.3rem] bg-forest" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
             )}
             <span className="relative block">{option.label}</span>
             {option.hint && <span className="relative block text-[0.65rem] font-normal opacity-70">{option.hint}</span>}

@@ -7,6 +7,7 @@ import { GuestOnly, RequireAuth } from './app/guards'
 
 const LoginPage = lazy(() => import('./pages/auth/LoginPage').then((m) => ({ default: m.LoginPage })))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage').then((m) => ({ default: m.RegisterPage })))
+const IconSheet = lazy(() => import('./pages/IconSheet').then((m) => ({ default: m.IconSheet })))
 const AppRoutes = lazy(() => import('./app/AppRoutes').then((m) => ({ default: m.AppRoutes })))
 
 function Splash() {
@@ -41,6 +42,7 @@ export default function App() {
               </RequireAuth>
             }
           />
+          {import.meta.env.DEV && <Route path="/__icons" element={<IconSheet />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

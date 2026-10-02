@@ -1,34 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { BarChart3, Bell, Compass, Home, LogOut, Map as MapIcon, Sparkles, UserRound, type LucideIcon } from 'lucide-react'
+import { Bell, LogOut } from 'lucide-react'
 import { useTrips } from '../api/queries'
-import { Khatam } from '../components/art/Khatam'
+import { NavIcon, type NavIconName } from '../components/icons'
 import { LangSwitch } from '../components/LangSwitch'
 import { MagicCursor } from '../components/MagicCursor'
+import { JoCompanion } from '../components/mascot/JoCompanion'
 import { Toasts } from '../components/ui/Toasts'
+import { WeatherChip } from '../components/weather/WeatherChip'
+import { WeatherLayer } from '../components/weather/WeatherLayer'
 import { siteConfig } from '../content/site'
 import { cityById } from '../domain/pois'
 import { useTr } from '../hooks/useTr'
 import { useAuthStore } from '../store/authStore'
 import { useNotificationStore } from '../store/notificationStore'
 import { usePortalStore } from '../store/portalStore'
+import { useSky } from '../store/weatherStore'
 import { fmtTime } from '../domain/time'
 
-type NavItem = { to: string; end?: boolean; icon: LucideIcon; vi: string; en: string }
+type NavItem = { to: string; end?: boolean; icon: NavIconName; vi: string; en: string }
 
 const travelerNav: NavItem[] = [
-  { to: '/app', end: true, icon: Home, vi: 'Trang chủ', en: 'Home' },
-  { to: '/app/plan', icon: Sparkles, vi: 'Tạo lịch trình', en: 'New itinerary' },
-  { to: '/app/trips', icon: MapIcon, vi: 'Chuyến đi', en: 'My trips' },
-  { to: '/app/discover', icon: Compass, vi: 'Khám phá', en: 'Discover' },
-  { to: '/app/profile', icon: UserRound, vi: 'Hồ sơ & sở thích', en: 'Profile' },
+  { to: '/app', end: true, icon: 'home', vi: 'Trang chủ', en: 'Home' },
+  { to: '/app/plan', icon: 'plan', vi: 'Tạo lịch trình', en: 'New itinerary' },
+  { to: '/app/trips', icon: 'trips', vi: 'Chuyến đi', en: 'My trips' },
+  { to: '/app/discover', icon: 'discover', vi: 'Khám phá', en: 'Discover' },
+  { to: '/app/profile', icon: 'profile', vi: 'Hồ sơ & sở thích', en: 'Profile' },
 ]
 
 const adminNav: NavItem[] = [
-  { to: '/app/analytics', icon: BarChart3, vi: 'Phân tích', en: 'Analytics' },
-  { to: '/app/discover', icon: Compass, vi: 'Dữ liệu điểm đến', en: 'Places data' },
-  { to: '/app/profile', icon: UserRound, vi: 'Tài khoản', en: 'Account' },
+  { to: '/app/analytics', icon: 'analytics', vi: 'Phân tích', en: 'Analytics' },
+  { to: '/app/discover', icon: 'discover', vi: 'Dữ liệu điểm đến', en: 'Places data' },
+  { to: '/app/profile', icon: 'profile', vi: 'Tài khoản', en: 'Account' },
 ]
 
 function initials(name: string) {
@@ -42,10 +46,8 @@ function initials(name: string) {
 
 function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   return (
-    <span className="relative grid shrink-0 place-items-center" style={{ width: size, height: size }} aria-hidden="true">
-      <Khatam size={size} className="absolute inset-0 text-gold" />
-      <Khatam size={size * 0.82} className="absolute left-[9%] top-[9%] text-midnight" />
-      <span className="relative text-[0.7rem] font-bold text-gold">{initials(name)}</span>
+    <span className="grid shrink-0 place-items-center rounded-full border-2 border-sun bg-forest text-[0.72rem] font-bold text-sun" style={{ width: size, height: size }} aria-hidden="true">
+      {initials(name)}
     </span>
   )
 }
@@ -55,20 +57,13 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
   return (
     <nav className="flex flex-col gap-1" aria-label={tr('Điều hướng chính', 'Main navigation')}>
       {items.map((item) => (
-        <NavLink key={item.to} to={item.to} end={item.end} className="nav-link" onClick={onNavigate}>
+        <NavLink key={item.to} to={item.to} end={item.end} className="nav-link group" onClick={onNavigate}>
           {({ isActive }) => (
             <>
-              {isActive && (
-                <motion.span
-                  layoutId="nav-flame"
-                  className="absolute inset-0 rounded-[0.6rem] bg-gold/10 ring-1 ring-gold/30"
-                  transition={{ type: 'spring', stiffness: 400, damping: 34 }}
-                />
-              )}
-              {isActive && (
-                <motion.span layoutId="nav-bar" className="absolute -left-3 top-2 bottom-2 w-1 rounded-full bg-gold shadow-[0_0_12px_rgba(246,203,90,0.9)]" />
-              )}
-              <item.icon size={19} className="relative" aria-hidden="true" />
+              {isActive && <motion.span layoutId="nav-tab" className="absolute inset-0 border-l-[3px] border-sun bg-paper/[0.09]" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+              <motion.span className="relative block" whileHover={{ rotate: -8, scale: 1.12 }} transition={{ type: 'spring', stiffness: 400, damping: 14 }}>
+                <NavIcon name={item.icon} size={26} />
+              </motion.span>
               <span className="relative">{tr(item.vi, item.en)}</span>
             </>
           )}
@@ -87,7 +82,7 @@ function LiveChip() {
   return (
     <Link
       to={`/app/trips/${live.id}/live`}
-      className="group relative mt-6 block overflow-hidden rounded-xl border border-firuze/40 bg-firuze/10 p-3 transition-colors hover:bg-firuze/20"
+      className="group relative mt-6 block overflow-hidden border border-firuze/45 bg-firuze/10 p-3 transition-colors hover:bg-firuze/20"
     >
       <span className="flex items-center gap-2 text-[0.7rem] font-bold text-firuze">
         <span className="pulse-dot size-2 rounded-full bg-firuze" aria-hidden="true" />
@@ -130,7 +125,7 @@ function NotificationBell({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
           setOpen((value) => !value)
           if (!open) markAllRead()
         }}
-        className={`relative grid size-11 place-items-center transition-colors ${tone === 'dark' ? 'text-paper/80 hover:text-gold' : 'text-ink/70 hover:text-lapis'}`}
+        className={`relative grid size-11 place-items-center transition-colors ${tone === 'dark' ? 'text-paper/80 hover:text-sun' : 'text-ink/70 hover:text-terracotta'}`}
         aria-label={tr('Thông báo', 'Notifications')}
         aria-expanded={open}
       >
@@ -152,18 +147,18 @@ function NotificationBell({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 top-full z-50 mt-1 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-xl border border-gold/40 bg-paper text-ink shadow-[0_24px_50px_-20px_rgba(9,13,43,0.7)]"
+            className="absolute right-0 top-full z-50 mt-1 w-[min(22rem,calc(100vw-2rem))] origin-top-right overflow-hidden border border-forest/25 bg-paper text-ink shadow-[0_24px_50px_-20px_rgba(13,40,34,0.6)]"
           >
             <div className="flex items-center justify-between border-b border-forest/10 px-4 py-3">
               <p className="text-sm font-bold">{tr('Thông báo', 'Notifications')}</p>
               {items.length > 0 && (
-                <button className="text-xs font-semibold text-lapis hover:underline" onClick={clear}>
+                <button className="text-xs font-semibold text-terracotta hover:underline" onClick={clear}>
                   {tr('Xóa tất cả', 'Clear all')}
                 </button>
               )}
             </div>
             <ul className="max-h-80 overflow-y-auto">
-              {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-ink/55">{tr('Chưa có thông báo. Jinnie sẽ báo khi kế hoạch cần đổi.', 'Nothing yet. Jinnie will tell you when a plan needs to change.')}</li>}
+              {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-ink/55">{tr('Chưa có thông báo. Jo sẽ báo khi kế hoạch cần đổi.', 'Nothing yet. Jo will tell you when a plan needs to change.')}</li>}
               {items.map((item) => (
                 <li key={item.id} className="border-b border-forest/8 px-4 py-3 last:border-0">
                   <Link to={item.to ?? '/app'} onClick={() => setOpen(false)} className="block">
@@ -187,6 +182,7 @@ export function AppShell() {
   const signOut = useAuthStore((state) => state.signOut)
   const openPortal = usePortalStore((state) => state.open)
   const location = useLocation()
+  const sky = useSky()
   const items = user.role === 'admin' ? adminNav : travelerNav
 
   useEffect(() => {
@@ -199,62 +195,66 @@ export function AppShell() {
   }
 
   return (
-    <div className="app-bg min-h-dvh lg:pl-[17.5rem]">
+    <div className="app-bg app-root min-h-dvh lg:pl-[17.5rem]" data-sky={sky.kind}>
       <MagicCursor />
+      <WeatherLayer kind={sky.kind} tone="light" plain calm />
       <a href="#app-main" className="skip-link">
         {tr('Bỏ qua điều hướng', 'Skip navigation')}
       </a>
 
       <aside className="sidebar fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col px-5 py-6 lg:flex">
         <Link to={user.role === 'admin' ? '/app/analytics' : '/app'} className="group flex items-center gap-3" aria-label="Journie">
-          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="h-[5.5rem] w-auto -ml-2 transition-transform duration-500 group-hover:-rotate-3" />
+          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="-ml-2 h-[5.5rem] w-auto transition-transform duration-500 group-hover:-rotate-3" />
           <span className="sr-only">Journie</span>
         </Link>
 
-        <div className="mt-8 flex-1 overflow-y-auto pl-3">
+        <div className="mt-7 flex-1 overflow-y-auto">
           <NavList items={items} />
           {user.role === 'traveler' && <LiveChip />}
         </div>
 
-        <div className="mt-4 border-t border-paper/10 pt-4">
-          <div className="flex items-center gap-3">
+        <div className="mt-4 border-t border-paper/12 pt-4">
+          <WeatherChip tone="dark" direction="up" />
+          <div className="mt-4 flex items-center gap-3">
             <Avatar name={user.name} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-paper">{user.name}</p>
-              <p className="truncate text-xs text-paper/50">{user.role === 'admin' ? 'Business Admin' : tr('Lữ khách', 'Traveler')}</p>
+              <p className="truncate text-xs text-paper/55">{user.role === 'admin' ? 'Business Admin' : tr('Lữ khách', 'Traveler')}</p>
             </div>
-            <button type="button" onClick={logout} className="grid size-10 place-items-center text-paper/55 transition-colors hover:text-pomegranate" aria-label={tr('Đăng xuất', 'Sign out')} title={tr('Đăng xuất', 'Sign out')}>
+            <button type="button" onClick={logout} className="grid size-10 place-items-center text-paper/55 transition-colors hover:text-terracotta" aria-label={tr('Đăng xuất', 'Sign out')} title={tr('Đăng xuất', 'Sign out')}>
               <LogOut size={18} />
             </button>
           </div>
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between">
             <LangSwitch />
             <NotificationBell tone="dark" />
           </div>
         </div>
       </aside>
 
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-forest/10 bg-paper/90 px-4 lg:hidden">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-forest/12 bg-paper/90 px-3 backdrop-blur lg:hidden">
         <Link to={user.role === 'admin' ? '/app/analytics' : '/app'} className="flex items-center gap-2" aria-label="Journie">
           <img src={siteConfig.logoMark} alt="" width="384" height="512" className="h-10 w-auto" />
-          <span className="h-display text-xl text-forest">Journie</span>
+          <span className="h-display text-xl text-forest max-[400px]:sr-only">Journie</span>
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          <WeatherChip tone="light" align="right" compact />
           <LangSwitch tone="light" />
           <NotificationBell />
-          <button type="button" onClick={logout} className="grid size-11 place-items-center text-ink/60" aria-label={tr('Đăng xuất', 'Sign out')}>
+          <button type="button" onClick={logout} className="grid size-10 place-items-center text-ink/60" aria-label={tr('Đăng xuất', 'Sign out')}>
             <LogOut size={19} />
           </button>
         </div>
       </header>
 
-      <main id="app-main" className="mx-auto w-full max-w-[90rem] px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-14 lg:pt-9">
+      <main id="app-main" className="relative z-10 mx-auto w-full max-w-[90rem] px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-14 lg:pt-9">
         <motion.div key={location.pathname.split('/').slice(0, 4).join('/')} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
           <Outlet />
         </motion.div>
       </main>
 
       <MobileTabs items={items} />
+      <JoCompanion />
       <Toasts />
     </div>
   )
@@ -265,19 +265,19 @@ function MobileTabs({ items }: { items: NavItem[] }) {
   const user = useAuthStore((state) => state.user)!
   const tabs = user.role === 'admin' ? items : [items[0], items[2], items[1], items[3], items[4]]
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gold/25 bg-night/95 pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label={tr('Điều hướng di động', 'Mobile navigation')}>
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-sun/30 bg-night/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden" aria-label={tr('Điều hướng di động', 'Mobile navigation')}>
       <ul className={`mx-auto grid max-w-md ${tabs.length === 5 ? 'grid-cols-5' : 'grid-cols-3'}`}>
         {tabs.map((item, index) => {
           const center = user.role === 'traveler' && index === 2
           return (
             <li key={item.to} className="flex justify-center">
-              <NavLink to={item.to} end={item.end} className="relative flex h-16 w-full flex-col items-center justify-center gap-1 text-[0.62rem] font-semibold text-paper/60 aria-[current=page]:text-gold">
+              <NavLink to={item.to} end={item.end} className="relative flex h-16 w-full flex-col items-center justify-center gap-1 text-[0.62rem] font-semibold text-paper/65 aria-[current=page]:text-sun">
                 {center ? (
-                  <span className="-mt-7 grid size-14 place-items-center rounded-full bg-gradient-to-br from-gold to-[#eaa93a] text-night shadow-[0_10px_24px_-8px_rgba(246,203,90,0.9)] ring-4 ring-night">
-                    <item.icon size={24} aria-hidden="true" />
+                  <span className="-mt-7 grid size-14 place-items-center rounded-full bg-sun text-forest shadow-[0_10px_24px_-8px_rgba(240,185,75,0.8)] ring-4 ring-night">
+                    <NavIcon name={item.icon} size={30} tone={{ a: '#d96745', b: '#fbf5e6' }} />
                   </span>
                 ) : (
-                  <item.icon size={21} aria-hidden="true" />
+                  <NavIcon name={item.icon} size={25} />
                 )}
                 <span className={center ? 'sr-only' : ''}>{tr(item.vi, item.en).split(' ').slice(0, 2).join(' ')}</span>
               </NavLink>
