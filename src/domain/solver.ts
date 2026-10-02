@@ -222,10 +222,16 @@ export function retimeDay(stops: Stop[], options: RetimeOptions): { stops: Stop[
         uid: stop.uid,
         kind: 'closed',
         detail: `${poi.name} ${poi.close >= start ? 'đóng cửa' : 'đã đóng'} lúc ${fmtTime(poi.close)}`,
+        detailEn: `${poi.name} ${poi.close >= start ? 'closes' : 'closed'} at ${fmtTime(poi.close)}`,
       })
     }
     if (end > options.dayEnd) {
-      violations.push({ uid: stop.uid, kind: 'overtime', detail: `${fmtTime(end)} vượt giờ kết thúc ${fmtTime(options.dayEnd)}` })
+      violations.push({
+        uid: stop.uid,
+        kind: 'overtime',
+        detail: `${fmtTime(end)} vượt giờ kết thúc ${fmtTime(options.dayEnd)}`,
+        detailEn: `${fmtTime(end)} is past the ${fmtTime(options.dayEnd)} day end`,
+      })
     }
     time = end
     prev = poi

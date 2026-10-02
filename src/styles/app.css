@@ -758,3 +758,8 @@ input[type='range'].range:active::-webkit-slider-thumb {
     animation: none !important;
   }
 }
+
+/* Grid items may shrink below their content width; stops tabs, maps and tables from forcing sideways scroll on phones. */
+:where(.grid) > * {
+  min-width: 0;
+}

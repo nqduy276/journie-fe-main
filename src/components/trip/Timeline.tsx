@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Reorder, useDragControls, motion } from 'motion/react'
 import { AlertTriangle, Bike, CarTaxiFront, Check, ChevronDown, ChevronUp, Footprints, GripVertical, Lock, LockOpen, Minus, Plus, Trash2, Hourglass } from 'lucide-react'
 import { poiById } from '../../domain/pois'
@@ -76,7 +76,7 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
       onMouseEnter={() => onHover?.(stop.uid)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="w-[3.7rem] shrink-0 pt-3 text-right sm:w-[4.4rem]">
+      <div className="hidden w-[4.4rem] shrink-0 pt-3 text-right sm:block">
         <p className="tabular text-[0.95rem] font-bold leading-none text-forest">{fmtTime(stop.start)}</p>
         <p className="tabular mt-1 text-[0.7rem] text-ink/45">{fmtTime(stop.end)}</p>
       </div>
@@ -101,6 +101,9 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
         <div className="flex items-start gap-3">
           <CategoryGlyph cat={poi.cat} size={38} />
           <button type="button" onClick={() => onSelect?.(stop.uid)} className="min-w-0 flex-1 text-left">
+            <p className="tabular text-[0.72rem] font-bold text-lapis sm:hidden">
+              {fmtTime(stop.start)}–{fmtTime(stop.end)}
+            </p>
             <p className="truncate text-[0.95rem] font-semibold text-ink">{poi.name}</p>
             <p className="truncate text-xs text-ink/55">
               <CategoryName cat={poi.cat} /> · {poi.area}
@@ -108,17 +111,25 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
           </button>
           {!readOnly && (
             <div className="flex shrink-0 items-center">
+              <span className="hidden flex-col sm:flex">
+                <button type="button" disabled={index === 0} onClick={() => onMove?.(stop.uid, -1)} className="grid h-[1.1rem] w-8 place-items-center text-ink/35 transition-colors hover:text-lapis disabled:opacity-25" aria-label={tr('Chuyển lên trên', 'Move up')}>
+                  <ChevronUp size={15} />
+                </button>
+                <button type="button" disabled={index === total - 1} onClick={() => onMove?.(stop.uid, 1)} className="grid h-[1.1rem] w-8 place-items-center text-ink/35 transition-colors hover:text-lapis disabled:opacity-25" aria-label={tr('Chuyển xuống dưới', 'Move down')}>
+                  <ChevronDown size={15} />
+                </button>
+              </span>
               <button
                 type="button"
                 onClick={() => onLock?.(stop.uid)}
-                className={`grid size-9 place-items-center transition-colors ${stop.locked ? 'text-lapis' : 'text-ink/35 hover:text-ink'}`}
+                className={`hidden size-9 place-items-center transition-colors sm:grid ${stop.locked ? 'text-lapis' : 'text-ink/35 hover:text-ink'}`}
                 aria-pressed={stop.locked}
                 aria-label={stop.locked ? tr('Bỏ khóa điểm này', 'Unlock this stop') : tr('Khóa: điểm bắt buộc phải giữ', 'Lock: this stop must stay')}
                 title={stop.locked ? tr('Điểm bắt buộc', 'Mandatory stop') : tr('Khóa điểm này', 'Lock this stop')}
               >
                 {stop.locked ? <Lock size={16} /> : <LockOpen size={16} />}
               </button>
-              <button type="button" onClick={() => onRemove?.(stop.uid)} className="grid size-9 place-items-center text-ink/35 transition-colors hover:text-pomegranate" aria-label={tr('Xóa điểm này', 'Remove this stop')}>
+              <button type="button" onClick={() => onRemove?.(stop.uid)} className="hidden size-9 place-items-center text-ink/35 transition-colors hover:text-pomegranate sm:grid" aria-label={tr('Xóa điểm này', 'Remove this stop')}>
                 <Trash2 size={16} />
               </button>
               <span
@@ -160,12 +171,18 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
         {violation && (
           <p className="mt-2 flex items-start gap-1.5 text-xs font-semibold text-pomegranate" role="alert">
             <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden="true" />
-            {violation.detail}
+            {vi ? violation.detail : violation.detailEn}
           </p>
         )}
 
         {!readOnly && (
-          <div className="mt-2 flex gap-1 sm:hidden">
+          <div className="mt-2 flex flex-wrap gap-1.5 sm:hidden">
+            <button type="button" onClick={() => onLock?.(stop.uid)} aria-pressed={stop.locked} className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.7rem] font-semibold ${stop.locked ? 'border-lapis bg-lapis/10 text-lapis' : 'border-forest/15'}`}>
+              {stop.locked ? <Lock size={13} /> : <LockOpen size={13} />} {stop.locked ? tr('Bắt buộc', 'Locked') : tr('Khóa', 'Lock')}
+            </button>
+            <button type="button" onClick={() => onRemove?.(stop.uid)} className="inline-flex items-center gap-1 rounded-full border border-pomegranate/40 px-2.5 py-1 text-[0.7rem] font-semibold text-pomegranate">
+              <Trash2 size={13} /> {tr('Xóa', 'Remove')}
+            </button>
             <button type="button" disabled={index === 0} onClick={() => onMove?.(stop.uid, -1)} className="inline-flex items-center gap-1 rounded-full border border-forest/15 px-2.5 py-1 text-[0.7rem] font-semibold disabled:opacity-30">
               <ChevronUp size={13} /> {tr('Lên', 'Up')}
             </button>
@@ -213,8 +230,12 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
 export function Timeline({ stops, readOnly, activeUid, violations = [], nowMinutes, ...actions }: Props) {
   const { tr } = useTr()
   const [order, setOrder] = useState(stops)
-
-  useEffect(() => setOrder(stops), [stops])
+  const [seen, setSeen] = useState(stops)
+  // New data from the parent replaces the local drag order (adjusting state while rendering).
+  if (seen !== stops) {
+    setSeen(stops)
+    setOrder(stops)
+  }
 
   const commit = () => {
     if (order.every((stop, index) => stop.uid === stops[index]?.uid)) return

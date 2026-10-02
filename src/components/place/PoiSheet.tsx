@@ -7,6 +7,7 @@ import { useProfile, useReviews, useSaveProfile, useSaveTrip, useTrips } from '.
 import { track } from '../../api/analytics'
 import { addStop } from '../../domain/edit'
 import { poiById } from '../../domain/pois'
+import { violationText } from '../../domain/violation'
 import { fmtTime, formatVnd } from '../../domain/time'
 import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
@@ -46,7 +47,7 @@ export function PoiSheet() {
     if (!poi || !selectedTrip) return
     const result = addStop(selectedTrip, dayIndex, poi.id)
     if (!result.ok) {
-      toast('warning', tr('Chưa thêm được', 'Could not add it'), result.violations[0]?.detail)
+      toast('warning', tr('Chưa thêm được', 'Could not add it'), violationText(result.violations[0], vi))
       return
     }
     saveTrip.mutate(result.trip)

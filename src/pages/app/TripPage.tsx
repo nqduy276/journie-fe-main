@@ -10,13 +10,15 @@ import { track } from '../../api/analytics'
 import { useDeleteTrip, useProfile, useSaveTrip, useTrip } from '../../api/queries'
 import { RouteMap } from '../../components/map/RouteMap'
 import { PoiSheet } from '../../components/place/PoiSheet'
-import { describeTrip, DayTabs, TripStats } from '../../components/trip/parts'
+import { DayTabs, TripStats } from '../../components/trip/parts'
+import { describeTrip } from '../../components/trip/explain'
 import { Timeline } from '../../components/trip/Timeline'
 import { CategoryGlyph, EmptyState, Skeleton, SolverBadge } from '../../components/ui/primitives'
 import { Sheet } from '../../components/ui/Sheet'
 import { PageHeader } from '../../components/PageHeader'
 import { addStop, changeDuration, diffDay, removeStop, reorderDay, toggleLock, usedPoiIds } from '../../domain/edit'
 import { cityById, poiById } from '../../domain/pois'
+import { violationText } from '../../domain/violation'
 import { retimeDay, tripCost } from '../../domain/solver'
 import { addDays, fmtMinutes, fmtTime, formatDate, formatVnd } from '../../domain/time'
 import type { Stop, Trip } from '../../domain/types'
@@ -104,7 +106,7 @@ export function TripPage() {
   /** Validate-then-apply, exactly the manual editing flow in the report. */
   const apply = (result: ReturnType<typeof reorderDay>, kind: string): boolean => {
     if (!result.ok) {
-      toast('warning', tr('Chỉnh sửa không hợp lệ, đã hoàn lại', 'Edit not valid, so it was undone'), result.violations[0]?.detail)
+      toast('warning', tr('Chỉnh sửa không hợp lệ, đã hoàn lại', 'Edit not valid, so it was undone'), violationText(result.violations[0], vi))
       return false
     }
     commit(result.trip, kind)
@@ -194,7 +196,7 @@ export function TripPage() {
               <p className="font-bold">{tr('Lịch có điểm không còn hợp lệ', 'Some stops are no longer valid')}</p>
               <ul className="mt-1 list-disc pl-5">
                 {live.violations.map((violation) => (
-                  <li key={violation.uid + violation.kind}>{violation.detail}</li>
+                  <li key={violation.uid + violation.kind}>{vi ? violation.detail : violation.detailEn}</li>
                 ))}
               </ul>
             </div>
@@ -344,7 +346,7 @@ export function TripPage() {
 /* ───────── add a place ───────── */
 
 function AddPlaceSheet({ open, onClose, trip, dayIndex, onAdd }: { open: boolean; onClose: () => void; trip: Trip; dayIndex: number; onAdd: (poiId: string) => void }) {
-  const { tr } = useTr()
+  const { tr, language } = useTr()
   const [query, setQuery] = useState('')
   const used = usedPoiIds(trip)
   const hits = searchPois({ query, cities: [trip.city], categories: [], prices: [], minRating: 0, indoorOnly: false, sort: 'relevance' })
@@ -369,7 +371,7 @@ function AddPlaceSheet({ open, onClose, trip, dayIndex, onAdd }: { open: boolean
                 <p className="tabular text-xs text-ink/55">
                   {fmtTime(poi.open)}–{fmtTime(poi.close)} · {poi.cost ? formatVnd(poi.cost, true) : tr('Miễn phí', 'Free')} · ★ {poi.rating.toFixed(1)}
                 </p>
-                {!test.ok && <p className="mt-1 text-xs font-semibold text-pomegranate">{test.violations[0]?.detail}</p>}
+                {!test.ok && <p className="mt-1 text-xs font-semibold text-pomegranate">{violationText(test.violations[0], language === 'vi')}</p>}
               </div>
               <button type="button" className="btn-ghost btn-sm shrink-0" disabled={!test.ok} onClick={() => onAdd(poi.id)}>
                 <Plus size={14} aria-hidden="true" /> {tr('Thêm', 'Add')}
@@ -387,7 +389,7 @@ function AddPlaceSheet({ open, onClose, trip, dayIndex, onAdd }: { open: boolean
 function ProposalSheet({ proposal, trip, onClose, onAccept }: { proposal: Trip | null; trip: Trip; onClose: () => void; onAccept: () => void }) {
   const { tr, language } = useTr()
   const vi = language === 'vi'
-  if (!proposal) return <Sheet open={false} onClose={onClose} title="" children={null} />
+  if (!proposal) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>
 
   const before = tripCost(trip.days)
   const after = tripCost(proposal.days)
@@ -473,7 +475,7 @@ function EditableTitle({ value, onSave, label }: { value: string; onSave: (value
         aria-label={label}
         onBlur={(event) => onSave(event.target.value)}
         onKeyDown={(event) => event.key === 'Enter' && (event.target as HTMLInputElement).blur()}
-        className="h-display w-full min-w-[12rem] max-w-[46rem] border-b border-transparent bg-transparent outline-none transition-colors hover:border-forest/25 focus:border-gold"
+        className="h-display w-full min-w-[12rem] max-w-[46rem] text-ellipsis border-b max-sm:text-[1.7rem] border-transparent bg-transparent outline-none transition-colors hover:border-forest/25 focus:border-gold"
       />
       <Pencil size={16} className="ml-2 shrink-0 text-ink/30 transition-opacity group-focus-within:opacity-0 group-hover:text-lapis" aria-hidden="true" />
     </span>

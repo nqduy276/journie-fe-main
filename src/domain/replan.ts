@@ -114,13 +114,13 @@ export function replanDay(trip: Trip, dayIndex: number, now: number, disruption:
     for (const stop of baselineBase.stops) {
       const poi = poiById[stop.poiId]
       if (!poi.indoor && stop.start >= rainWindow.from && stop.start < rainWindow.until) {
-        baselineViolations.push({ uid: stop.uid, kind: 'closed', detail: `${poi.name} ngoài trời, đang mưa lớn` })
+        baselineViolations.push({ uid: stop.uid, kind: 'closed', detail: `${poi.name} ngoài trời, đang mưa lớn`, detailEn: `${poi.name} is outdoors and it is raining hard` })
       }
     }
   }
   if (closedId) {
     const stop = remaining.find((s) => s.poiId === closedId)
-    if (stop) baselineViolations.push({ uid: stop.uid, kind: 'closed', detail: `${poiById[closedId].name} đóng cửa đột xuất` })
+    if (stop) baselineViolations.push({ uid: stop.uid, kind: 'closed', detail: `${poiById[closedId].name} đóng cửa đột xuất`, detailEn: `${poiById[closedId].name} has closed unexpectedly` })
   }
   const baseline = {
     stops: baselineBase.stops,

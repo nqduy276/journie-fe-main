@@ -20,7 +20,7 @@ function commitDay(trip: Trip, dayIndex: number, stops: Stop[]): EditResult {
   if (tripCost(next.days) > trip.budget * 1.0001 && tripCost(next.days) > tripCost(trip.days)) {
     return {
       ok: false,
-      violations: [{ uid: timed[0]?.uid ?? '', kind: 'budget', detail: `Chi phí vượt ngân sách ${new Intl.NumberFormat('vi-VN').format(trip.budget)}đ` }],
+      violations: [{ uid: timed[0]?.uid ?? '', kind: 'budget', detail: `Chi phí vượt ngân sách ${new Intl.NumberFormat('vi-VN').format(trip.budget)}đ`, detailEn: `Cost exceeds the ${new Intl.NumberFormat('en-US').format(trip.budget)} VND budget` }],
     }
   }
   return { ok: true, trip: next }
