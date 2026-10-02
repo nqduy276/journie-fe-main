@@ -36,7 +36,7 @@ export function TripsPage() {
     <>
       <PageHeader
         title={tr('Chuyến đi của tôi', 'My trips')}
-        subtitle={tr('Mở một lịch trình để chỉnh sửa, hoặc bắt đầu đi và để Jo theo dõi giúp bạn.', 'Open an itinerary to edit it, or start travelling and let Jo keep watch.')}
+        subtitle={tr('Mở một lịch trình để chỉnh sửa, hoặc bắt đầu đi và để Di theo dõi giúp bạn.', 'Open an itinerary to edit it, or start travelling and let Di keep watch.')}
         actions={
           <Link to="/app/plan" className="btn-gold btn-sm">
             <Sparkles size={15} aria-hidden="true" /> {tr('Chuyến mới', 'New trip')}
@@ -64,7 +64,7 @@ export function TripsPage() {
       ) : visible.length === 0 ? (
         <EmptyState
           title={filter === 'all' ? tr('Chưa có chuyến đi nào', 'No trips yet') : tr('Không có chuyến nào ở mục này', 'Nothing in this tab')}
-          body={tr('Hãy kể chuyến đi bạn mơ, Jo sẽ biến nó thành lịch trình chi tiết.', 'Tell Jo about your dream trip and it becomes a detailed itinerary.')}
+          body={tr('Hãy kể chuyến đi bạn mơ, Di sẽ biến nó thành lịch trình chi tiết.', 'Tell Di about your dream trip and it becomes a detailed itinerary.')}
           action={
             <Link to="/app/plan" className="btn-gold">
               <Sparkles size={17} aria-hidden="true" /> {tr('Lên chuyến đầu tiên', 'Plan my first trip')}

@@ -5,7 +5,7 @@ import { ArrowRight, CalendarClock, Compass, MapPin, Navigation, Send, Sparkles 
 import { readProfile } from '../../api/profile'
 import { useProfile, useTrips } from '../../api/queries'
 import { WeatherIcon } from '../../components/icons'
-import { JoAvatar } from '../../components/mascot/JoAvatar'
+import { DiAvatar } from '../../components/mascot/DiAvatar'
 import { CityCover } from '../../components/CityCover'
 import { CountUp } from '../../components/motion/CountUp'
 import { EmptyState, Skeleton, SolverBadge } from '../../components/ui/primitives'
@@ -80,10 +80,10 @@ export function Dashboard() {
           </h1>
           <p className="mt-3 max-w-lg text-[0.98rem] leading-relaxed text-paper/70">
             {live
-              ? tr(`Chuyến “${live.title}” đang diễn ra. Jo đang theo dõi giao thông và thời tiết giúp bạn.`, `“${live.title}” is under way. Jo is watching traffic and weather for you.`)
+              ? tr(`Chuyến “${live.title}” đang diễn ra. Di đang theo dõi giao thông và thời tiết giúp bạn.`, `“${live.title}” is under way. Di is watching traffic and weather for you.`)
               : upcoming.length
                 ? tr(`Bạn có ${upcoming.length} chuyến sắp tới. Muốn thêm một chuyến nữa?`, `You have ${upcoming.length} trip(s) coming up. Another trip?`)
-                : tr('Bạn muốn đi đâu tiếp theo? Hãy kể, Jo sẽ dựng lịch trình.', 'Where to next? Tell Jo and the itinerary appears.')}
+                : tr('Bạn muốn đi đâu tiếp theo? Hãy kể, Di sẽ dựng lịch trình.', 'Where to next? Tell Di and the itinerary appears.')}
           </p>
 
           <form
@@ -94,7 +94,7 @@ export function Dashboard() {
             }}
           >
             <label htmlFor="quick-wish" className="sr-only">
-              {tr('Kể cho Jo nghe chuyến đi', 'Tell Jo about your trip')}
+              {tr('Kể cho Di nghe chuyến đi', 'Tell Di about your trip')}
             </label>
             <div className="group relative flex items-center rounded-2xl border border-gold/35 bg-night/45 pr-2 transition-[border-color,box-shadow] duration-300 focus-within:border-gold focus-within:shadow-[0_0_0_4px_rgba(246,203,90,0.14)]">
               <Sparkles size={19} className="ml-4 shrink-0 text-gold" aria-hidden="true" />
@@ -114,7 +114,7 @@ export function Dashboard() {
                   </AnimatePresence>
                 )}
               </div>
-              <button type="submit" className="btn-gold btn-sm shrink-0" aria-label={tr('Gửi cho Jo', 'Send to Jo')}>
+              <button type="submit" className="btn-gold btn-sm shrink-0" aria-label={tr('Gửi cho Di', 'Send to Di')}>
                 <Send size={16} aria-hidden="true" />
                 <span className="hidden sm:inline">{tr('Lên lịch', 'Plan')}</span>
               </button>
@@ -124,7 +124,7 @@ export function Dashboard() {
 
         <div className="relative hidden items-end justify-center lg:flex">
           <div className="w-[min(100%,15rem)]">
-            <JoAvatar mood={live ? 'joy' : 'idle'} className="aspect-[300/340] w-full" />
+            <DiAvatar mood={live ? 'joy' : 'idle'} className="aspect-[300/340] w-full" />
             
           </div>
         </div>
@@ -172,7 +172,7 @@ export function Dashboard() {
       ) : (
         <EmptyState
           title={tr('Chưa có chuyến đi nào', 'No trips yet')}
-          body={tr('Kể chuyến đi đầu tiên ở khung phía trên, Jo sẽ dựng một lịch trình hoàn chỉnh trong vài giây.', 'Describe your first trip above and Jo builds a full itinerary in seconds.')}
+          body={tr('Kể chuyến đi đầu tiên ở khung phía trên, Di sẽ dựng một lịch trình hoàn chỉnh trong vài giây.', 'Describe your first trip above and Di builds a full itinerary in seconds.')}
           action={
             <Link to="/app/plan" className="btn-gold">
               <Sparkles size={17} aria-hidden="true" />

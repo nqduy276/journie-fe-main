@@ -16,8 +16,8 @@ export function describeTrip(trip: Trip, vi: boolean): string[] {
 
   const lines = [
     vi
-      ? `Jo xếp ${stops.length} điểm vào ${trip.days.length} ngày, nghiêng về ${top.join(' và ')} theo đúng gu bạn nói. Chi phí ước tính ${formatVnd(spend)}, tức ${pct}% ngân sách.`
-      : `Jo placed ${stops.length} stops across ${trip.days.length} day${trip.days.length > 1 ? 's' : ''}, leaning toward ${top.join(' and ')} as you asked. Estimated cost is ${formatVnd(spend)}, ${pct}% of the budget.`,
+      ? `Di xếp ${stops.length} điểm vào ${trip.days.length} ngày, nghiêng về ${top.join(' và ')} theo đúng gu bạn nói. Chi phí ước tính ${formatVnd(spend)}, tức ${pct}% ngân sách.`
+      : `Di placed ${stops.length} stops across ${trip.days.length} day${trip.days.length > 1 ? 's' : ''}, leaning toward ${top.join(' and ')} as you asked. Estimated cost is ${formatVnd(spend)}, ${pct}% of the budget.`,
   ]
   if (trip.rainy) {
     lines.push(

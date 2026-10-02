@@ -178,9 +178,33 @@ export function CategoryIcon({ cat, ...props }: IconProps & { cat: CategoryId })
 
 /* ───────── weather ───────── */
 
-export type WeatherKind = 'sunny' | 'cloudy' | 'rain' | 'storm' | 'night'
+export type WeatherKind = 'sunny' | 'cloudy' | 'rain' | 'storm' | 'night' | 'night-cloudy' | 'night-rain'
 
 const CLOUD = 'M14 35C9 35 6 31.5 6 27.5C6 23.5 9.5 20.5 13.5 21C14.5 15.5 19 12 24.5 12C30.5 12 35 16 35.5 21.5C40 21.5 43 24.5 43 28.5C43 32.5 40 35 36 35Z'
+
+const nightCloudy = () => (
+  <>
+    <Off>
+      <path d="M26 5C19 7 15 13 16.5 20C18 27 24 31 30 29C23 26 21 20 23 14C24 10 25 7 26 5Z" style={B} />
+    </Off>
+    <path d="M26 5C19 7 15 13 16.5 20C18 27 24 31 30 29C23 26 21 20 23 14C24 10 25 7 26 5Z" />
+    <Off>
+      <path d={CLOUD} transform="translate(0 6)" style={{ fill: '#2b5a4d', stroke: 'none' }} />
+    </Off>
+    <path d={CLOUD} transform="translate(0 6)" />
+  </>
+)
+
+const nightRain = () => (
+  <>
+    <path d="M38 6V11M35.5 8.5H40.5" />
+    <Off>
+      <path d={CLOUD} transform="translate(0 -5)" style={A} />
+    </Off>
+    <path d={CLOUD} transform="translate(0 -5)" />
+    <path d="M16 34L13 42M25 34L22 42M34 34L31 42" style={Bs} />
+  </>
+)
 
 const WEATHER: Record<WeatherKind, () => ReactNode> = {
   sunny: () => (
@@ -220,6 +244,8 @@ const WEATHER: Record<WeatherKind, () => ReactNode> = {
       <path d="M12 37L10 42M36 37L34 42" style={Bs} />
     </>
   ),
+  'night-cloudy': nightCloudy,
+  'night-rain': nightRain,
   night: () => (
     <>
       <Off>
@@ -232,11 +258,30 @@ const WEATHER: Record<WeatherKind, () => ReactNode> = {
 }
 
 const WEATHER_TONES: Record<WeatherKind, Tone> = {
+  'night-cloudy': { a: DUSK, b: SUN },
+  'night-rain': { a: '#6f8ea0', b: JADE },
   sunny: { a: SUN, b: TERRACOTTA },
   cloudy: { a: '#cfd8d2', b: SUN },
   rain: { a: '#b9d4cf', b: JADE },
   storm: { a: '#9fb2aa', b: SUN },
   night: { a: DUSK, b: SUN },
+}
+
+/** The icon for a sky: sun or moon, with the weather in front of it. */
+export function SkyIcon({ phase, weather, ...props }: IconProps & { phase: 'day' | 'night'; weather: 'clear' | 'cloudy' | 'rain' | 'storm' }) {
+  const kind: WeatherKind =
+    phase === 'day'
+      ? weather === 'clear'
+        ? 'sunny'
+        : weather
+      : weather === 'clear'
+        ? 'night'
+        : weather === 'cloudy'
+          ? 'night-cloudy'
+          : weather === 'rain'
+            ? 'night-rain'
+            : 'storm'
+  return <WeatherIcon kind={kind} {...props} />
 }
 
 export function WeatherIcon({ kind, ...props }: IconProps & { kind: WeatherKind }) {

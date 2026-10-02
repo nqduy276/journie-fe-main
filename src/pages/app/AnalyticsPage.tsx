@@ -15,7 +15,7 @@ import { useTr } from '../../hooks/useTr'
    ordinal      #6fbfac → #0d4638   (one hue, monotone lightness, light end 2.0:1) */
 const SERIES = { trips: '#0f9a80', replans: '#d95a2b' } as const
 const RAMP = ['#6fbfac', '#45a48e', '#2a8671', '#186553', '#0d4638'] as const
-const GRID = 'rgba(23,63,53,0.12)'
+const GRID = 'var(--chart-grid, rgba(23,63,53,0.12))'
 
 function useWidth() {
   const ref = useRef<HTMLDivElement>(null)
@@ -113,10 +113,10 @@ function LineChart({ data, labels }: { data: DailyPoint[]; labels: { trips: stri
         <motion.path d={line('trips')} fill="none" stroke={SERIES.trips} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: 'easeOut' }} />
         <motion.path d={line('replans')} fill="none" stroke={SERIES.replans} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, delay: 0.15, ease: 'easeOut' }} />
 
-        {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={m.top} y2={m.top + ih} stroke="rgba(23,63,53,0.35)" />}
+        {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={m.top} y2={m.top + ih} stroke="var(--chart-cursor, rgba(23,63,53,0.35))" />}
         {([['trips', SERIES.trips], ['replans', SERIES.replans]] as const).map(([key, color]) => (
           <g key={key}>
-            <circle cx={x(active)} cy={y(data[active][key])} r="5" fill={color} stroke="#fbf8f0" strokeWidth="2" />
+            <circle cx={x(active)} cy={y(data[active][key])} r="5" fill={color} style={{ stroke: 'var(--chart-dot-edge, #fbf8f0)' }} strokeWidth="2" />
             {hover === null && (
               <text x={x(lastIdx) + 12} y={y(data[lastIdx][key]) + 4} className="fill-ink text-[11px] font-semibold">
                 {key === 'trips' ? labels.trips : labels.replans}
@@ -286,7 +286,7 @@ export function AnalyticsPage() {
 
           <Card
             title={tr('Chuyến đi và lần điều chỉnh mỗi ngày', 'Trips and replans per day')}
-            subtitle={tr('Một trục, hai chuỗi: lịch trình được tạo và số lần Jo đề xuất điều chỉnh.', 'One axis, two series: itineraries created and replans Jo suggested.')}
+            subtitle={tr('Một trục, hai chuỗi: lịch trình được tạo và số lần Di đề xuất điều chỉnh.', 'One axis, two series: itineraries created and replans Di suggested.')}
             actions={
               <button type="button" aria-pressed={table} className="inline-flex items-center gap-1.5 text-xs font-semibold text-lapis hover:underline" onClick={() => setTable((v) => !v)}>
                 <Table2 size={14} aria-hidden="true" /> {table ? tr('Xem biểu đồ', 'Show chart') : tr('Xem dạng bảng', 'Show as table')}

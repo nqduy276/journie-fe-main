@@ -234,9 +234,9 @@ export function TripPage() {
 
           <section className="panel-night p-5" aria-labelledby="adjust-title">
             <h2 id="adjust-title" className="h-display flex items-center gap-2 text-xl text-paper">
-              <Wand2 size={19} className="text-gold" aria-hidden="true" /> {tr('Nhờ Jo điều chỉnh', 'Ask Jo to adjust')}
+              <Wand2 size={19} className="text-gold" aria-hidden="true" /> {tr('Nhờ Di điều chỉnh', 'Ask Di to adjust')}
             </h2>
-            <p className="mt-1 text-sm text-paper/60">{tr('Nói thêm yêu cầu mới, Jo dựng lại lịch rồi cho bạn xem trước khi áp dụng.', 'Add a new request. Jo rebuilds the plan and shows you before applying.')}</p>
+            <p className="mt-1 text-sm text-paper/60">{tr('Nói thêm yêu cầu mới, Di dựng lại lịch rồi cho bạn xem trước khi áp dụng.', 'Add a new request. Di rebuilds the plan and shows you before applying.')}</p>
             <label htmlFor="adjust-text" className="sr-only">
               {tr('Yêu cầu mới', 'New request')}
             </label>
@@ -354,7 +354,7 @@ function AddPlaceSheet({ open, onClose, trip, dayIndex, onAdd }: { open: boolean
     .slice(0, 12)
 
   return (
-    <Sheet open={open} onClose={onClose} title={tr(`Thêm vào Ngày ${dayIndex + 1}`, `Add to Day ${dayIndex + 1}`)} description={tr('Jo kiểm tra giờ mở cửa và thời gian di chuyển trước khi cho thêm.', 'Jo checks opening hours and travel time before it lets you add.')}>
+    <Sheet open={open} onClose={onClose} title={tr(`Thêm vào Ngày ${dayIndex + 1}`, `Add to Day ${dayIndex + 1}`)} description={tr('Di kiểm tra giờ mở cửa và thời gian di chuyển trước khi cho thêm.', 'Di checks opening hours and travel time before it lets you add.')}>
       <div className="relative">
         <Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40" aria-hidden="true" />
         <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr('Tìm theo tên, loại hoặc từ khóa…', 'Search by name, type or keyword…')} aria-label={tr('Tìm địa điểm', 'Search places')} className="h-12 w-full rounded-xl border border-forest/20 bg-white pl-10 pr-3 text-sm outline-none focus:border-lapis" />
@@ -402,7 +402,7 @@ function ProposalSheet({ proposal, trip, onClose, onAccept }: { proposal: Trip |
       open
       onClose={onClose}
       width="max-w-2xl"
-      title={tr('Phương án mới của Jo', "Jo's new plan")}
+      title={tr('Phương án mới của Di', "Di's new plan")}
       description={tr('So sánh với lịch hiện tại. Chưa có gì thay đổi cho đến khi bạn áp dụng.', 'Compared with your current plan. Nothing changes until you apply it.')}
       footer={
         <div className="flex justify-end gap-2.5">

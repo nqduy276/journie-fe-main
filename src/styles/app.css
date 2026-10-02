@@ -203,12 +203,6 @@
   transition: background-color 1400ms ease;
 }
 
-/* The workspace tints with the sky, on top of the paper ground. */
-.app-bg[data-sky='cloudy'] { background-color: #eceae0; }
-.app-bg[data-sky='rain'] { background-color: #e1e6df; }
-.app-bg[data-sky='storm'] { background-color: #d5dcd6; }
-.app-bg[data-sky='night'] { background-color: #e6e2d6; }
-
 .panel {
   position: relative;
   border: 1px solid color-mix(in srgb, var(--color-forest) 14%, transparent);
@@ -449,56 +443,6 @@ input[type='range'].range:active::-webkit-slider-thumb {
 
 /* ───────── Weather ───────── */
 
-.sky-wash {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1400ms ease;
-}
-
-.sky-wash[data-on='true'] {
-  opacity: 1;
-}
-
-.sky-wash[data-kind='sunny'] {
-  background:
-    radial-gradient(ellipse 45% 38% at 92% -4%, rgba(240, 185, 75, 0.42), transparent 70%),
-    linear-gradient(180deg, rgba(240, 185, 75, 0.07), transparent 40%);
-}
-
-.sky-wash[data-kind='cloudy'] {
-  background: linear-gradient(180deg, rgba(150, 168, 160, 0.2), transparent 50%);
-}
-
-.sky-wash[data-kind='rain'] {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(95, 120, 112, 0.3), transparent 70%),
-    linear-gradient(180deg, rgba(120, 140, 133, 0.16), rgba(120, 140, 133, 0.06));
-}
-
-.sky-wash[data-kind='storm'] {
-  background:
-    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(40, 62, 58, 0.5), transparent 70%),
-    linear-gradient(180deg, rgba(60, 82, 77, 0.3), rgba(60, 82, 77, 0.12));
-}
-
-.sky-wash[data-kind='night'] {
-  background:
-    radial-gradient(ellipse 60% 40% at 8% -6%, rgba(240, 185, 75, 0.14), transparent 70%),
-    linear-gradient(180deg, rgba(13, 40, 34, 0.46), rgba(13, 40, 34, 0.2) 60%, rgba(13, 40, 34, 0.12));
-}
-
-.sky-flash {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(ellipse 70% 50% at 50% 0, rgba(255, 255, 255, 0.85), rgba(220, 235, 255, 0.35) 55%, transparent 80%);
-  opacity: 0;
-}
-
 .sky-cloud {
   position: fixed;
   z-index: 0;
@@ -512,99 +456,109 @@ input[type='range'].range:active::-webkit-slider-thumb {
   to { transform: translate3d(130vw, 0, 0); }
 }
 
-.sun-rays {
-  position: fixed;
-  right: -12rem;
-  top: -12rem;
-  z-index: 0;
-  width: 34rem;
-  height: 34rem;
-  pointer-events: none;
-  border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(240, 185, 75, 0.2) 0 5deg, transparent 5deg 15deg);
-  mask-image: radial-gradient(circle, #000 0 28%, transparent 68%);
-  animation: spin-slow 80s linear infinite;
-}
+/* ───────── Di the mascot ───────── */
 
-/* ───────── Jo the mascot ───────── */
-
-.jo-float {
-  animation: jo-float 4.8s ease-in-out infinite alternate;
+.di-float {
+  animation: di-float 4.4s ease-in-out infinite alternate;
   will-change: transform;
 }
 
-@keyframes jo-float {
-  from { transform: translate3d(0, 3px, 0); }
-  to { transform: translate3d(0, -9px, 0); }
+@keyframes di-float {
+  from { transform: translate3d(0, 4px, 0) rotate(-1.2deg); }
+  to { transform: translate3d(0, -10px, 0) rotate(1.4deg); }
 }
 
-.jo-shadow {
+.di-shadow {
   transform-box: fill-box;
   transform-origin: center;
-  animation: jo-shadow 4.8s ease-in-out infinite alternate;
+  animation: di-shadow 4.4s ease-in-out infinite alternate;
 }
 
-@keyframes jo-shadow {
-  from { transform: scale(1.05); opacity: 0.55; }
-  to { transform: scale(0.8); opacity: 0.3; }
+@keyframes di-shadow {
+  from { transform: scale(1.06); opacity: 0.5; }
+  to { transform: scale(0.78); opacity: 0.26; }
 }
 
-.jo-eyes {
+.di-eyes {
   transform-box: view-box;
-  transform-origin: 150px 134px;
-  animation: jo-blink 5.2s ease-in-out infinite;
+  transform-origin: 160px 118px;
+  animation: di-blink 5.4s ease-in-out infinite;
 }
 
-@keyframes jo-blink {
+@keyframes di-blink {
   0%, 92%, 100% { transform: scaleY(1); }
   95% { transform: scaleY(0.08); }
 }
 
-.jo-sprout {
+.di-tail {
+  animation: di-tail 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes di-tail {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(9deg); }
+}
+
+.di-tassel {
+  animation: di-tassel 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes di-tassel {
+  from { transform: rotate(-9deg); }
+  to { transform: rotate(7deg); }
+}
+
+.di-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: di-twinkle 2s ease-in-out infinite;
+}
+
+@keyframes di-twinkle {
+  0%, 100% { transform: scale(0.3) rotate(0deg); opacity: 0.2; }
+  50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+.di-umbrella {
+  animation: di-umbrella 3s ease-in-out infinite alternate;
   transform-box: view-box;
-  transform-origin: 150px 50px;
-  animation: jo-sway 3.4s ease-in-out infinite alternate;
+  transform-origin: 232px 138px;
 }
 
-@keyframes jo-sway {
-  from { transform: rotate(-5deg); }
-  to { transform: rotate(6deg); }
+@keyframes di-umbrella {
+  from { transform: rotate(-2.5deg); }
+  to { transform: rotate(3deg); }
 }
 
-.jo-trail {
-  stroke-dasharray: 3 10;
-  animation: route-flow 1.8s linear infinite;
-}
-
-.jo-zzz {
-  animation: jo-zzz 2.6s ease-in infinite;
+.di-zzz {
+  animation: di-zzz 2.6s ease-in infinite;
   opacity: 0;
 }
 
-@keyframes jo-zzz {
+@keyframes di-zzz {
   0% { transform: translate(0, 6px) scale(0.6); opacity: 0; }
   30% { opacity: 1; }
   100% { transform: translate(10px, -22px) scale(1.1); opacity: 0; }
 }
 
-.jo-drop {
-  animation: jo-drop 1.4s ease-in infinite;
+.di-drop {
+  animation: di-drop 1.4s ease-in infinite;
   transform-box: fill-box;
 }
 
-@keyframes jo-drop {
+@keyframes di-drop {
   0% { transform: translateY(-4px); opacity: 0; }
   20% { opacity: 1; }
   100% { transform: translateY(26px); opacity: 0; }
 }
 
-.jo-bubble {
+.di-bubble {
   position: relative;
   border-radius: 14px;
-  background: var(--color-paper);
-  border: 1px solid color-mix(in srgb, var(--color-forest) 22%, transparent);
+  background: #f7f2e8;
+  border: 1px solid rgba(23, 63, 53, 0.24);
   padding: 0.65rem 0.95rem;
-  color: var(--color-ink);
+  color: #18231f;
   font-family: var(--font-display);
   font-size: 0.92rem;
   font-style: italic;
@@ -612,29 +566,38 @@ input[type='range'].range:active::-webkit-slider-thumb {
   box-shadow: 0 16px 30px -18px rgba(13, 40, 34, 0.5);
 }
 
-.jo-bubble::after {
+.di-bubble::after {
   content: '';
   position: absolute;
   width: 12px;
   height: 12px;
-  background: var(--color-paper);
-  border: solid color-mix(in srgb, var(--color-forest) 22%, transparent);
+  background: #f7f2e8;
+  border: solid rgba(23, 63, 53, 0.24);
   border-width: 0 1px 1px 0;
   transform: rotate(45deg);
 }
 
-.jo-bubble[data-tail='bottom']::after {
+.di-bubble[data-tail='bottom']::after {
   bottom: -7px;
   left: 50%;
   margin-left: -6px;
 }
 
-.jo-bubble[data-tail='bottom-right']::after {
+.di-bubble[data-tail='bottom-right']::after {
   bottom: -7px;
   right: 1.6rem;
 }
 
-.jo-bubble[data-tail='right']::after {
+.di-bubble[data-tail='bottom-left']::after {
+  bottom: -7px;
+  left: 1.6rem;
+}
+
+.di-bubble[data-tail='none']::after {
+  display: none;
+}
+
+.di-bubble[data-tail='right']::after {
   right: -7px;
   top: 50%;
   margin-top: -6px;
@@ -662,14 +625,14 @@ input[type='range'].range:active::-webkit-slider-thumb {
   color: var(--a-ink);
 }
 
-.auth-root[data-sky='rain'],
-.auth-root[data-sky='storm'] {
+.auth-root[data-phase='day'][data-weather='rain'],
+.auth-root[data-phase='day'][data-weather='storm'] {
   --ridge-far: rgba(23, 63, 53, 0.16);
   --ridge-mid: rgba(23, 63, 53, 0.26);
   --ridge-near: rgba(23, 63, 53, 0.4);
 }
 
-.auth-root[data-sky='night'] {
+.auth-root[data-phase='night'] {
   --a-ink: #f7f2e8;
   --a-muted: rgba(247, 242, 232, 0.66);
   --a-line: rgba(247, 242, 232, 0.22);
@@ -694,28 +657,40 @@ input[type='range'].range:active::-webkit-slider-thumb {
   opacity: 1;
 }
 
-.auth-sky[data-kind='sunny'] {
+.auth-sky[data-key='day-clear'] {
   background:
     radial-gradient(ellipse 50% 42% at 84% 6%, rgba(240, 185, 75, 0.55), transparent 68%),
     linear-gradient(180deg, #f8ebcd 0%, #f4eee0 42%, #e5ebe0 100%);
 }
 
-.auth-sky[data-kind='cloudy'] {
+.auth-sky[data-key='day-cloudy'] {
   background: linear-gradient(180deg, #e3e8e2 0%, #eeece1 50%, #e2e9df 100%);
 }
 
-.auth-sky[data-kind='rain'] {
+.auth-sky[data-key='day-rain'] {
   background: linear-gradient(180deg, #c4d1cb 0%, #dde4dd 55%, #cfdad3 100%);
 }
 
-.auth-sky[data-kind='storm'] {
+.auth-sky[data-key='day-storm'] {
   background: linear-gradient(180deg, #8fa09a 0%, #b9c6c0 55%, #a7b6af 100%);
 }
 
-.auth-sky[data-kind='night'] {
+.auth-sky[data-key='night-clear'] {
   background:
     radial-gradient(ellipse 55% 40% at 14% 6%, rgba(240, 185, 75, 0.12), transparent 70%),
     linear-gradient(180deg, #08201b 0%, #0f3029 48%, #154038 100%);
+}
+
+.auth-sky[data-key='night-cloudy'] {
+  background: linear-gradient(180deg, #0a221d 0%, #12332c 50%, #17433b 100%);
+}
+
+.auth-sky[data-key='night-rain'] {
+  background: linear-gradient(180deg, #071a17 0%, #0c2723 55%, #11332e 100%);
+}
+
+.auth-sky[data-key='night-storm'] {
+  background: linear-gradient(180deg, #050f0e 0%, #081a18 55%, #0b2220 100%);
 }
 
 .ridge path {
@@ -774,12 +749,12 @@ input[type='range'].range:active::-webkit-slider-thumb {
     linear-gradient(180deg, rgba(13, 40, 34, 0.1) 0%, rgba(13, 40, 34, 0.15) 40%, rgba(13, 40, 34, 0.78) 100%);
 }
 
-.auth-root[data-sky='night'] .auth-visual::after {
+.auth-root[data-phase='night'] .auth-visual::after {
   background: linear-gradient(180deg, rgba(5, 22, 18, 0.62) 0%, rgba(8, 30, 25, 0.55) 45%, rgba(5, 20, 17, 0.9) 100%);
 }
 
-.auth-root[data-sky='rain'] .auth-visual::after,
-.auth-root[data-sky='storm'] .auth-visual::after {
+.auth-root[data-phase='day'][data-weather='rain'] .auth-visual::after,
+.auth-root[data-phase='day'][data-weather='storm'] .auth-visual::after {
   background: linear-gradient(180deg, rgba(40, 62, 58, 0.5) 0%, rgba(30, 50, 46, 0.55) 45%, rgba(13, 40, 34, 0.85) 100%);
 }
 
@@ -811,34 +786,463 @@ input[type='range'].range:active::-webkit-slider-thumb {
   opacity: 0.7;
 }
 
-.lamp-beam {
-  position: absolute;
-  right: 0.9rem;
-  top: 50%;
-  z-index: 2;
-  width: min(30rem, 92%);
-  height: 11rem;
-  margin-top: -5.5rem;
-  transform-origin: 100% 50%;
-  pointer-events: none;
-  clip-path: polygon(100% 46%, 0 -30%, 0 130%, 100% 54%);
-  background: linear-gradient(270deg, rgba(255, 226, 150, 0.95), rgba(255, 226, 150, 0.5) 42%, rgba(255, 226, 150, 0));
-  mix-blend-mode: screen;
-  filter: blur(1px);
+/* ───────── The torch: a soft light that follows the pointer, and the things it wakes ───────── */
+
+.torch-btn {
+  color: var(--a-muted);
 }
 
-.auth-root:not([data-sky='night']) .lamp-beam {
-  mix-blend-mode: normal;
-  background: linear-gradient(270deg, rgba(240, 185, 75, 0.7), rgba(240, 185, 75, 0.28) 45%, rgba(240, 185, 75, 0));
+.torch-btn:hover {
+  color: var(--a-accent);
 }
 
-.lamp-on {
+.torch-btn[data-on='true'] {
   color: var(--color-sun);
-  filter: drop-shadow(0 0 8px rgba(240, 185, 75, 0.9));
 }
 
-.lit-text {
+.torch-glow {
+  position: absolute;
+  inset: -0.2rem;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 224, 140, 0.55), transparent 68%);
+  animation: torch-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes torch-breathe {
+  0%, 100% { transform: scale(0.9); opacity: 0.75; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+.light-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  background:
+    radial-gradient(circle 120px at var(--lx, 50%) var(--ly, 50%), rgba(255, 232, 170, 0.26), transparent 100%),
+    radial-gradient(circle 300px at var(--lx, 50%) var(--ly, 50%), rgba(255, 220, 140, 0.15), transparent 100%);
+}
+
+.light-glow[data-on='true'] {
+  opacity: 1;
+}
+
+.auth-root[data-phase='night'] .light-glow {
+  mix-blend-mode: screen;
+}
+
+.auth-root:not([data-phase='night']) .light-glow {
+  background:
+    radial-gradient(circle 120px at var(--lx, 50%) var(--ly, 50%), rgba(255, 214, 120, 0.3), transparent 100%),
+    radial-gradient(circle 300px at var(--lx, 50%) var(--ly, 50%), rgba(255, 200, 100, 0.12), transparent 100%);
+}
+
+/* after dark the scenery dims, except where the torch points */
+.light-dark {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  background: radial-gradient(circle 320px at var(--lx, 50%) var(--ly, 50%), transparent 0%, rgba(2, 10, 8, 0.2) 40%, rgba(2, 10, 8, 0.66) 100%);
+}
+
+.light-dark[data-on='true'] {
+  opacity: 1;
+}
+
+/* the secret on a password field: dots in the dark, letters in the light */
+.lit-input {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: var(--a-ink);
+}
+
+.lit-readout {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.95rem;
+}
+
+.lit-readout[data-on='true'] {
+  opacity: 1;
+}
+
+.lit-dots,
+.lit-chars {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: pre;
+}
+
+.lit-dots {
+  color: var(--a-muted);
+  -webkit-mask-image: radial-gradient(circle 112px at var(--ox, -999px) var(--oy, -999px), transparent 55%, #000 100%);
+  mask-image: radial-gradient(circle 112px at var(--ox, -999px) var(--oy, -999px), transparent 55%, #000 100%);
+}
+
+.lit-chars {
+  color: var(--a-accent);
   text-shadow: 0 0 12px rgba(240, 185, 75, 0.7);
+  -webkit-mask-image: radial-gradient(circle 112px at var(--ox, -999px) var(--oy, -999px), #000 38%, transparent 100%);
+  mask-image: radial-gradient(circle 112px at var(--ox, -999px) var(--oy, -999px), #000 38%, transparent 100%);
+}
+
+.auth-root[data-phase='night'] .lit-chars {
+  color: #ffe08a;
+}
+
+/* spots */
+
+.spot {
+  position: absolute;
+  pointer-events: none;
+}
+
+.spot > :not(.spot-hint) {
+  opacity: 0;
+  transition: opacity 700ms ease, filter 700ms ease, transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.spot[data-on='true'] > :not(.spot-hint) {
+  opacity: 0.42;
+  filter: saturate(0.5) brightness(0.8);
+}
+
+.spot[data-lit='true'] > :not(.spot-hint) {
+  opacity: 1;
+  filter: none;
+}
+
+.spot-hint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin: -0.45rem;
+  background: #ffe08a;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.spot[data-on='true'][data-lit='false'] .spot-hint {
+  opacity: 0.85;
+  animation: hint-twinkle 2.2s ease-in-out infinite;
+}
+
+@keyframes hint-twinkle {
+  0%, 100% { transform: scale(0.5) rotate(0deg); }
+  50% { transform: scale(1.05) rotate(45deg); }
+}
+
+.auth-visual > .spot {
+  z-index: 3;
+}
+
+.auth-moon-face {
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.auth-moon[data-lit='true'] .auth-moon-face {
+  opacity: 1;
+}
+
+.auth-moon[data-lit='true'] {
+  animation: moon-bob 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 22px rgba(255, 238, 180, 0.8));
+}
+
+@keyframes moon-bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+
+.auth-moon[data-lit='true'] .auth-moon-wink {
+  animation: wink 3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes wink {
+  0%, 70%, 100% { transform: scaleY(1); }
+  78%, 90% { transform: scaleY(-1) translateY(-4px); }
+}
+
+/* lantern */
+.lantern svg {
+  transform-origin: 50% 0;
+}
+
+.lantern[data-lit='true'] svg {
+  animation: lantern-sway 3.2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 16px rgba(255, 170, 70, 0.85));
+}
+
+@keyframes lantern-sway {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+
+.lantern-flame {
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.lantern[data-lit='true'] .lantern-flame {
+  opacity: 1;
+  animation: flicker 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  35% { transform: scale(0.88, 1.08); opacity: 0.8; }
+  70% { transform: scale(1.08, 0.94); opacity: 1; }
+}
+
+.lantern-body {
+  transition: fill 600ms ease;
+}
+
+.lantern[data-lit='true'] .lantern-body {
+  fill: #f08a4b;
+}
+
+/* treasure chest */
+.chest-lid {
+  transform-box: view-box;
+  transform-origin: 14px 52px;
+  transition: transform 800ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chest[data-lit='true'] .chest-lid {
+  transform: rotate(-34deg) translate(-2px, -2px);
+}
+
+.chest-rays {
+  opacity: 0;
+  transform-box: view-box;
+  transform-origin: 60px 52px;
+}
+
+.chest[data-lit='true'] .chest-rays {
+  opacity: 1;
+  animation: spin-slow 12s linear infinite;
+}
+
+.chest-coin {
+  opacity: 0;
+}
+
+.chest[data-lit='true'] .chest-coin {
+  animation: coin-pop 2.2s ease-out infinite;
+  animation-delay: calc(var(--i) * 0.16s);
+}
+
+@keyframes coin-pop {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  14% { opacity: 1; }
+  45% { transform: translateY(-34px) scale(1); opacity: 1; }
+  70% { transform: translateY(-14px) scale(1); opacity: 1; }
+  100% { transform: translateY(-2px) scale(0.9); opacity: 0; }
+}
+
+/* lotus */
+.lotus-petal {
+  transform-box: view-box;
+  transform: rotate(calc(var(--a) * 0.18));
+  transform-origin: 0 0;
+  transition: transform 1000ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lotus[data-lit='true'] .lotus-petal {
+  transform: rotate(var(--a));
+}
+
+.lotus-heart {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms;
+}
+
+.lotus[data-lit='true'] .lotus-heart {
+  transform: scale(1);
+}
+
+/* constellation */
+.constellation-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1800ms cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(255, 238, 180, 0.9));
+}
+
+.constellation[data-lit='true'] .constellation-line {
+  stroke-dashoffset: 0;
+}
+
+.constellation-star {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.6);
+  transition: transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 140ms);
+}
+
+.constellation[data-lit='true'] .constellation-star {
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 5px #fff4cf);
+}
+
+.constellation-label {
+  margin-top: -0.4rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.95rem;
+  color: #ffeab0;
+  text-shadow: 0 0 10px rgba(255, 224, 140, 0.8);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 900ms ease 1.2s, transform 900ms ease 1.2s;
+}
+
+.constellation[data-lit='true'] .constellation-label {
+  opacity: 1;
+  transform: none;
+}
+
+/* kite */
+.kite-body {
+  transform-box: view-box;
+  transform-origin: 60px 150px;
+  transform: rotate(-28deg) translateY(8px);
+  transition: transform 1100ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kite[data-lit='true'] .kite-body {
+  animation: kite-dance 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes kite-dance {
+  0% { transform: rotate(-16deg) translateY(-8px); }
+  50% { transform: rotate(10deg) translateY(-18px); }
+  100% { transform: rotate(18deg) translateY(-6px); }
+}
+
+/* birds and bats */
+.flock-bird {
+  transform-box: fill-box;
+  transition: transform 1500ms cubic-bezier(0.3, 0, 0.2, 1), opacity 1100ms ease;
+  transition-delay: calc(var(--i) * 120ms);
+}
+
+.flock[data-lit='true'] .flock-bird {
+  transform: translate(calc(60px + var(--i) * 44px), calc(-46px - var(--i) * 22px)) rotate(-10deg);
+  opacity: 0;
+}
+
+/* koi leaping in the photo */
+.fish-body,
+.fish-drops {
+  opacity: 0;
+  transform-box: view-box;
+}
+
+.fish-ripples {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.fish[data-lit='true'] .fish-body {
+  animation: fish-leap 3.8s ease-in-out infinite;
+}
+
+.fish[data-lit='true'] .fish-drops {
+  animation: fish-drops 3.8s ease-out infinite;
+}
+
+.fish[data-lit='true'] .fish-ripples {
+  animation: fish-ripples 3.8s ease-out infinite;
+}
+
+@keyframes fish-leap {
+  0% { transform: translate(-4px, 40px) rotate(-52deg); opacity: 0; }
+  6% { opacity: 1; }
+  20% { transform: translate(22px, -16px) rotate(-26deg); opacity: 1; }
+  32% { transform: translate(52px, -6px) rotate(26deg); opacity: 1; }
+  42% { transform: translate(72px, 40px) rotate(74deg); opacity: 0; }
+  100% { transform: translate(72px, 40px) rotate(74deg); opacity: 0; }
+}
+
+@keyframes fish-drops {
+  0%, 12% { transform: translate(0, 0); opacity: 0; }
+  22% { opacity: 1; }
+  38% { transform: translate(14px, 40px); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes fish-ripples {
+  0%, 36% { transform: scale(0.2); opacity: 0; }
+  42% { opacity: 0.9; }
+  75%, 100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* the message on the cliff */
+.cliff-note-text {
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.7rem;
+  color: rgba(255, 232, 170, 0);
+  text-shadow: 0 0 0 rgba(255, 224, 140, 0);
+  transition: color 900ms ease, text-shadow 900ms ease !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.cliff-note[data-lit='true'] .cliff-note-text {
+  color: rgba(255, 234, 176, 0.97);
+  text-shadow: 0 0 16px rgba(255, 214, 110, 0.85);
+}
+
+/* fireflies gather round the light */
+.firefly {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: -0.22rem;
+  border-radius: 50%;
+  background: #ffe58a;
+  box-shadow: 0 0 12px 4px rgba(255, 214, 102, 0.85);
+  animation: firefly 4.6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.7s);
+}
+
+@keyframes firefly {
+  0% { transform: translate(calc(var(--i) * 6px - 20px), calc(var(--i) * -5px + 14px)) scale(0.8); }
+  33% { transform: translate(calc(var(--i) * -7px + 24px), calc(var(--i) * 4px - 18px)) scale(1.15); }
+  66% { transform: translate(calc(var(--i) * 5px - 6px), calc(var(--i) * 6px - 26px)) scale(0.9); }
+  100% { transform: translate(calc(var(--i) * 6px - 20px), calc(var(--i) * -5px + 14px)) scale(0.8); }
 }
 
 .portal-wipe {
@@ -851,14 +1255,17 @@ input[type='range'].range:active::-webkit-slider-thumb {
 /* ───────── Reduced motion and polish ───────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .jo-float,
-  .jo-shadow,
-  .jo-sprout,
-  .jo-trail,
-  .jo-zzz,
-  .jo-drop,
+  .di-float,
+  .di-shadow,
+  .di-tail,
+  .di-tassel,
+  .di-twinkle,
+  .di-umbrella,
+  .torch-glow,
+  .di-zzz,
+  .di-drop,
   .sky-cloud,
-  .sun-rays,
+  .sky-sun-rays,
   .auth-visual img,
   .route-line,
   .me-dot,
@@ -888,7 +1295,7 @@ summary {
   --a-error: #b8381f;
 }
 
-.auth-root[data-sky='night'] {
+.auth-root[data-phase='night'] {
   --a-error: #ff9d85;
 }
 
@@ -936,11 +1343,11 @@ summary {
   opacity: 0.6;
 }
 
-.jo-dot {
-  animation: jo-dot 1.2s ease-in-out infinite;
+.di-dot {
+  animation: di-dot 1.2s ease-in-out infinite;
 }
 
-@keyframes jo-dot {
+@keyframes di-dot {
   0%, 100% { opacity: 0.25; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-4px); }
 }
@@ -1059,4 +1466,211 @@ summary {
     transition: none !important;
   }
   .postcard:hover .postcard-route { animation: none; }
+}
+
+
+/* ───────── Sky bodies: the sun and the moon of the workspace ───────── */
+
+.sky-body {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky-sun,
+.sky-moon {
+  position: absolute;
+  top: 0.1rem;
+  right: 4.5rem;
+  width: 6.2rem;
+  height: 6.2rem;
+  opacity: 0;
+  transform: translate3d(0, 11rem, 0) rotate(-24deg) scale(0.8);
+  transition: transform 1500ms cubic-bezier(0.22, 1, 0.36, 1), opacity 1100ms ease;
+}
+
+.sky-sun[data-up='true'],
+.sky-moon[data-up='true'] {
+  opacity: var(--show, 1);
+  transform: none;
+}
+
+.sky-sun-disc {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 34%, #fff3c4, #f6c75a 55%, #eda63b);
+  box-shadow: 0 0 60px 18px rgba(240, 185, 75, 0.38);
+}
+
+.sky-sun-rays {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(240, 185, 75, 0.28) 0 4deg, transparent 4deg 12deg);
+  mask-image: radial-gradient(circle, #000 0 22%, transparent 62%);
+  animation: spin-slow 90s linear infinite;
+}
+
+.sky-moon-glow {
+  position: absolute;
+  inset: -45%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 205, 0.28), transparent 62%);
+}
+
+.sky-moon-disc {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  filter: drop-shadow(0 0 16px rgba(255, 244, 205, 0.45));
+}
+
+@media (max-width: 1023px) {
+  .sky-sun,
+  .sky-moon {
+    top: 4.6rem;
+    right: 1rem;
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+}
+
+/* ───────── Night in the workspace ─────────
+   The whole workspace flips to a deep forest night. Foreground tokens (ink, forest) turn light, surfaces
+   turn dark, `paper` stays the light cream so text on dark panels is untouched. */
+
+html[data-app-phase='night'] {
+  color-scheme: dark;
+  --color-ink: #e6eee7;
+  --color-forest: #d3e8dd;
+  --color-cream: #133129;
+  --color-jade-ink: #86e0c9;
+  --color-sun-ink: #f3c969;
+  --app-surface: #10302a;
+  --app-surface-2: #163b33;
+  --app-line: rgba(211, 232, 221, 0.15);
+  --chart-grid: rgba(211, 232, 221, 0.14);
+  --chart-label: rgba(230, 238, 231, 0.7);
+  --chart-cursor: rgba(211, 232, 221, 0.4);
+  --chart-dot-edge: #10302a;
+}
+
+html[data-app-phase='night'],
+html[data-app-phase='night'] body {
+  background: #09201b;
+}
+
+html[data-app-phase='night'] ::selection {
+  background: var(--color-sun);
+  color: #0d2822;
+}
+
+.app-bg {
+  transition: background-color 1200ms ease;
+}
+
+html[data-app-phase='night'] .app-bg {
+  background:
+    radial-gradient(ellipse 55% 42% at 100% 0, rgba(79, 184, 164, 0.16), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0 100%, rgba(112, 92, 196, 0.14), transparent 70%),
+    linear-gradient(180deg, #0b241f, #08191a);
+}
+
+/* weather tints the ground a little */
+html[data-app-phase='day'] .app-bg[data-weather='cloudy'] { background-color: #ece9de; }
+html[data-app-phase='day'] .app-bg[data-weather='rain'] { background-color: #e0e6df; }
+html[data-app-phase='day'] .app-bg[data-weather='storm'] { background-color: #d3dbd5; }
+
+html[data-app-phase='night'] .text-lapis { color: #7fd1bd; }
+html[data-app-phase='night'] .text-pomegranate { color: #ff9a82; }
+
+html[data-app-phase='night'] .panel {
+  background: var(--app-surface);
+  border-color: var(--app-line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html[data-app-phase='night'] .panel-night {
+  border: 1px solid rgba(240, 185, 75, 0.22);
+  box-shadow: 0 30px 60px -40px rgba(0, 0, 0, 0.8);
+}
+
+html[data-app-phase='night'] .bg-white,
+html[data-app-phase='night'] [class*='bg-white/'] {
+  background-color: color-mix(in srgb, #163b33 82%, transparent);
+}
+
+html[data-app-phase='night'] .bg-paper {
+  background-color: var(--app-surface);
+}
+
+html[data-app-phase='night'] [class*='bg-paper/9'],
+html[data-app-phase='night'] [class*='bg-paper/8'] {
+  background-color: rgba(9, 32, 27, 0.9);
+}
+
+html[data-app-phase='night'] .bg-forest,
+html[data-app-phase='night'] .chip-on {
+  background-color: #2f7a66;
+  border-color: #2f7a66;
+  color: #f7f2e8;
+}
+
+html[data-app-phase='night'] .chip-on:hover {
+  background-color: var(--color-terracotta);
+  border-color: var(--color-terracotta);
+}
+
+html[data-app-phase='night'] input,
+html[data-app-phase='night'] textarea,
+html[data-app-phase='night'] select {
+  color: var(--color-ink);
+}
+
+html[data-app-phase='night'] .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(211, 232, 221, 0.12), transparent);
+}
+
+html[data-app-phase='night'] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(172deg) brightness(0.82) contrast(0.92) saturate(0.7);
+}
+
+html[data-app-phase='night'] .leaflet-container {
+  background: #1a2a27;
+}
+
+/* Sidebar, mobile tabs and other forest surfaces keep their light-on-dark look in both phases. */
+html[data-app-phase='night'] .sidebar {
+  background:
+    radial-gradient(ellipse 120% 50% at 0 0, rgba(112, 92, 196, 0.2), transparent 60%),
+    linear-gradient(180deg, #08201b, #0b2a23 60%, #0d3029);
+  border-right: 1px solid var(--app-line);
+}
+
+html[data-app-phase='night'] .sky-pop {
+  background: #0f2b25;
+  border-color: var(--app-line);
+}
+
+html[data-app-phase='night'] .postcard {
+  background: #112f29;
+  border-color: var(--app-line);
+}
+
+html[data-app-phase='night'] .postcard::before,
+html[data-app-phase='night'] .postcard::after {
+  background: #09201b;
+  border-color: var(--app-line);
+}
+
+html[data-app-phase='night'] .postcard-art {
+  background:
+    radial-gradient(circle at 18% 120%, color-mix(in srgb, var(--pc) 34%, transparent), transparent 55%),
+    radial-gradient(1.2px 1.2px at 12px 12px, color-mix(in srgb, var(--pc) 40%, transparent) 99%, transparent 100%) 0 0 / 14px 14px,
+    color-mix(in srgb, var(--pc) 16%, #0f2b25);
+  color: color-mix(in srgb, var(--pc) 55%, #e6eee7);
 }

@@ -5,7 +5,7 @@ import { searchPois, tierOf, type PriceTier, type SearchHit } from '../../api/pl
 import { readProfile } from '../../api/profile'
 import { track } from '../../api/analytics'
 import { useProfile, useSaveProfile } from '../../api/queries'
-import { CategoryIcon, WeatherIcon } from '../../components/icons'
+import { CategoryIcon, SkyIcon, WeatherIcon } from '../../components/icons'
 import { RouteMap } from '../../components/map/RouteMap'
 import { PageHeader } from '../../components/PageHeader'
 import { PoiSheet } from '../../components/place/PoiSheet'
@@ -54,7 +54,7 @@ export function DiscoverPage() {
   const hits = useMemo(() => searchPois({ ...discover, query: deferredQuery }), [discover, deferredQuery])
   const anchor = hits.find((hit) => hit.anchor)?.anchor
   const filtersActive = discover.cities.length + discover.categories.length + discover.prices.length > 0 || discover.minRating > 0 || discover.indoorOnly
-  const wet = (sky.kind === 'rain' || sky.kind === 'storm') && !discover.indoorOnly
+  const wet = (sky.weather === 'rain' || sky.weather === 'storm') && !discover.indoorOnly
 
   const toggleSaved = (id: string) => {
     const saved = profile.saved.includes(id)
@@ -94,7 +94,7 @@ export function DiscoverPage() {
         <span className="text-xs font-semibold text-ink/50">{tr('Thử:', 'Try:')}</span>
         {wet && (
           <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={SPRING} type="button" className="chip !min-h-8 !border-jade !bg-jade/12 !text-xs !text-jade-ink" onClick={() => setDiscover({ indoorOnly: true })}>
-            <WeatherIcon kind="rain" size={20} />
+            <SkyIcon phase={sky.phase} weather="rain" size={20} />
             {tr('Đang mưa: chỉ xem điểm trong nhà', 'Raining: show indoor places only')}
           </motion.button>
         )}

@@ -4,7 +4,7 @@ import { Bell, Heart, Save } from 'lucide-react'
 import { readProfile, type Profile } from '../../api/profile'
 import { useProfile, useSaveProfile } from '../../api/queries'
 import { CategoryIcon } from '../../components/icons'
-import { JoAvatar } from '../../components/mascot/JoAvatar'
+import { DiAvatar } from '../../components/mascot/DiAvatar'
 import { PageHeader } from '../../components/PageHeader'
 import { PoiSheet } from '../../components/place/PoiSheet'
 import { CategoryGlyph, Segmented, Switch } from '../../components/ui/primitives'
@@ -42,7 +42,7 @@ export function ProfilePage() {
   }
 
   const about = draft.about ?? ''
-  // What Jo understood from the free text, shown live so nothing is a surprise after saving.
+  // What Di understood from the free text, shown live so nothing is a surprise after saving.
   const heard = useMemo(() => extractIntent(about), [about])
   const picked = pickedFrom(draft.interests)
   const effective = useMemo(() => [...new Set([...picked, ...(Object.keys(heard.interests) as CategoryId[])])], [picked, heard.interests])
@@ -62,7 +62,7 @@ export function ProfilePage() {
 
   const submit = () => {
     const name = draft.name.trim() || user.name
-    // Words typed in "about" become real weights and avoid-tags, so Jo's plans follow them.
+    // Words typed in "about" become real weights and avoid-tags, so Di's plans follow them.
     const interests = { ...draft.interests }
     for (const cat of Object.keys(heard.interests) as CategoryId[]) interests[cat] = Math.max(interests[cat] ?? 0, 0.9)
     const dietary = [...new Set([...draft.dietary, ...heard.avoidTags])]
@@ -72,7 +72,7 @@ export function ProfilePage() {
         onSuccess: (_data, saved) => {
           setDraft(saved)
           if (name !== user.name) signIn({ ...user, name })
-          toast('success', tr('Đã lưu hồ sơ', 'Profile saved'), tr('Jo sẽ nhớ và dùng cho lịch trình mới.', 'Jo will remember this for new itineraries.'))
+          toast('success', tr('Đã lưu hồ sơ', 'Profile saved'), tr('Di sẽ nhớ và dùng cho lịch trình mới.', 'Di will remember this for new itineraries.'))
         },
       },
     )
@@ -80,13 +80,13 @@ export function ProfilePage() {
 
   return (
     <>
-      <PageHeader title={tr('Hồ sơ của bạn', 'Your profile')} subtitle={tr('Chỉ cần vài ý chính. Phần còn lại Jo tự đoán, và bạn luôn chỉnh lại được trong từng chuyến đi.', 'Just a few key ideas. Jo guesses the rest, and you can always tweak it per trip.')} />
+      <PageHeader title={tr('Hồ sơ của bạn', 'Your profile')} subtitle={tr('Chỉ cần vài ý chính. Phần còn lại Di tự đoán, và bạn luôn chỉnh lại được trong từng chuyến đi.', 'Just a few key ideas. Di guesses the rest, and you can always tweak it per trip.')} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="space-y-6">
           <section className="panel p-5 sm:p-6" aria-labelledby="who">
             <label htmlFor="p-name" className="block text-[0.8rem] font-semibold text-ink/75">
-              {tr('Jo nên gọi bạn là gì?', 'What should Jo call you?')}
+              {tr('Di nên gọi bạn là gì?', 'What should Di call you?')}
             </label>
             <input id="p-name" value={draft.name} onChange={(event) => patch({ name: event.target.value })} className="mt-1.5 h-11 w-full max-w-sm border border-forest/25 bg-white px-3 text-sm outline-none transition-colors focus:border-terracotta" />
             <p id="who" className="mt-1.5 text-xs text-ink/50">{user.email}</p>
@@ -138,7 +138,7 @@ export function ProfilePage() {
             />
 
             <div className="mt-4 flex min-h-8 flex-wrap items-center gap-2" aria-live="polite">
-              <span className="text-xs font-semibold text-ink/55">{tr('Jo hiểu là:', 'Jo understood:')}</span>
+              <span className="text-xs font-semibold text-ink/55">{tr('Di hiểu là:', 'Di understood:')}</span>
               <AnimatePresence initial={false}>
                 {effective.map((cat) => (
                   <motion.span key={cat} layout initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.6 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }} className="inline-flex items-center gap-1.5 border border-forest/20 bg-white py-0.5 pl-1 pr-2.5 text-xs font-semibold text-forest">
@@ -155,7 +155,7 @@ export function ProfilePage() {
                   )
                 })}
               </AnimatePresence>
-              {effective.length === 0 && avoided.length === 0 && <span className="text-xs text-ink/45">{tr('chưa có gì, cứ để Jo gợi ý đa dạng', 'nothing yet, Jo will mix it up')}</span>}
+              {effective.length === 0 && avoided.length === 0 && <span className="text-xs text-ink/45">{tr('chưa có gì, cứ để Di gợi ý đa dạng', 'nothing yet, Di will mix it up')}</span>}
             </div>
           </section>
 
@@ -194,9 +194,9 @@ export function ProfilePage() {
 
         <aside className="space-y-6 lg:sticky lg:top-8">
           <section className="panel-night p-5 text-center">
-            <JoAvatar mood={dirty ? 'wave' : 'idle'} trail={false} className="mx-auto aspect-[300/340] w-32" />
-            <p className="h-display mt-2 text-lg text-paper">{tr('Jo ghi nhớ giúp bạn', 'Jo is taking notes')}</p>
-            <p className="mt-1 text-[0.82rem] leading-relaxed text-paper/70">{tr('Càng ít càng tốt. Chọn vài thứ bạn mê là Jo biết cách xếp lịch.', 'Less is more. Pick a few loves and Jo knows how to plan.')}</p>
+            <DiAvatar mood={dirty ? 'wave' : 'idle'} trail={false} className="mx-auto aspect-[300/340] w-32" />
+            <p className="h-display mt-2 text-lg text-paper">{tr('Di ghi nhớ giúp bạn', 'Di is taking notes')}</p>
+            <p className="mt-1 text-[0.82rem] leading-relaxed text-paper/70">{tr('Càng ít càng tốt. Chọn vài thứ bạn mê là Di biết cách xếp lịch.', 'Less is more. Pick a few loves and Di knows how to plan.')}</p>
           </section>
 
           <section className="panel p-5">

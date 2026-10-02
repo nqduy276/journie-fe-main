@@ -1,5 +1,30 @@
 @import 'tailwindcss';
 
+/* Journie Display: drawn for this project (tools/font), pen-built Vietnamese-ready letterforms. */
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-regular.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-bold.woff2') format('woff2');
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
   --color-paper: #f7f2e8;
   --color-cream: #eee7d8;
@@ -21,7 +46,7 @@
   --color-jade-ink: #0a6a5c;
   --color-sun-ink: #7a4f00;
   --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Lora', ui-serif, Georgia, serif;
+  --font-display: 'Journie Display', 'Lora', ui-serif, Georgia, serif;
 }
 
 @layer base {

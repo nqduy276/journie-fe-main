@@ -111,7 +111,7 @@ export function LivePage() {
       if (disruption.kind === 'weather') useWeatherStore.getState().setOverride('rain', 5 * 60_000)
       track({ type: 'replan_suggested', city: trip.city, reason: disruption.kind })
       const label = disruptionMeta[disruption.kind]
-      pushNote({ kind: disruption.kind, vi: `${label.vi} trong chuyến “${trip.title}”`, en: `${label.en} on “${trip.title}”`, bodyVi: 'Jo đề xuất điều chỉnh phần còn lại của ngày.', bodyEn: 'Jo suggests adjusting the rest of the day.', to: `/app/trips/${trip.id}/live` })
+      pushNote({ kind: disruption.kind, vi: `${label.vi} trong chuyến “${trip.title}”`, en: `${label.en} on “${trip.title}”`, bodyVi: 'Di đề xuất điều chỉnh phần còn lại của ngày.', bodyEn: 'Di suggests adjusting the rest of the day.', to: `/app/trips/${trip.id}/live` })
       addLog(tr(`Phát hiện: ${label.vi}`, `Detected: ${label.en}`), 'warn', at)
     },
     [addLog, pushNote, tr, trip],
@@ -210,7 +210,7 @@ export function LivePage() {
           </Link>
         }
         title={trip.title}
-        subtitle={tr(`${city.name} · đồng hồ mô phỏng, bạn có thể tua nhanh để xem Jo theo dõi chuyến đi.`, `${city.nameEn} · a simulated clock; speed it up to watch Jo track the trip.`)}
+        subtitle={tr(`${city.name} · đồng hồ mô phỏng, bạn có thể tua nhanh để xem Di theo dõi chuyến đi.`, `${city.nameEn} · a simulated clock; speed it up to watch Di track the trip.`)}
         actions={
           <>
             <button type="button" className="btn-ghost btn-sm" onClick={() => setPlaying((value) => !value)} aria-pressed={playing}>
@@ -236,7 +236,7 @@ export function LivePage() {
               <span className="pulse-dot absolute size-12 rounded-full text-sun" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-ink">{tr('Jo phát hiện: ', 'Jo noticed: ')}{vi ? disruptionMeta[event.disruption.kind].vi : disruptionMeta[event.disruption.kind].en}</p>
+              <p className="font-bold text-ink">{tr('Di phát hiện: ', 'Di noticed: ')}{vi ? disruptionMeta[event.disruption.kind].vi : disruptionMeta[event.disruption.kind].en}</p>
               <p className="text-sm text-ink/70">{describeDisruption(event.disruption, vi)}</p>
             </div>
             <button type="button" className="btn-ghost btn-sm" onClick={dismiss}>
@@ -290,7 +290,7 @@ export function LivePage() {
                 <Radar size={16} className="text-lapis" aria-hidden="true" /> {tr('Nhật ký theo dõi', 'Monitor log')}
               </h2>
               <ul className="mt-3 space-y-1.5" aria-live="polite">
-                {log.length === 0 && <li className="text-xs text-ink/50">{tr('Jo sẽ kiểm tra giao thông và thời tiết mỗi 10 phút.', 'Jo checks traffic and weather every 10 minutes.')}</li>}
+                {log.length === 0 && <li className="text-xs text-ink/50">{tr('Di sẽ kiểm tra giao thông và thời tiết mỗi 10 phút.', 'Di checks traffic and weather every 10 minutes.')}</li>}
                 <AnimatePresence initial={false}>
                   {log.map((line) => (
                     <motion.li key={line.id} layout initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} className="flex gap-2 text-xs">

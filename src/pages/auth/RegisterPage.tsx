@@ -8,7 +8,8 @@ import { register } from '../../api/auth'
 import { ApiError } from '../../api/http'
 import { Khatam } from '../../components/art/Khatam'
 import { AuthShell } from '../../components/auth/AuthShell'
-import { LampBeam, LampToggle } from '../../components/auth/LampToggle'
+import { useLight } from '../../components/auth/light-context'
+import { LampToggle } from '../../components/auth/LampToggle'
 import { useMascotField } from '../../components/auth/useMascotField'
 import { CategoryIcon } from '../../components/icons'
 import { useMascot } from '../../components/mascot/mascot-context'
@@ -70,7 +71,9 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [lamp, setLamp] = useState(false)
+  const light = useLight()
+  const lamp = light.on
+  const setLamp = light.setOn
   const [styles, setStyles] = useState<string[]>([])
   const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({})
   const [done, setDone] = useState(false)
@@ -114,7 +117,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
     event.preventDefault()
     if (busy) return
     const next: typeof errors = {}
-    if (name.trim().length < 2) next.name = tr('Cho Jo biết tên bạn (ít nhất 2 ký tự).', 'Tell Jo your name (2+ characters).')
+    if (name.trim().length < 2) next.name = tr('Cho Di biết tên bạn (ít nhất 2 ký tự).', 'Tell Di your name (2+ characters).')
     if (!EMAIL_PATTERN.test(email.trim())) next.email = tr('Email cần có dạng ten@vi-du.com.', 'Email should look like name@example.com.')
     if (password.length < 6) next.password = tr('Mật khẩu cần ít nhất 6 ký tự.', 'Password needs at least 6 characters.')
     setErrors(next)
@@ -130,7 +133,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
   return (
     <form onSubmit={submit} noValidate>
       <h1 className="h-display text-[2.1rem] text-[color:var(--a-ink)] sm:text-[2.5rem]">{tr('Tạo tài khoản', 'Create account')}</h1>
-      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[color:var(--a-muted)]">{tr('Để Jo lập lịch trình hợp gu bạn.', 'So Jo can plan trips that fit you.')}</p>
+      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[color:var(--a-muted)]">{tr('Để Di lập lịch trình hợp gu bạn.', 'So Di can plan trips that fit you.')}</p>
 
       <div className="mt-5">
         <Field
@@ -174,7 +177,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
         />
         <Field
           label={tr('Mật khẩu', 'Password')}
-          type={lamp ? 'text' : 'password'}
+          type="password"
           name="new-password"
           autoComplete="new-password"
           placeholder={tr('Ít nhất 6 ký tự', 'At least 6 characters')}
@@ -182,7 +185,8 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
           value={password}
           error={errors.password}
           inputRef={passwordField.ref}
-          inputClassName={lamp ? 'font-mono lit-text' : ''}
+          lit={{ on: lamp, value: password }}
+          hint={lamp ? tr('Rọi đèn vào ô này để đọc mật khẩu.', 'Shine the light on this field to read the password.') : tr('Mẹo: bật đèn pin để đọc mật khẩu và tìm bí mật quanh trang.', 'Tip: switch on the torch to read the password and find secrets around the page.')}
           onFocus={passwordField.onFocus}
           onBlur={passwordField.onBlur}
           onChange={(event) => {
@@ -191,8 +195,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
             passwordField.track()
           }}
           disabled={busy}
-          trailing={<LampToggle on={lamp} onToggle={() => setLamp((value) => !value)} labelOn={tr('Tắt đèn, ẩn mật khẩu', 'Turn the lamp off and hide the password')} labelOff={tr('Bật đèn để xem mật khẩu', 'Turn the lamp on to see the password')} />}
-          beam={<LampBeam on={lamp} />}
+          trailing={<LampToggle on={lamp} onToggle={(center) => { setLamp(!lamp); if (!lamp) light.aimAt(center.fieldX, center.fieldY) }} labelOn={tr('Tắt đèn pin', 'Turn the torch off')} labelOff={tr('Bật đèn pin: rọi để đọc mật khẩu', 'Turn the torch on: shine it to read the password')} />}
         />
         <div className="-mt-2 mb-3 flex items-center gap-3" aria-live="polite">
           <div className="flex gap-1" aria-hidden="true">

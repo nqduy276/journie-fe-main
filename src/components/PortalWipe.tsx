@@ -6,7 +6,7 @@ import { useMotionPrefs } from '../hooks/useMotionPrefs'
 import { usePortalStore } from '../store/portalStore'
 
 /**
- * The page-to-page transition: a wash of forest green grows from Jo until it fills the
+ * The page-to-page transition: a wash of forest green grows from Di until it fills the
  * screen, the route changes underneath it, then the light fades to reveal the new page.
  */
 export function PortalWipe() {
