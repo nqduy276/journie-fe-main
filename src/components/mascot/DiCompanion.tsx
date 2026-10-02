@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, useVelocity } from 'motion/react'
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, useVelocity, type MotionValue } from 'motion/react'
 import { X } from 'lucide-react'
+import { CHEER_EVENT } from '../../lib/cheer'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
 import { useTr } from '../../hooks/useTr'
 import { useMascotPrefs } from '../../store/mascotStore'
@@ -61,6 +62,18 @@ function hourTip(now: Date): { slot: string; tip: Tip } | null {
   return null
 }
 
+const DUST = ['#f0b94b', '#4fb8a4', '#f6d27a', '#d96745', '#fff6dc']
+
+/** A speck of stardust that drifts after the carpet and only shows while it flies fast. */
+function Dust({ x, y, i, energy, size }: { x: MotionValue<number>; y: MotionValue<number>; i: number; energy: MotionValue<number>; size: number }) {
+  const dx = useSpring(x, { stiffness: 46 - i * 6, damping: 13 + i * 0.6 })
+  const dy = useSpring(y, { stiffness: 46 - i * 6, damping: 13 + i * 0.6 })
+  const left = useTransform(dx, (v) => v + size * 0.5 + ((i * 17) % 22) - 11)
+  const top = useTransform(dy, (v) => v + size * 0.78 + ((i * 11) % 18) - 7)
+  const opacity = useTransform(energy, (e) => clamp(e * 1.5 - 0.12, 0, 0.95))
+  return <motion.span className="di-dust" style={{ x: left, y: top, opacity, scale: 0.55 + (i % 3) * 0.3, background: DUST[i % DUST.length] }} aria-hidden="true" />
+}
+
 function readSize() {
   return window.innerWidth >= 640 ? 92 : 76
 }
@@ -118,8 +131,9 @@ export function DiCompanion() {
 
   const say = useCallback(
     (next: Tip, ms = 7500) => {
-      const bubbleRight = x.get() + 250 > window.innerWidth
-      setSide({ right: bubbleRight, below: y.get() < 150 })
+      // a tip with a button waits in the corner, so size the bubble for where Di will be
+      const base = next.cta ? corner() : { x: x.get(), y: y.get() }
+      setSide({ right: base.x + 250 > window.innerWidth, below: base.y < 150 })
       setTip(next)
       window.clearTimeout(bubbleTimer.current)
       // tips with a button wait in the corner so the button holds still while you reach for it
@@ -134,7 +148,7 @@ export function DiCompanion() {
         bubbleTimer.current = window.setTimeout(() => setTip(null), ms)
       }
     },
-    [goHome, x, y],
+    [corner, goHome, x, y],
   )
 
   const feel = useCallback((next: MascotMood, ms: number) => {
@@ -179,6 +193,14 @@ export function DiCompanion() {
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
   }, [flying, hidden, goHome, x, y])
+
+  // Something nice happened elsewhere in the app: cheer.
+  useEffect(() => {
+    if (hidden) return
+    const onCheer = () => feel('joy', 1200)
+    window.addEventListener(CHEER_EVENT, onCheer)
+    return () => window.removeEventListener(CHEER_EVENT, onCheer)
+  }, [hidden, feel])
 
   // Greeting.
   useEffect(() => {
@@ -280,6 +302,8 @@ export function DiCompanion() {
   if (hidden) return null
 
   return (
+    <>
+      {flying && [0, 1, 2, 3, 4, 5].map((i) => <Dust key={i} i={i} x={sx} y={sy} energy={energy} size={size} />)}
     <motion.div className="pointer-events-none fixed left-0 top-0 z-40" style={{ x: sx, y: sy, width: size }} aria-live="polite">
       <AnimatePresence>
         {tip && (
@@ -324,5 +348,6 @@ export function DiCompanion() {
         )}
       </motion.div>
     </motion.div>
+    </>
   )
 }

@@ -27,14 +27,14 @@ src/
 │   ├── art/             # Khatam star, dividers
 │   ├── auth/            # Auth shell (split card, day/night sky), lamp toggle, mascot-aware fields
 │   ├── icons/           # Journie's own duotone icon set: categories, weather, navigation (preview at /__icons in dev)
-│   ├── mascot/          # Jo, the living map-pin mascot, and JoCompanion, the floating pet inside the app
+│   ├── mascot/          # Di, the carpet-riding monkey, and DiCompanion, the pet that trails the pointer inside the app
 │   ├── map/             # Leaflet route map (OSRM geometry with an offline-safe fallback)
 │   ├── motion/          # Reusable motion: RevealHeading, Magnetic, Tilt, CountUp, Coordinates
-│   ├── place/           # POI detail sheet (info, reviews, add to trip)
+│   ├── place/           # POI detail sheet (info, reviews, add to trip) and art/: the place illustrations (/__art in dev)
 │   ├── scenes/          # Place-based animated backdrops for the landing page
 │   ├── trip/            # Timeline (drag and drop), day tabs, stats, plan explanation
 │   ├── ui/              # Sheet, toasts, field, segmented control, switch, stars, meters
-│   └── weather/         # WeatherLayer (rain, storm, sun, clouds, night) and WeatherChip
+│   └── weather/         # WeatherLayer (rain, storm, clouds, stars), SkyBody (sun and moon) and WeatherChip
 ├── content/site.ts      # Brand content, destinations and journey chapters
 ├── domain/              # Pure planning logic: POIs, scoring, solver, replanner, intent extraction, edits
 ├── hooks/               # Shared React hooks (language, motion preferences, inline translation)
@@ -42,8 +42,9 @@ src/
 ├── layouts/             # Landing page chrome
 ├── pages/               # auth/, app/ (workspace pages) and the landing page
 ├── sections/            # One file per landing page section
-├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, weather
-├── styles/app.css       # Workspace, auth and mascot styling (landing palette)
+├── lib/                 # Small helpers: sky View Transition, cheer event
+├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, sky, Di preferences
+├── styles/app.css       # Workspace, night theme, auth torch, mascot and postcard styling (landing palette)
 ├── App.tsx
 ├── index.css
 └── main.tsx
@@ -56,10 +57,10 @@ The landing page lives at `/`. Everything else follows the system description in
 
 | Route | Report module | What it does |
 | --- | --- | --- |
-| `/login`, `/register` | Login / Registration | Verify password (with error states), onboarding interests. A split card (Trang An arch photo with Jo on one side, the form on the other) under a live sky. Jo follows the pointer, watches the field you are typing in, covers its eyes for passwords, shakes its head on errors and celebrates success before a portal transition into the app. The lamp button in the password field switches on a beam of light that reveals the password. Day or night, sun, clouds or rain follow the real clock and forecast, or the weather chip. |
+| `/login`, `/register` | Login / Registration | Verify password (with error states), onboarding interests. A split card (Trang An arch photo with Di on one side, the form on the other) under a live sky. Di follows the pointer, watches the field you are typing in, covers its eyes for passwords, shakes its head on errors and celebrates success before a portal transition into the app. The torch button in the password field switches on a soft light that drifts after the pointer: it reads out the password only where it falls on the field, dims the scenery at night and wakes hidden things (a winking moon, lanterns, a treasure chest, lotus, a constellation, a kite, a flock, a leaping koi, fireflies, a message on the cliff). Day or night and the weather follow the real clock and forecast, or the sky chip. |
 | `/app` | Dashboard | Quick trip box, live and upcoming trips, destination picks based on the taste profile. |
 | `/app/plan` | Itinerary creation | Natural-language request → extracted constraints (hard vs soft) → editable parameters → pipeline (LLM, data gathering, scoring, CP-SAT-style solve, OSRM routing, time slots) → result with solver status and explanation. |
-| `/app/trips/:id` | Itinerary customization | Drag-and-drop (or Alt+Arrow / buttons) reorder, duration stepper, lock mandatory stops, add or remove places. Every edit is re-timed and validated against opening hours and the day window; invalid edits are rejected with the reason. "Ask Jo to adjust" rebuilds the plan from new requests and shows a diff before applying. Undo is available. |
+| `/app/trips/:id` | Itinerary customization | Drag-and-drop (or Alt+Arrow / buttons) reorder, duration stepper, lock mandatory stops, add or remove places. Every edit is re-timed and validated against opening hours and the day window; invalid edits are rejected with the reason. "Ask Di to adjust" rebuilds the plan from new requests and shows a diff before applying. Undo is available. |
 | `/app/trips/:id/live` | Trip management and adaptive replanning | Simulated clock and GPS position, time-budget ring, condition monitor log, and a disruption simulator (traffic, heavy rain, closure, running late). Replanning solves `I' = argmax [Utility(I) − λ·ChangeCost(I, I_old)]` for the λ you pick on a slider. |
 | `/app/discover` | Search and discovery | Keyword and contextual search ("coffee near Chùa Cầu"), filters by area, type, price and rating, list and map views, venue details with reviews. |
 | `/app/profile` | Profile management | Deliberately short: a name, a few tappable tastes (or a sentence in your own words, which Jo turns into interests and avoid-tags and shows back live), pace, daily budget, foods to avoid, one alerts switch and saved places. |
@@ -91,20 +92,39 @@ yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midni
 hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
 card. Charts use landing-palette hues that were checked with the dataviz validator.
 
-- **Jo** (`components/mascot`) is a living map-pin: a face that blinks and follows the pointer, arms that cover its
-  eyes for passwords or wave hello, moods (idle, watching, hiding, peeking, thinking, error, joy, sleepy, wave) and
-  outfits taken from the weather (sunglasses, umbrella, night cap). Inside the app `JoCompanion` lives in the corner,
-  dozes off after a while, hops when poked and offers tips that fit the sky and the page. It can be sent to rest and
-  called back.
-- **Weather** (`components/weather`, `store/weatherStore.ts`) is one shared sky for the whole app: `auto` follows the
-  clock (night after dusk) and the deterministic forecast, or pin sunny, cloudy, rain, storm or night from the weather
-  chip. `WeatherLayer` draws clouds and sun rays with CSS and everything that moves (rain with ground ripples,
-  lightning, fireflies, stars, sun motes) on a single canvas that stops itself when idle and pauses when the tab is
-  hidden. On the live-trip page, "heavy rain" turns the whole app rainy until the traveler decides on a replan.
+- **Di** (`components/mascot`) is a monkey on a flying carpet. The carpet is a ribbon redrawn every frame so it
+  ripples (faster when Di flies); the face blinks and follows the pointer, the arms cover the eyes for passwords or
+  wave hello, moods are idle, watching, hiding, peeking, thinking, error, joy, sleepy and wave, and it dresses for the
+  sky (fez or nightcap, sunglasses, umbrella). When nobody moves the mouse Di glances around on its own. Inside the
+  app `DiCompanion` trails the pointer on a spring with a stardust tail (or waits in the corner on touch screens, or
+  when you switch "Di theo con trỏ" off in the sidebar), dozes off after a while, cheers when something is saved, and
+  gives tips for the weather, the hour (breakfast, lunch, dinner, late) and the page, some with a button that
+  opens Discover pre-filtered (indoor places when it rains, food at mealtimes).
+- **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
+  cloudy, rain, storm) are two independent settings, so a rainy night is possible. Both follow the clock and the
+  deterministic forecast on `auto`, or can be pinned from the sky chip; switching day and night plays a circular
+  View Transition from the click. The workspace has a real night theme (`html[data-app-phase='night']` flips the
+  foreground tokens and surfaces, inverts map tiles), `SkyBody` parks the sun or the moon in the corner, and
+  `WeatherLayer` draws clouds in CSS and everything that moves (rain with ground ripples, lightning, fireflies,
+  stars, sun motes) on one canvas that stops itself when idle and pauses when the tab is hidden. On the live-trip
+  page, "heavy rain" turns the whole app rainy until the traveler decides on a replan.
+- **Typeface**: headings use *Journie Display*, drawn for this project. Each letter is a centre-line swept with a
+  tilted elliptical nib (so strokes get thick and thin like a broad pen), the dot of the i and j is a small ring
+  (a map pin), and every Vietnamese letter is a base glyph plus a diacritic placed by rule. The skeletons and the
+  builder live in `tools/font` (`python build.py`, needs fonttools, shapely, brotli) and write the three woff2 files
+  (regular, bold, italic) into `src/assets/fonts`. Body text is Be Vietnam Pro.
 - **Icons** (`components/icons`) are drawn on a 48 grid with one ink line and two flat colours printed slightly off
-  register. Category, weather and navigation icons share it; open `/__icons` in dev to see the sheet.
-- **Discover** is a postcard wall: city "passport stamps" with round photos, sticker-style category buttons, price
-  coins that flip when picked, and cards with a postmark, a dotted route that runs on hover and a ticket edge.
+  register. Category, weather, sky and navigation icons share it; open `/__icons` in dev to see the sheet.
+- **Place illustrations** (`components/place/art`): every place has its own flat-vector scene (sky for the time of
+  day, ridge, ground, and the landmark or dish in front: the Turtle Tower, Chùa Cầu, a bowl of phở, a junk in the bay,
+  a cable car…). A table of motifs maps each place id to a drawing; the sun, clouds and stars are seeded by the id so
+  a card always looks the same. `/__art` in dev shows them all.
+- **Discover** is a postcard wall: city "passport stamps", sticker-style category buttons, price coins that flip when
+  picked, and cards with the place's illustration, a postmark, a dotted route that runs on hover, a ticket edge and a
+  burst of hearts when you save.
+- **Small motion**: a rug-pattern ribbon unrolls across the top on every page change, timelines draw their rail and
+  pop their stops in, primary buttons throw lamp-dust where pressed, city cards tilt with a glare, the page-header
+  route flows, and the planning pipeline has Di riding the progress line.
 
 ## Motion and Scenes
 

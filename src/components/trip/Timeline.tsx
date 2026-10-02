@@ -82,18 +82,31 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
       </div>
 
       <div className="relative flex w-8 shrink-0 justify-center">
-        <span className="timeline-rail absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" aria-hidden="true" />
-        <span
+        <motion.span
+          className="timeline-rail absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2"
+          style={{ originY: 0 }}
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 0.55, delay: 0.12 + index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+          aria-hidden="true"
+        />
+        <motion.span
+          initial={{ scale: 0, rotate: -140 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 17, delay: index * 0.08 }}
           className={`relative z-10 mt-3 grid size-8 place-items-center rounded-full border-2 text-xs font-bold ${
             state === 'done' ? 'border-firuze bg-firuze text-white' : state === 'now' ? 'border-gold bg-gold text-night' : 'border-lapis bg-paper text-lapis'
           }`}
         >
           {state === 'done' ? <Check size={15} /> : index + 1}
           {state === 'now' && <span className="pulse-dot absolute inset-0 rounded-full text-gold" aria-hidden="true" />}
-        </span>
+        </motion.span>
       </div>
 
-      <div
+      <motion.div
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.05 + index * 0.08, ease: [0.22, 1, 0.36, 1] }}
         className={`min-w-0 flex-1 rounded-xl border bg-white/70 p-3 transition-[border-color,box-shadow,background-color] duration-300 ${
           violation ? 'border-pomegranate/60 bg-pomegranate/5' : active || state === 'now' ? 'border-gold bg-gold/10 shadow-[0_10px_26px_-16px_rgba(240,185,75,0.9)]' : 'border-forest/12 hover:border-lapis/40'
         }`}
@@ -191,7 +204,7 @@ function StopRow({ stop, index, total, readOnly, active, violation, state, onSel
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   )
 

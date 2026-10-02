@@ -9,11 +9,14 @@ import { addStop } from '../../domain/edit'
 import { poiById } from '../../domain/pois'
 import { violationText } from '../../domain/violation'
 import { fmtTime, formatVnd } from '../../domain/time'
+import { cheer } from '../../lib/cheer'
 import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
+import { PlaceArt } from './art/PlaceArt'
 import { StarRating } from '../ui/Stars'
+import { CategoryIcon } from '../icons'
 import { CategoryGlyph, CategoryName, Skeleton } from '../ui/primitives'
 import { Sheet } from '../ui/Sheet'
 
@@ -40,6 +43,7 @@ export function PoiSheet() {
     if (!poi) return
     const next: Profile = { ...profile, saved: saved ? profile.saved.filter((p) => p !== poi.id) : [...profile.saved, poi.id] }
     saveProfile.mutate(next)
+    if (!saved) cheer()
     toast('info', saved ? tr('Đã bỏ khỏi danh sách yêu thích', 'Removed from favourites') : tr('Đã lưu vào yêu thích', 'Saved to favourites'))
   }
 
@@ -60,6 +64,12 @@ export function PoiSheet() {
     <Sheet open={!!poi} onClose={() => openPoi(null)} title={poi?.name ?? ''} description={poi?.area}>
       {poi && (
         <div className="space-y-6">
+          <div className="relative -mx-1 overflow-hidden border border-forest/20">
+            <PlaceArt poi={poi} className="aspect-[5/2] w-full" />
+            <span className="absolute bottom-2 left-2 grid size-12 place-items-center rounded-full border border-forest/25 bg-paper/90 text-forest shadow-sm">
+              <CategoryIcon cat={poi.cat} size={34} />
+            </span>
+          </div>
           <div className="flex items-center gap-3">
             <CategoryGlyph cat={poi.cat} size={44} />
             <div className="min-w-0 flex-1">

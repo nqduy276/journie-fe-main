@@ -32,7 +32,7 @@ function Moon({ weather }: { weather: Weather }) {
   return (
     <div
       ref={ref}
-      className="auth-moon absolute left-[2.5%] top-[24%] size-24 transition-opacity duration-[1400ms] max-lg:left-[27%] max-lg:top-[1.4rem] max-lg:size-10"
+      className="auth-moon absolute left-[2.5%] top-[24%] size-24 transition-opacity duration-[1400ms] max-lg:hidden"
       data-lit={lit}
       style={{ opacity: MOON_SHOW[weather] }}
     >
