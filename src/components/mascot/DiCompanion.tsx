@@ -5,9 +5,8 @@ import { X } from 'lucide-react'
 import { CHEER_EVENT } from '../../lib/cheer'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
 import { useTr } from '../../hooks/useTr'
-import { useDiLive } from '../../store/diLiveStore'
 import { useMascotPrefs } from '../../store/mascotStore'
-import { useUiStore } from '../../store/uiStore'
+import { applyDiAction, type DiAction } from '../../lib/diActions'
 import { useSky, type Weather } from '../../store/weatherStore'
 import { DiAvatar } from './DiAvatar'
 import type { FocusPoint, MascotMood } from './mascot-context'
@@ -16,7 +15,7 @@ const SLEEP_AFTER_MS = 50_000
 const POINT_AFTER_MS = 420
 const INTERACTIVE = 'a[href], button:not(:disabled), [role="button"], [role="tab"], [role="radio"], [role="switch"], input:not([type="hidden"]), select, textarea, summary'
 
-type Action = 'indoor' | 'food' | 'cafe'
+type Action = DiAction
 type Tip = { vi: string; en: string; cta?: { vi: string; en: string; action: Action } }
 
 const WEATHER_TIPS: Record<'day' | 'night', Record<Weather, Tip[]>> = {
@@ -72,7 +71,6 @@ export function DiCompanion() {
   const navigate = useNavigate()
   const { canPointerFx } = useMotionPrefs()
   const point = useMascotPrefs((state) => state.point)
-  const publish = useDiLive((state) => state.publish)
 
   const [mood, setMood] = useState<MascotMood>('wave')
   const [tip, setTip] = useState<Tip | null>(null)
@@ -198,11 +196,6 @@ export function DiCompanion() {
     }
   }, [feel])
 
-  // Share what Di feels and points at with the other Di on screen.
-  useEffect(() => {
-    publish({ mood, pointAt })
-  }, [mood, pointAt, publish])
-
   useEffect(
     () => () => {
       window.clearTimeout(bubbleTimer.current)
@@ -219,17 +212,14 @@ export function DiCompanion() {
   }
 
   const runAction = (action: Action) => {
-    const { setDiscover } = useUiStore.getState()
-    if (action === 'indoor') setDiscover({ indoorOnly: true })
-    if (action === 'food') setDiscover({ categories: ['food'] })
-    if (action === 'cafe') setDiscover({ categories: ['cafe'], indoorOnly: true })
+    applyDiAction(action)
     setTip(null)
     navigate('/app/discover')
     feel('joy', 1000)
   }
 
   return (
-    <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[5rem] sm:right-3 sm:w-[5.6rem] lg:bottom-2 lg:right-5 lg:w-[6.2rem]" aria-live="polite">
+    <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[4.4rem] sm:right-3 sm:w-[4.9rem] lg:bottom-2 lg:right-5 lg:w-[5.4rem]" aria-live="polite">
       <AnimatePresence>
         {tip && (
           <motion.div
@@ -258,7 +248,7 @@ export function DiCompanion() {
 
       <motion.div initial={{ y: 40, opacity: 0, scale: 0.8 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 15, delay: 0.4 }} className="relative">
         <button type="button" onClick={poke} className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-105 active:scale-95" aria-label={tr('Hỏi Di một gợi ý', 'Ask Di for a tip')}>
-          <DiAvatar mood={mood} pointAt={pointAt} className="aspect-[320/300] w-full" />
+          <DiAvatar mood={mood} pointAt={pointAt} className="aspect-square w-full" />
         </button>
       </motion.div>
     </div>

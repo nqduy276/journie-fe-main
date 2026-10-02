@@ -194,7 +194,7 @@ export function ProfilePage() {
 
         <aside className="space-y-6 lg:sticky lg:top-8">
           <section className="panel-night p-5 text-center">
-            <DiAvatar mood={dirty ? 'wave' : 'idle'} trail={false} className="mx-auto aspect-[320/300] w-32" />
+            <DiAvatar mood={dirty ? 'wave' : 'idle'} trail={false} className="mx-auto aspect-square w-24" />
             <p className="h-display mt-2 text-lg text-paper">{tr('Di ghi nhớ giúp bạn', 'Di is taking notes')}</p>
             <p className="mt-1 text-[0.82rem] leading-relaxed text-paper/70">{tr('Càng ít càng tốt. Chọn vài thứ bạn mê là Di biết cách xếp lịch.', 'Less is more. Pick a few loves and Di knows how to plan.')}</p>
           </section>

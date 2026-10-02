@@ -6,7 +6,9 @@ import { readProfile } from '../../api/profile'
 import { useProfile, useTrips } from '../../api/queries'
 import { WeatherIcon } from '../../components/icons'
 import { Tilt } from '../../components/motion/Tilt'
-import { DiMirror } from '../../components/mascot/DiMirror'
+import { DiAvatar } from '../../components/mascot/DiAvatar'
+import { useDiMoment } from '../../components/mascot/useDiMoment'
+import { applyDiAction } from '../../lib/diActions'
 import { CityCover } from '../../components/CityCover'
 import { CountUp } from '../../components/motion/CountUp'
 import { EmptyState, Skeleton, SolverBadge } from '../../components/ui/primitives'
@@ -47,6 +49,7 @@ export function Dashboard() {
   const navigate = useNavigate()
   const trips = useTrips()
   const profile = useProfile().data ?? readProfile(user.id, user.name)
+  const moment = useDiMoment()
   const [wish, setWish] = useState('')
   const [hint, setHint] = useState(0)
 
@@ -126,9 +129,35 @@ export function Dashboard() {
           </form>
         </div>
 
-        <div className="relative hidden items-end justify-center lg:flex">
-          <div className="w-[min(100%,12rem)]">
-            <DiMirror className="aspect-[320/300] w-full" />
+        <div className="relative hidden flex-col items-center justify-end gap-3 lg:flex">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={moment.line.vi}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.3 }}
+              className="di-bubble w-[min(100%,16rem)] !px-3.5 !py-2.5 !text-[0.86rem] !leading-snug"
+              data-tail="bottom"
+              role="status"
+            >
+              {tr(moment.line.vi, moment.line.en)}
+              {moment.cta && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    applyDiAction(moment.cta!.action)
+                    navigate('/app/discover')
+                  }}
+                  className="mt-2 block border border-terracotta/60 bg-terracotta/10 px-2.5 py-1 font-sans text-[0.74rem] font-semibold not-italic text-terracotta transition-colors hover:bg-terracotta hover:text-white"
+                >
+                  {tr(moment.cta.vi, moment.cta.en)}
+                </button>
+              )}
+            </motion.div>
+          </AnimatePresence>
+          <div className="w-[min(100%,10.5rem)]">
+            <DiAvatar mood={moment.mood} className="aspect-square w-full" />
           </div>
         </div>
       </section>
