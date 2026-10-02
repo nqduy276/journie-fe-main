@@ -130,6 +130,10 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   `domain/solverStatus.ts`), place tags are translated (`domain/tags.ts`), the sample trips are shown in the page
   language (`domain/tripText.ts`), and the map's own buttons and the analytics log are localised. Place and street
   names stay as the proper names they are.
+- **A different place each visit** (`content/heroPlaces.ts`): the photograph behind Di on the sign-in and register
+  pages and in the landing hero is picked at random from the six destinations we have photos of, once per page load
+  (never the one shown on the previous load, remembered in `journie-hero-last`). The caption, coordinates, weather card,
+  the side journey rail and which hidden torch effects appear (a leaping koi only over water) all follow that place.
 - **Logo** (`components/Logo.tsx`): the lamp mark is the picture (`journie-mark.png` for light backgrounds,
   `journie-mark-light.png` for dark ones) and the name beneath it is live text in *Journie Display*, so the logo and
   the headings share one typeface everywhere (sign-in, sidebar, footer, portal transition).

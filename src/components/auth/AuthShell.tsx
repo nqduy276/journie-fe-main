@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Link } from 'react-router'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'motion/react'
 import { ArrowLeft } from 'lucide-react'
-import { siteConfig } from '../../content/site'
 import { useTr } from '../../hooks/useTr'
 import { useSky, useWeatherStore, type Phase, type Weather } from '../../store/weatherStore'
 import { LangSwitch } from '../LangSwitch'
@@ -17,6 +16,7 @@ import { LightContext, type LightControl } from './light-context'
 import { ChestSpot, CliffNoteSpot, ConstellationSpot, FirefliesSpot, FishSpot, FlockSpot, KiteSpot, LanternSpot, LotusSpot } from './LightSpots'
 import { useLit } from './use-lit'
 import { Logo } from '../Logo'
+import { formatCoords, heroPlace } from '../../content/heroPlaces'
 
 const KEYS = (['day', 'night'] as const).flatMap((phase) => (['clear', 'cloudy', 'rain', 'storm'] as const).map((weather) => `${phase}-${weather}` as const))
 
@@ -119,6 +119,7 @@ type Props = {
 /** Visual half of the auth card: the Tràng An arch with Di flying in it, and a few secrets in the photo. */
 function Visual({ lines }: { lines: Props['lines'] }) {
   const { tr } = useTr()
+  const place = useMemo(() => heroPlace(), [])
   const { mood, setMood } = useMascot()
   const { ref: diRef, lit } = useLit(120)
   const line = lines[mood] ?? lines.idle ?? ''
@@ -138,12 +139,12 @@ function Visual({ lines }: { lines: Props['lines'] }) {
   return (
     <div className="flex p-3 sm:p-4">
       <div className="auth-visual flex w-full flex-col justify-end">
-        <img src={siteConfig.heroImage} alt="" width="1280" height="853" decoding="async" />
-        <p className="absolute inset-x-0 top-[11%] text-center text-[0.62rem] font-semibold tracking-[0.22em] text-paper/80">20.2506° N, 105.9745° E</p>
+        <img src={place.image} alt="" width="1280" height="853" decoding="async" style={{ objectPosition: place.focus }} />
+        <p className="absolute inset-x-0 top-[11%] text-center text-[0.62rem] font-semibold tracking-[0.22em] text-paper/80">{formatCoords(place)}</p>
 
         <CliffNoteSpot text={tr('Chào mừng trở lại!', 'Welcome back!')} style={{ left: '50%', top: '27%', transform: 'translateX(-50%) rotate(-4deg)' }} />
         <FirefliesSpot style={{ left: '8%', top: '46%' }} />
-        <FishSpot style={{ left: '10%', bottom: '17%' }} />
+        {place.water && <FishSpot style={{ left: '10%', bottom: '17%' }} />}
 
         <div className="relative z-10 flex flex-col items-center px-5 pb-6 text-center">
           <div className="di-bubble mb-3 max-w-[16.5rem]" data-tail="bottom" role="status" aria-live="polite">
@@ -156,7 +157,7 @@ function Visual({ lines }: { lines: Props['lines'] }) {
           <div ref={diRef}>
             <Di className="aspect-square w-36 sm:w-40 md:w-48" />
           </div>
-          <p className="h-display mt-1 text-[1.45rem] text-paper">{tr('Tràng An, Ninh Bình', 'Trang An, Ninh Binh')}</p>
+          <p className="h-display mt-1 text-[1.45rem] text-paper">{tr(...place.name)}</p>
           <p className="mt-0.5 max-w-[17rem] text-[0.78rem] leading-snug text-paper/75">{tr('Đi Việt Nam, theo cách của riêng bạn.', 'See Vietnam your own way.')}</p>
         </div>
       </div>

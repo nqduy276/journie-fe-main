@@ -9,7 +9,6 @@ import phuQuocImage from '../assets/images/phu-quoc.jpg'
 
 export const siteConfig = {
   name: 'Journie',
-  heroImage: ninhBinhImage,
   sampleItineraryImage: hoChiMinhCityImage,
   logoMark,
   logoMarkLight,
