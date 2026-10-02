@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { PortalWipe } from './components/PortalWipe'
+import { SkySwitch } from './components/weather/SkySwitch'
 import { SiteLayout } from './layouts/SiteLayout'
 import { LandingPage } from './pages/LandingPage'
 import { GuestOnly, RequireAuth } from './app/guards'
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <>
       <PortalWipe />
+      <SkySwitch />
       <Suspense fallback={<Splash />}>
         <Routes>
           <Route

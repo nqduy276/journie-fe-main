@@ -456,6 +456,59 @@ input[type='range'].range:active::-webkit-slider-thumb {
   to { transform: translate3d(130vw, 0, 0); }
 }
 
+/* Weather behind the dashboard hero: a lazy cloud bank, a rain veil and the odd flash. */
+
+.hero-cloud {
+  position: absolute;
+  will-change: transform;
+  animation: hero-cloud var(--dur, 70s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+@keyframes hero-cloud {
+  from { transform: translate3d(-4rem, 0, 0); }
+  to { transform: translate3d(4rem, 0.4rem, 0); }
+}
+
+.hero-drop {
+  position: absolute;
+  top: -40px;
+  width: 1.5px;
+  height: var(--len, 22px);
+  border-radius: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(196, 228, 240, 0.9));
+  transform: rotate(12deg);
+  will-change: transform;
+  animation: hero-drop var(--d, 0.8s) linear var(--delay, 0s) infinite;
+}
+
+@keyframes hero-drop {
+  from { transform: translate3d(0, 0, 0) rotate(12deg); }
+  to { transform: translate3d(-90px, 560px, 0) rotate(12deg); }
+}
+
+.hero-mist {
+  position: absolute;
+  inset: auto 0 0;
+  height: 38%;
+  background: linear-gradient(to top, rgba(170, 214, 224, 0.16), transparent);
+}
+
+.hero-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse 60% 70% at 62% 0, rgba(235, 244, 255, 0.55), rgba(235, 244, 255, 0.08) 60%, transparent 80%);
+  animation: hero-flash 7.5s ease-out 1.2s infinite;
+}
+
+@keyframes hero-flash {
+  0%, 62%, 100% { opacity: 0; }
+  63% { opacity: 1; }
+  65% { opacity: 0.1; }
+  67% { opacity: 0.85; }
+  74% { opacity: 0; }
+}
+
 /* ───────── Di the mascot ───────── */
 
 .di-float {
@@ -1268,6 +1321,9 @@ input[type='range'].range:active::-webkit-slider-thumb {
   .di-drop,
   .sky-cloud,
   .sky-sun-rays,
+  .hero-cloud,
+  .hero-drop,
+  .hero-flash,
   .auth-visual img,
   .route-line,
   .me-dot,

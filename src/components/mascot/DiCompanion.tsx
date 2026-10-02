@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, useVelocity, type MotionValue } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
 import { CHEER_EVENT } from '../../lib/cheer'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
@@ -9,10 +9,11 @@ import { useMascotPrefs } from '../../store/mascotStore'
 import { useUiStore } from '../../store/uiStore'
 import { useSky, type Weather } from '../../store/weatherStore'
 import { DiAvatar } from './DiAvatar'
-import type { MascotMood } from './mascot-context'
+import type { FocusPoint, MascotMood } from './mascot-context'
 
 const SLEEP_AFTER_MS = 50_000
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
+const POINT_AFTER_MS = 420
+const INTERACTIVE = 'a[href], button:not(:disabled), [role="button"], [role="tab"], [role="radio"], [role="switch"], input:not([type="hidden"]), select, textarea, summary'
 
 type Action = 'indoor' | 'food' | 'cafe'
 type Tip = { vi: string; en: string; cta?: { vi: string; en: string; action: Action } }
@@ -27,12 +28,8 @@ const WEATHER_TIPS: Record<'day' | 'night', Record<Weather, Tip[]>> = {
       { vi: 'Trời mát, đi bộ phố cổ là tuyệt nhất.', en: 'Nice and cool, perfect for an old-town stroll.' },
       { vi: 'Mây nhiều nên ảnh sẽ rất mềm, chụp ngay nhé.', en: 'Soft clouds make the best light for photos.' },
     ],
-    rain: [
-      { vi: 'Trời mưa rồi! Mình che ô cho bạn nhé.', en: 'It is raining! Let me hold the umbrella.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } },
-    ],
-    storm: [
-      { vi: 'Có dông đó, đừng ở điểm ngoài trời. Mình tìm chỗ trú nhé.', en: 'Thunderstorm! Stay off outdoor stops, I will find shelter.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } },
-    ],
+    rain: [{ vi: 'Trời mưa rồi! Mình che ô cho bạn nhé.', en: 'It is raining! Let me hold the umbrella.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
+    storm: [{ vi: 'Có dông đó, đừng ở điểm ngoài trời. Mình tìm chỗ trú nhé.', en: 'Thunderstorm! Stay off outdoor stops, I will find shelter.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
   },
   night: {
     clear: [
@@ -62,26 +59,10 @@ function hourTip(now: Date): { slot: string; tip: Tip } | null {
   return null
 }
 
-const DUST = ['#f0b94b', '#4fb8a4', '#f6d27a', '#d96745', '#fff6dc']
-
-/** A speck of stardust that drifts after the carpet and only shows while it flies fast. */
-function Dust({ x, y, i, energy, size }: { x: MotionValue<number>; y: MotionValue<number>; i: number; energy: MotionValue<number>; size: number }) {
-  const dx = useSpring(x, { stiffness: 46 - i * 6, damping: 13 + i * 0.6 })
-  const dy = useSpring(y, { stiffness: 46 - i * 6, damping: 13 + i * 0.6 })
-  const left = useTransform(dx, (v) => v + size * 0.5 + ((i * 17) % 22) - 11)
-  const top = useTransform(dy, (v) => v + size * 0.78 + ((i * 11) % 18) - 7)
-  const opacity = useTransform(energy, (e) => clamp(e * 1.5 - 0.12, 0, 0.95))
-  return <motion.span className="di-dust" style={{ x: left, y: top, opacity, scale: 0.55 + (i % 3) * 0.3, background: DUST[i % DUST.length] }} aria-hidden="true" />
-}
-
-function readSize() {
-  return window.innerWidth >= 640 ? 92 : 76
-}
-
 /**
- * Di living in the app: a monkey on a flying carpet that trails the pointer, blinks and looks at what
- * you look at, dozes off when nothing happens, cheers when poked and passes on tips that fit the
- * weather, the hour and the page. It can wait in the corner instead, or be sent to rest.
+ * Di living in the corner of the app. It stays put: its eyes and head turn to wherever the pointer is, and when
+ * the pointer rests on a control Di points at it. It dozes off when nothing happens, cheers when something is
+ * saved and passes on tips that fit the weather, the hour and the page, some with a button.
  */
 export function DiCompanion() {
   const { tr } = useTr()
@@ -90,25 +71,13 @@ export function DiCompanion() {
   const navigate = useNavigate()
   const { canPointerFx } = useMotionPrefs()
   const hidden = useMascotPrefs((state) => state.hidden)
-  const follow = useMascotPrefs((state) => state.follow)
+  const point = useMascotPrefs((state) => state.point)
   const setHidden = useMascotPrefs((state) => state.setHidden)
 
   const [mood, setMood] = useState<MascotMood>('wave')
   const [tip, setTip] = useState<Tip | null>(null)
-  const [side, setSide] = useState({ right: true, below: false })
-  const [size, setSize] = useState(readSize)
-
-  const x = useMotionValue(-200)
-  const y = useMotionValue(-200)
-  const sx = useSpring(x, { stiffness: 70, damping: 13, mass: 0.9 })
-  const sy = useSpring(y, { stiffness: 70, damping: 13, mass: 0.9 })
-  const vx = useVelocity(sx)
-  const vy = useVelocity(sy)
-  const roll = useTransform(vx, (v) => clamp(v / 50, -16, 16))
-  const energy = useTransform([vx, vy], ([a, b]: number[]) => clamp(Math.hypot(a, b) / 800, 0, 1))
-
-  const flying = follow && canPointerFx
-  const parked = useRef(false)
+  const [pointAt, setPointAt] = useState<FocusPoint | null>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
   const asleep = useRef(false)
   const sleepTimer = useRef(0)
   const bubbleTimer = useRef(0)
@@ -117,39 +86,11 @@ export function DiCompanion() {
   const lastWeather = useRef<string | null>(null)
   const seenSlots = useRef(new Set<string>())
 
-  const corner = useCallback(() => {
-    const s = readSize()
-    const lg = window.innerWidth >= 1024
-    return { x: window.innerWidth - s - (lg ? 28 : 8), y: window.innerHeight - s - (lg ? 28 : 96) }
+  const say = useCallback((next: Tip, ms = 7500) => {
+    setTip(next)
+    window.clearTimeout(bubbleTimer.current)
+    bubbleTimer.current = window.setTimeout(() => setTip(null), next.cta ? 14_000 : ms)
   }, [])
-
-  const goHome = useCallback(() => {
-    const c = corner()
-    x.set(c.x)
-    y.set(c.y)
-  }, [corner, x, y])
-
-  const say = useCallback(
-    (next: Tip, ms = 7500) => {
-      // a tip with a button waits in the corner, so size the bubble for where Di will be
-      const base = next.cta ? corner() : { x: x.get(), y: y.get() }
-      setSide({ right: base.x + 250 > window.innerWidth, below: base.y < 150 })
-      setTip(next)
-      window.clearTimeout(bubbleTimer.current)
-      // tips with a button wait in the corner so the button holds still while you reach for it
-      if (next.cta) {
-        parked.current = true
-        goHome()
-        bubbleTimer.current = window.setTimeout(() => {
-          setTip(null)
-          parked.current = false
-        }, 14_000)
-      } else {
-        bubbleTimer.current = window.setTimeout(() => setTip(null), ms)
-      }
-    },
-    [corner, goHome, x, y],
-  )
 
   const feel = useCallback((next: MascotMood, ms: number) => {
     setMood(next)
@@ -157,42 +98,37 @@ export function DiCompanion() {
     moodTimer.current = window.setTimeout(() => setMood('idle'), ms)
   }, [])
 
-  // Starting position and resizing.
+  // Point at the control the pointer is resting on.
   useEffect(() => {
-    const place = () => {
-      setSize(readSize())
-      if (!flying || parked.current) goHome()
+    if (!point || !canPointerFx || hidden) return
+    let timer = 0
+    const onOver = (event: PointerEvent) => {
+      window.clearTimeout(timer)
+      const el = (event.target as Element | null)?.closest?.(INTERACTIVE)
+      if (!el || boxRef.current?.contains(el)) {
+        setPointAt(null)
+        return
+      }
+      timer = window.setTimeout(() => {
+        const rect = el.getBoundingClientRect()
+        if (rect.width === 0) return
+        setPointAt({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+      }, POINT_AFTER_MS)
     }
-    if (x.get() < -100) {
-      const c = corner()
-      x.jump(c.x)
-      y.jump(c.y)
+    const onOut = () => {
+      window.clearTimeout(timer)
+      setPointAt(null)
     }
-    window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
-  }, [corner, flying, goHome, x, y])
-
-  // Trail the pointer, a little below and to the right of it, flipping sides near the screen edge.
-  useEffect(() => {
-    if (!flying || hidden) {
-      goHome()
-      return
+    document.addEventListener('pointerover', onOver, { passive: true })
+    document.addEventListener('pointerleave', onOut)
+    document.addEventListener('pointerdown', onOut, { passive: true })
+    return () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('pointerover', onOver)
+      document.removeEventListener('pointerleave', onOut)
+      document.removeEventListener('pointerdown', onOut)
     }
-    const onMove = (event: PointerEvent) => {
-      if (parked.current) return
-      const s = readSize()
-      const w = window.innerWidth
-      const h = window.innerHeight
-      let tx = event.clientX + 26
-      let ty = event.clientY + 22
-      if (tx + s > w - 6) tx = event.clientX - s - 18
-      if (ty + s * 0.95 > h - 6) ty = event.clientY - s - 14
-      x.set(clamp(tx, 6, w - s - 6))
-      y.set(clamp(ty, 6, h - s - 6))
-    }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    return () => window.removeEventListener('pointermove', onMove)
-  }, [flying, hidden, goHome, x, y])
+  }, [point, canPointerFx, hidden])
 
   // Something nice happened elsewhere in the app: cheer.
   useEffect(() => {
@@ -205,7 +141,7 @@ export function DiCompanion() {
   // Greeting.
   useEffect(() => {
     if (hidden) return
-    const hello = window.setTimeout(() => say({ vi: 'Chào bạn, mình là Di! Mình sẽ đi theo và nhắc bạn mọi thứ nhé.', en: 'Hi, I am Di! I will tag along and keep you posted.' }, 6000), 1400)
+    const hello = window.setTimeout(() => say({ vi: 'Chào bạn, mình là Di! Mình sẽ nhìn theo bạn và nhắc mọi thứ nhé.', en: 'Hi, I am Di! I will keep an eye on you and keep you posted.' }, 6000), 1400)
     const settle = window.setTimeout(() => setMood('idle'), 2800)
     return () => {
       window.clearTimeout(hello)
@@ -239,12 +175,6 @@ export function DiCompanion() {
     }, 2600)
     return () => window.clearTimeout(timer)
   }, [location.pathname, hidden, say])
-
-  // On the first visit in the rain Di already has its umbrella up, so say so.
-  useEffect(() => {
-    if (hidden || lastWeather.current !== null) return
-    lastWeather.current = sky.key
-  }, [hidden, sky.key])
 
   // Falls asleep after a while, wakes on any activity.
   useEffect(() => {
@@ -294,7 +224,6 @@ export function DiCompanion() {
     if (action === 'food') setDiscover({ categories: ['food'] })
     if (action === 'cafe') setDiscover({ categories: ['cafe'], indoorOnly: true })
     setTip(null)
-    parked.current = false
     navigate('/app/discover')
     feel('joy', 1000)
   }
@@ -302,28 +231,26 @@ export function DiCompanion() {
   if (hidden) return null
 
   return (
-    <>
-      {flying && [0, 1, 2, 3, 4, 5].map((i) => <Dust key={i} i={i} x={sx} y={sy} energy={energy} size={size} />)}
-    <motion.div className="pointer-events-none fixed left-0 top-0 z-40" style={{ x: sx, y: sy, width: size }} aria-live="polite">
+    <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[6.6rem] sm:right-3 sm:w-[7.6rem] lg:bottom-2 lg:right-5 lg:w-[8.6rem]" aria-live="polite">
       <AnimatePresence>
         {tip && (
           <motion.div
             key={tip.vi}
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            initial={{ opacity: 0, y: 8, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+            exit={{ opacity: 0, y: 4, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 340, damping: 24 }}
             style={{ position: 'absolute' }}
-            className={`di-bubble w-[12.5rem] !px-3 !py-2 !text-[0.8rem] !leading-snug sm:w-[15rem] sm:!px-[0.95rem] sm:!py-[0.65rem] sm:!text-[0.92rem] ${side.below ? 'top-[calc(100%-0.4rem)]' : 'bottom-[calc(100%-0.6rem)]'} ${side.right ? 'right-1 origin-bottom-right' : 'left-1 origin-bottom-left'} ${tip.cta ? 'pointer-events-auto' : ''}`}
-            data-tail={side.below ? 'none' : side.right ? 'bottom-right' : 'bottom-left'}
+            className="di-bubble pointer-events-auto bottom-[calc(100%-0.8rem)] right-1 w-[12.5rem] origin-bottom-right !px-3 !py-2 !text-[0.8rem] !leading-snug sm:w-[15rem] sm:!px-[0.95rem] sm:!py-[0.65rem] sm:!text-[0.92rem]"
+            data-tail="bottom-right"
             role="status"
           >
-            <button type="button" onClick={() => { setTip(null); parked.current = false }} className="pointer-events-auto absolute -right-2 -top-2 grid size-6 place-items-center rounded-full border border-[#173f35]/25 bg-[#f7f2e8] text-[#173f35]/70 hover:text-terracotta" aria-label={tr('Đóng gợi ý', 'Close tip')}>
+            <button type="button" onClick={() => setTip(null)} className="absolute -right-2 -top-2 grid size-6 place-items-center rounded-full border border-[#173f35]/25 bg-[#f7f2e8] text-[#173f35]/70 hover:text-terracotta" aria-label={tr('Đóng gợi ý', 'Close tip')}>
               <X size={12} />
             </button>
             {tr(tip.vi, tip.en)}
             {tip.cta && (
-              <button type="button" onClick={() => runAction(tip.cta!.action)} className="pointer-events-auto mt-2 block border border-terracotta/60 bg-terracotta/10 px-2.5 py-1 font-sans text-[0.74rem] font-semibold not-italic text-terracotta transition-colors hover:bg-terracotta hover:text-white">
+              <button type="button" onClick={() => runAction(tip.cta!.action)} className="mt-2 block border border-terracotta/60 bg-terracotta/10 px-2.5 py-1 font-sans text-[0.74rem] font-semibold not-italic text-terracotta transition-colors hover:bg-terracotta hover:text-white">
                 {tr(tip.cta.vi, tip.cta.en)}
               </button>
             )}
@@ -331,23 +258,14 @@ export function DiCompanion() {
         )}
       </AnimatePresence>
 
-      <motion.div initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 160, damping: 13, delay: 0.4 }} className="group relative" style={{ originX: 0.5, originY: 1 }}>
-        {flying ? (
-          <div className="pointer-events-none">
-            <DiAvatar mood={mood} className="aspect-[320/300] w-full" energy={energy} roll={roll} />
-          </div>
-        ) : (
-          <>
-            <button type="button" onClick={poke} className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-110 active:scale-95" aria-label={tr('Hỏi Di một gợi ý', 'Ask Di for a tip')}>
-              <DiAvatar mood={mood} className="aspect-[320/300] w-full" energy={energy} roll={roll} />
-            </button>
-            <button type="button" onClick={() => setHidden(true)} className="pointer-events-auto absolute -left-2 top-0 hidden size-6 place-items-center rounded-full border border-[#173f35]/25 bg-[#f7f2e8]/90 text-[#173f35]/65 transition-colors hover:text-terracotta group-hover:grid group-focus-within:grid" aria-label={tr('Cho Di nghỉ', 'Let Di rest')} title={tr('Cho Di nghỉ', 'Let Di rest')}>
-              <X size={12} />
-            </button>
-          </>
-        )}
+      <motion.div initial={{ y: 40, opacity: 0, scale: 0.8 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 15, delay: 0.4 }} className="group relative">
+        <button type="button" onClick={poke} className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-105 active:scale-95" aria-label={tr('Hỏi Di một gợi ý', 'Ask Di for a tip')}>
+          <DiAvatar mood={mood} pointAt={pointAt} className="aspect-[320/300] w-full" />
+        </button>
+        <button type="button" onClick={() => setHidden(true)} className="pointer-events-auto absolute -left-1 top-0 hidden size-6 place-items-center rounded-full border border-[#173f35]/25 bg-[#f7f2e8]/90 text-[#173f35]/65 transition-colors hover:text-terracotta group-hover:grid group-focus-within:grid" aria-label={tr('Cho Di nghỉ', 'Let Di rest')} title={tr('Cho Di nghỉ', 'Let Di rest')}>
+          <X size={12} />
+        </button>
       </motion.div>
-    </motion.div>
-    </>
+    </div>
   )
 }

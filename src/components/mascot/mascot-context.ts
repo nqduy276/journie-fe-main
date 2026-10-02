@@ -10,6 +10,8 @@ export type MascotControl = {
   /** Screen position Di should look at while a field has focus (null = follow the pointer). */
   focusPoint: FocusPoint | null
   setFocusPoint: (point: FocusPoint | null) => void
+  /** Screen position of something Di should point at (the control under the pointer); null = arms at rest. */
+  pointAt?: FocusPoint | null
   /** Bumps whenever something goes wrong, so Di can shake its head again. */
   errorTick: number
   /** Where Di stands on screen; the portal transition grows from here. */

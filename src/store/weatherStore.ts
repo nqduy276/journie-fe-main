@@ -16,24 +16,47 @@ export type Weather = 'clear' | 'cloudy' | 'rain' | 'storm'
 export type PhaseMode = 'auto' | Phase
 export type WeatherMode = 'auto' | Weather
 
+/** A day↔night change in progress: the overlay plays it, then commits `mode` while the screen is covered. */
+export type SkyShift = { id: number; from: Phase; to: Phase; mode: PhaseMode }
+
 type SkyState = {
   phaseMode: PhaseMode
   weatherMode: WeatherMode
   override: { weather: Weather; until: number } | null
+  shift: SkyShift | null
   setPhaseMode: (mode: PhaseMode) => void
+  /** Choose day, night or auto. A real change of sky plays the moon/sun rising; the same sky just applies. */
+  requestPhase: (mode: PhaseMode) => void
+  endShift: () => void
   setWeatherMode: (mode: WeatherMode) => void
   /** Force a weather for `ms` milliseconds, e.g. when the monitor reports heavy rain. */
   setOverride: (weather: Weather, ms?: number) => void
   clearOverride: () => void
 }
 
+const isNightHour = (date: Date) => {
+  const minutes = date.getHours() * 60 + date.getMinutes()
+  return minutes >= 18 * 60 + 30 || minutes < 5 * 60 + 30
+}
+
+/** The time of day a mode stands for right now (`auto` follows the clock: night is 18:30 to 05:30). */
+export const resolvePhase = (mode: PhaseMode, now: Date = new Date()): Phase => (mode === 'auto' ? (isNightHour(now) ? 'night' : 'day') : mode)
+
 export const useWeatherStore = create<SkyState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       phaseMode: 'auto',
       weatherMode: 'auto',
       override: null,
+      shift: null,
       setPhaseMode: (phaseMode) => set({ phaseMode }),
+      requestPhase: (mode) => {
+        const from = resolvePhase(get().phaseMode)
+        const to = resolvePhase(mode)
+        if (from === to) set({ phaseMode: mode, shift: null })
+        else set({ shift: { id: Date.now(), from, to, mode } })
+      },
+      endShift: () => set({ shift: null }),
       setWeatherMode: (weatherMode) => set({ weatherMode, override: null }),
       setOverride: (weather, ms = 120_000) => set({ override: { weather, until: Date.now() + ms } }),
       clearOverride: () => set({ override: null }),
@@ -58,10 +81,6 @@ export const PHASE_LABEL: Record<Phase, [string, string]> = {
   night: ['Ban đêm', 'Night'],
 }
 
-const isNightHour = (date: Date) => {
-  const minutes = date.getHours() * 60 + date.getMinutes()
-  return minutes >= 18 * 60 + 30 || minutes < 5 * 60 + 30
-}
 
 const BASE_TEMP: Record<Weather, number> = { clear: 33, cloudy: 29, rain: 26, storm: 25 }
 
@@ -100,7 +119,7 @@ export function useSky(city: CityId = 'sai-gon'): SkyInfo {
   const forecast = weatherFor(city, addDays(todayIso(), 0))
   const forecastWeather: Weather = forecast.condition === 'storm' ? 'storm' : isRainy(forecast) ? 'rain' : forecast.condition === 'cloudy' ? 'cloudy' : 'clear'
 
-  const phase: Phase = phaseMode === 'auto' ? (isNightHour(now) ? 'night' : 'day') : phaseMode
+  const phase: Phase = resolvePhase(phaseMode, now)
   const overridden = !!override && override.until > now.getTime()
   const weather: Weather = overridden ? override.weather : weatherMode === 'auto' ? forecastWeather : weatherMode
   const tempC = Math.round(weatherMode === 'auto' && !overridden ? forecast.tempC - (phase === 'night' ? 3 : 0) : BASE_TEMP[weather] - (phase === 'night' ? 4 : 0))

@@ -8,7 +8,8 @@ import { useProfile, useSaveProfile } from '../../api/queries'
 import { CategoryIcon, SkyIcon, WeatherIcon } from '../../components/icons'
 import { RouteMap } from '../../components/map/RouteMap'
 import { PageHeader } from '../../components/PageHeader'
-import { CityArt, PlaceArt } from '../../components/place/art/PlaceArt'
+import { CityArt } from '../../components/place/art/PlaceArt'
+import { PlaceImage } from '../../components/place/PlaceImage'
 import { PoiSheet } from '../../components/place/PoiSheet'
 import { CategoryName, EmptyState } from '../../components/ui/primitives'
 import { HeartBurst } from '../../components/ui/HeartBurst'
@@ -374,14 +375,16 @@ function Postcard({ hit, index, saved, onToggle, onOpen }: { hit: SearchHit; ind
     >
       <button type="button" onClick={onOpen} className="flex h-full w-full flex-col text-left">
         <span className="postcard-art relative block h-36 overflow-hidden">
-          <PlaceArt poi={poi} className="postcard-scene absolute inset-0 size-full" />
+          <span className="postcard-scene absolute inset-0 block">
+            <PlaceImage poi={poi} />
+          </span>
           <svg viewBox="0 0 320 128" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
             <path className="postcard-route" d="M-6 112C54 52 96 118 150 78S244 30 330 70" fill="none" stroke="#fffaf0" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="1 9" />
           </svg>
           <span className="postcard-icon absolute bottom-2 left-3 grid size-14 place-items-center rounded-full border-2 border-[#173f35] bg-[#fbf5e6] text-[#173f35] shadow-[3px_3px_0_rgba(23,63,53,0.25)]">
             <CategoryIcon cat={poi.cat} size={42} />
           </span>
-          <span className="absolute right-2 top-2 text-[#173f35]/85">
+          <span className="absolute right-2 top-2 rounded-full bg-[#fbf5e6]/88 text-[#173f35]/85 shadow-[0_1px_6px_rgba(13,40,34,0.25)]">
             <Postmark city={vi ? city.name : city.nameEn} cat={poi.cat} />
           </span>
         </span>
