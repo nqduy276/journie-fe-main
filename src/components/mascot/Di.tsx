@@ -9,9 +9,10 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 /*
- * One warm clay for the whole body with a deeper shade of the same hue for limbs and shadow, cream for the
- * face and belly, and the app's own green, gold and terracotta for the carpet and the hat. Flat fills only:
- * no highlights and no glossy parts, so Di reads as one soft shape instead of a toy made of pieces.
+ * One warm clay for the whole body with a deeper shade of the same hue for limbs and shadow, cream for the face and
+ * belly, and the app's own terracotta, gold and jade: a terracotta carpet with a gold edge and a matching fez, which
+ * stand out against both the green scenery and the cream pages. Flat fills only: no highlights and no glossy
+ * parts, so Di reads as one soft shape instead of a toy made of pieces.
  */
 const FUR = '#c08c66'
 const FUR_SHADE = '#a8764f'
@@ -23,12 +24,12 @@ const BROW = '#6a4630'
 const CHEEK = '#e8a090'
 const GOLD = '#e2bd6a'
 const GOLD_DEEP = '#b98f43'
-const RUG = '#7461cb'
-const RUG_DEEP = '#4a3a9e'
-const FEZ = '#cf6c4d'
-const FEZ_DEEP = '#aa533a'
-const CAP = '#8b7cd9'
-const CAP_DEEP = '#6a58c0'
+const RUG = '#cc5636'
+const RUG_DEEP = '#a23b27'
+const FEZ = '#e0714d'
+const FEZ_DEEP = '#b9553a'
+const CAP = '#58bfa9'
+const CAP_DEEP = '#3a9a86'
 const SKIN_DEEP = '#7a2f22'
 
 type Point = readonly [number, number]
@@ -543,8 +544,8 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
               {showUmbrella && (
                 <g className="di-umbrella">
                   <path d="M188 138V22" stroke="#4a3426" strokeWidth="3.4" strokeLinecap="round" />
-                  <path d="M140 38C140 -4 236 -4 236 38C228 30 220 30 212 38C204 30 196 30 188 38C180 30 172 30 164 38C156 30 148 30 140 38Z" fill={FEZ} />
-                  <path d="M188 3C170 8 154 20 148 38M188 3C206 8 222 20 228 38" stroke={FEZ_DEEP} strokeWidth="1.6" fill="none" />
+                  <path d="M140 38C140 -4 236 -4 236 38C228 30 220 30 212 38C204 30 196 30 188 38C180 30 172 30 164 38C156 30 148 30 140 38Z" fill={RUG} />
+                  <path d="M188 3C170 8 154 20 148 38M188 3C206 8 222 20 228 38" stroke={RUG_DEEP} strokeWidth="1.6" fill="none" />
                   {[150, 176, 202, 228].map((x, i) => (
                     <path key={x} className="di-drop" style={{ animationDelay: `${i * 0.33}s` }} d={`M${x} 48q-2.8 5 0 7q2.8 -2.2 0 -7Z`} fill="#a9d8cc" opacity="0.8" />
                   ))}
