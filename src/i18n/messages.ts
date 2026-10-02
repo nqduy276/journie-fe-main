@@ -34,6 +34,7 @@ const vi = {
     { label: 'Khám phá', href: '#kham-pha' },
   ],
   headerCta: 'Xem hành trình',
+  headerLogin: 'Đăng nhập',
   hero: {
     eyebrow: 'AI Travel Planner',
     title: 'Đi Việt Nam,',
@@ -205,6 +206,7 @@ const en: Messages = {
     { label: 'Explore', href: '#kham-pha' },
   ],
   headerCta: 'View itinerary',
+  headerLogin: 'Sign in',
   hero: {
     eyebrow: 'AI Travel Planner',
     title: 'See Vietnam,',
