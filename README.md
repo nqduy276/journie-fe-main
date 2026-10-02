@@ -92,20 +92,20 @@ yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midni
 hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
 card. Charts use landing-palette hues that were checked with the dataviz validator.
 
-- **Di** (`components/mascot`) is a small chibi monkey on a flying carpet, proportioned like a desk pet (a big round
-  head on a bean-sized body, stubby limbs, a short carpet) and drawn as a soft toy rather than a flat cartoon: no
-  outlines, a muted caramel-and-cream palette with one gold accent, gradient shading, a contact shadow and a rim of
-  light so it has depth. The carpet is a ribbon redrawn every frame so it ripples; the face blinks, the head and
-  eyes turn toward the pointer, the mitts cover the eyes for passwords or wave hello, moods are idle, watching,
-  hiding, peeking, thinking, error, joy, sleepy and wave, and it dresses for the sky (fez or nightcap, sunglasses,
-  umbrella in rain and storm in every mood except the ones that cover the eyes). Inside the app `DiCompanion` sits
-  in the bottom corner and never chases the cursor: it looks toward the pointer and, when you rest on a button or
-  link for a moment, raises the nearer arm and points at it (the sidebar switch "Di chỉ vào nơi bạn trỏ" turns the
-  pointing off). It dozes off after a while, cheers when something is saved, and gives tips for the weather, the
-  hour (breakfast, lunch, dinner, late) and the page, some with a button that opens Discover pre-filtered (indoor
-  places when it rains, food at mealtimes). The corner Di publishes its mood and what it points at to
-  `store/diLiveStore.ts`; the big Di on the dashboard (`DiMirror`) reads that, so the two always feel and do the
-  same thing at the same time.
+- **Di** (`components/mascot`) is a small monkey mascot on a flying carpet, drawn as one soft flat shape: a round
+  head-and-body bean, a heart-shaped cream face, short limbs, no outlines and no glossy highlights, in a warm clay,
+  cream, and the app's own green, gold and terracotta, so it sits in the palette instead of looking like a toy built
+  from parts. Arms are two bones of fixed length solved with two-bone IK (`solveArm`), so a limb bends but never
+  stretches, whatever it reaches for. The face blinks, the head and eyes turn toward the pointer, the mitts cover the
+  eyes for passwords, and moods are idle, watching, hiding, peeking, thinking, error, joy, sleepy, wave, hungry
+  (pats its tummy) and hot (fans itself). It dresses for the sky (fez or nightcap, sunglasses, umbrella in rain and
+  storm in every mood except the ones that cover the eyes). Inside the app `DiCompanion` sits small in the bottom
+  corner and never chases the cursor: it looks toward the pointer and, when you rest on a button or link for a moment,
+  raises the nearer arm and points at it (the sidebar switch "Di chỉ vào nơi bạn trỏ" turns pointing off). It dozes
+  off after a while, cheers when something is saved, and gives tips for the weather, the hour and the page, some with
+  a button that opens Discover pre-filtered. The bigger Di on the dashboard (`useDiMoment`) does not copy it: it acts
+  on the sky and the clock: umbrella and worried hands in a storm, umbrella in rain, a rumbling tummy and a "food
+  ideas" button at breakfast, lunch and dinner, a fan and sunglasses in the midday sun, asleep late at night.
 - **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
   cloudy, rain, storm) are two independent settings, so a rainy night is possible. Both follow the clock and the
   deterministic forecast on `auto`, or can be pinned from the sky chip. Changing the time of day plays `SkySwitch`:
@@ -116,7 +116,9 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   sun or the moon in the corner, `HeroScene` puts the weather behind the dashboard hero (dimmed sun or moon,
   drifting clouds, a rain veil, lightning in storms), and `WeatherLayer` draws clouds in CSS and everything that
   moves (rain with ground ripples, lightning, fireflies, stars, sun motes) on one canvas that stops itself when
-  idle and pauses when the tab is hidden. On the live-trip page, "heavy rain" turns the whole app rainy until the
+  idle and pauses when the tab is hidden. Inside the workspace the rain is deliberately light (few, faint,
+  slow drops; lightning is only a very faint slow glow, never a white-out), and the sky chip has a switch,
+  "Moving rain, lightning and fireflies", that stops all falling particles (clouds and tint stay). On the live-trip page, "heavy rain" turns the whole app rainy until the
   traveler decides on a replan.
 - **Pictures of places** (`domain/placeMedia.ts`, `components/place/PlaceImage.tsx`): real photographs first,
   drawings only when there is no photograph. A place uses, in order: `src/assets/images/places/<poi-id>.jpg` (drop a

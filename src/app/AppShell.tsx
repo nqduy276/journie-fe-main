@@ -18,7 +18,7 @@ import { useAuthStore } from '../store/authStore'
 import { useNotificationStore } from '../store/notificationStore'
 import { usePortalStore } from '../store/portalStore'
 import { useMascotPrefs } from '../store/mascotStore'
-import { useSky } from '../store/weatherStore'
+import { useSky, useWeatherStore } from '../store/weatherStore'
 import { fmtTime } from '../domain/time'
 import { tripTitle } from '../domain/tripText'
 
@@ -203,6 +203,7 @@ export function AppShell() {
   const openPortal = usePortalStore((state) => state.open)
   const location = useLocation()
   const sky = useSky()
+  const effects = useWeatherStore((state) => state.effects)
   const items = user.role === 'admin' ? adminNav : travelerNav
 
   useEffect(() => {
@@ -239,7 +240,7 @@ export function AppShell() {
     <div className="app-bg app-root min-h-dvh lg:pl-[17.5rem]" data-phase={sky.phase} data-weather={sky.weather}>
       <MagicCursor />
       <SkyBody phase={sky.phase} weather={sky.weather} hidden={location.pathname === '/app'} />
-      <WeatherLayer phase={sky.phase} weather={sky.weather} calm />
+      <WeatherLayer phase={sky.phase} weather={sky.weather} calm still={!effects} />
       <a href="#app-main" className="skip-link">
         {tr('Bỏ qua điều hướng', 'Skip navigation')}
       </a>

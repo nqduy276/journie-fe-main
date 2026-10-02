@@ -219,7 +219,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
       <div className="panel-night p-5 sm:p-7">
         <div className="flex items-start gap-4">
           <div className="hidden w-24 shrink-0 sm:block">
-            <DiAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-[320/300] w-full" />
+            <DiAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-square w-full" />
           </div>
           <div className="min-w-0 flex-1">
             <label htmlFor="wish" className="h-display text-[1.45rem] text-paper">
@@ -479,7 +479,7 @@ function Pipeline({ stage, report, params, intent }: { stage: number; report?: P
     <div className="panel-night mx-auto max-w-3xl p-6 sm:p-9">
       <div className="flex items-center gap-5">
         <div className="w-24 shrink-0">
-          <DiAvatar mood="thinking" className="aspect-[320/300] w-full" />
+          <DiAvatar mood="thinking" className="aspect-square w-full" />
         </div>
         <div>
           <h2 className="h-display text-[1.6rem] text-paper">{tr('Di đang vẽ lộ trình cho bạn…', 'Di is drawing your route…')}</h2>
@@ -515,7 +515,7 @@ function Pipeline({ stage, report, params, intent }: { stage: number; report?: P
         <div className="absolute inset-x-2 top-[2.7rem] border-t-2 border-dashed border-paper/25" />
         <motion.div className="absolute left-2 top-[2.7rem] h-0.5 bg-gradient-to-r from-firuze via-gold to-pomegranate" animate={{ width: `calc(${(stage / STAGES.length) * 100}% - 1rem)` }} transition={{ ease: 'easeOut', duration: 0.6 }} />
         <motion.div className="absolute top-0 w-[4.6rem] -translate-x-1/2" animate={{ left: `${4 + (stage / STAGES.length) * 92}%` }} transition={{ type: 'spring', stiffness: 70, damping: 14 }}>
-          <DiAvatar mood={stage >= STAGES.length ? 'joy' : 'thinking'} trail={false} className="aspect-[320/300] w-full" />
+          <DiAvatar mood={stage >= STAGES.length ? 'joy' : 'thinking'} trail={false} className="aspect-square w-full" />
         </motion.div>
         <span className="absolute right-0 top-[2.15rem] grid size-5 place-items-center rounded-full border-2 border-terracotta bg-night text-terracotta" aria-hidden="true">
           <span className="size-1.5 rounded-full bg-terracotta" />

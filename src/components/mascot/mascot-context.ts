@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-export type MascotMood = 'idle' | 'watching' | 'hiding' | 'peeking' | 'thinking' | 'error' | 'joy' | 'sleepy' | 'wave'
+export type MascotMood = 'idle' | 'watching' | 'hiding' | 'peeking' | 'thinking' | 'error' | 'joy' | 'sleepy' | 'wave' | 'hungry' | 'hot'
 
 export type FocusPoint = { x: number; y: number }
 

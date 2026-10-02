@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from
 import { ArrowLeft } from 'lucide-react'
 import { siteConfig } from '../../content/site'
 import { useTr } from '../../hooks/useTr'
-import { useSky, type Phase, type Weather } from '../../store/weatherStore'
+import { useSky, useWeatherStore, type Phase, type Weather } from '../../store/weatherStore'
 import { LangSwitch } from '../LangSwitch'
 import { MagicCursor } from '../MagicCursor'
 import { Di } from '../mascot/Di'
@@ -153,7 +153,7 @@ function Visual({ lines }: { lines: Props['lines'] }) {
             </AnimatePresence>
           </div>
           <div ref={diRef}>
-            <Di className="aspect-[320/300] w-44 sm:w-52 md:w-60" />
+            <Di className="aspect-square w-36 sm:w-40 md:w-48" />
           </div>
           <p className="h-display mt-1 text-[1.45rem] text-paper">{tr('Tràng An, Ninh Bình', 'Trang An, Ninh Binh')}</p>
           <p className="mt-0.5 max-w-[17rem] text-[0.78rem] leading-snug text-paper/75">{tr('Đi Việt Nam, theo cách của riêng bạn.', 'See Vietnam your own way.')}</p>
@@ -171,6 +171,7 @@ function Visual({ lines }: { lines: Props['lines'] }) {
 export function AuthShell({ children, lines }: Props) {
   const { tr } = useTr()
   const sky = useSky()
+  const effects = useWeatherStore((state) => state.effects)
   const [mood, setMoodState] = useState<MascotMood>('idle')
   const [focusPoint, setFocusPoint] = useState<FocusPoint | null>(null)
   const [errorTick, setErrorTick] = useState(0)
@@ -225,7 +226,7 @@ export function AuthShell({ children, lines }: Props) {
           <Backdrop phase={sky.phase} weather={sky.weather} />
           <BackdropSpots night={night} />
           <motion.div className="light-dark" data-on={lightOn && night} style={{ ['--lx' as string]: lxPx, ['--ly' as string]: lyPx }} aria-hidden="true" />
-          <WeatherLayer phase={sky.phase} weather={sky.weather} />
+          <WeatherLayer phase={sky.phase} weather={sky.weather} still={!effects} />
 
           <header className="relative z-20 mx-auto flex w-[min(100%-2rem,72rem)] items-center justify-between py-4 sm:py-6">
             <Link to="/" className="group flex items-center gap-2.5" aria-label={tr('Về trang chủ Journie', 'Back to Journie home')}>

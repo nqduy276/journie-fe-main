@@ -475,7 +475,7 @@ input[type='range'].range:active::-webkit-slider-thumb {
   width: 1.5px;
   height: var(--len, 22px);
   border-radius: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(196, 228, 240, 0.9));
+  background: linear-gradient(to bottom, transparent, rgba(196, 228, 240, 0.8));
   transform: rotate(12deg);
   will-change: transform;
   animation: hero-drop var(--d, 0.8s) linear var(--delay, 0s) infinite;
@@ -497,16 +497,14 @@ input[type='range'].range:active::-webkit-slider-thumb {
   position: absolute;
   inset: 0;
   opacity: 0;
-  background: radial-gradient(ellipse 60% 70% at 62% 0, rgba(235, 244, 255, 0.55), rgba(235, 244, 255, 0.08) 60%, transparent 80%);
-  animation: hero-flash 7.5s ease-out 1.2s infinite;
+  background: radial-gradient(ellipse 60% 70% at 62% 0, rgba(235, 244, 255, 0.16), rgba(235, 244, 255, 0.03) 60%, transparent 80%);
+  animation: hero-flash 16s ease-out 3s infinite;
 }
 
 @keyframes hero-flash {
-  0%, 62%, 100% { opacity: 0; }
-  63% { opacity: 1; }
-  65% { opacity: 0.1; }
-  67% { opacity: 0.85; }
-  74% { opacity: 0; }
+  0%, 70%, 100% { opacity: 0; }
+  74% { opacity: 1; }
+  88% { opacity: 0; }
 }
 
 /* ───────── Di the mascot ───────── */
@@ -517,8 +515,8 @@ input[type='range'].range:active::-webkit-slider-thumb {
 }
 
 @keyframes di-float {
-  from { transform: translate3d(0, 4px, 0) rotate(-1.2deg); }
-  to { transform: translate3d(0, -10px, 0) rotate(1.4deg); }
+  from { transform: translate3d(0, 1.5%, 0) rotate(-1deg); }
+  to { transform: translate3d(0, -3.5%, 0) rotate(1.2deg); }
 }
 
 .di-shadow {
@@ -534,7 +532,7 @@ input[type='range'].range:active::-webkit-slider-thumb {
 
 .di-eyes {
   transform-box: view-box;
-  transform-origin: 160px 118px;
+  transform-origin: 120px 98px;
   animation: di-blink 5.4s ease-in-out infinite;
 }
 
@@ -575,7 +573,7 @@ input[type='range'].range:active::-webkit-slider-thumb {
 .di-umbrella {
   animation: di-umbrella 3s ease-in-out infinite alternate;
   transform-box: view-box;
-  transform-origin: 232px 138px;
+  transform-origin: 188px 120px;
 }
 
 @keyframes di-umbrella {
@@ -602,7 +600,27 @@ input[type='range'].range:active::-webkit-slider-thumb {
 @keyframes di-drop {
   0% { transform: translateY(-4px); opacity: 0; }
   20% { opacity: 1; }
-  100% { transform: translateY(26px); opacity: 0; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+
+.di-rumble {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: di-rumble 0.9s ease-in-out infinite;
+}
+
+@keyframes di-rumble {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+.di-fan {
+  animation: di-fan 0.34s ease-in-out infinite alternate;
+}
+
+@keyframes di-fan {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(22deg); }
 }
 
 .di-bubble {
@@ -1309,6 +1327,8 @@ input[type='range'].range:active::-webkit-slider-thumb {
 
 @media (prefers-reduced-motion: reduce) {
   .di-float,
+  .di-rumble,
+  .di-fan,
   .di-shadow,
   .di-tail,
   .di-tassel,

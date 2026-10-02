@@ -41,10 +41,12 @@ type Props = {
   className?: string
   /** Gentler particles and clouds so content stays easy to read (used behind the workspace). */
   calm?: boolean
+  /** Draw no moving particles at all (rain, lightning, fireflies); the clouds stay. */
+  still?: boolean
 }
 
-export function WeatherLayer({ phase, weather, className = '', calm = false }: Props) {
-  const reduced = useReducedMotion() ?? false
+export function WeatherLayer({ phase, weather, className = '', calm = false, still = false }: Props) {
+  const reduced = (useReducedMotion() ?? false) || still
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const skyRef = useRef({ phase, weather, calm })
   const wake = useRef<() => void>(() => undefined)
@@ -188,22 +190,22 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
     const wet = Math.max(level.rain, level.storm)
     if (wet > 0.01) {
       const stormy = level.storm > level.rain
-      const want = Math.round(Math.min(280, Math.max(70, w / 5.5)) * (stormy ? 1.9 : 1) * (calm ? 0.65 : 1))
+      const want = Math.round(Math.min(220, Math.max(50, w / 8)) * (stormy ? 1.35 : 1) * (calm ? 0.45 : 0.8))
       while (drops.length < want) drops.push(spawnDrop(stormy))
       if (drops.length > want + 40) drops.length = want
 
-      const gust = stormy ? 0.42 + Math.sin(time * 0.7) * 0.16 : 0.16 + Math.sin(time * 0.4) * 0.03
+      const gust = stormy ? 0.26 + Math.sin(time * 0.7) * 0.07 : 0.12 + Math.sin(time * 0.4) * 0.02
       ctx.lineCap = 'round'
-      ctx.lineWidth = stormy ? 1.6 : 1.2
+      ctx.lineWidth = stormy ? 1.3 : 1
       const rgb = dark ? '196,228,224' : '36,82,72'
       for (const d of drops) {
         d.y += d.speed * dt
         d.x -= d.speed * dt * gust
         if (d.y >= d.groundY) {
-          if (ripples.length < 46 && Math.random() < 0.7) ripples.push({ x: d.x, y: d.groundY, r: 1, max: rand(10, 24) })
+          if (ripples.length < (calm ? 14 : 30) && Math.random() < 0.4) ripples.push({ x: d.x, y: d.groundY, r: 1, max: rand(10, 24) })
           Object.assign(d, spawnDrop(stormy), { y: -rand(10, 80) })
         }
-        ctx.strokeStyle = `rgba(${rgb},${d.a * wet * (dark ? 0.8 : 0.55)})`
+        ctx.strokeStyle = `rgba(${rgb},${d.a * wet * (dark ? 0.8 : 0.55) * (calm ? 0.42 : 0.7)})`
         ctx.beginPath()
         ctx.moveTo(d.x, d.y)
         ctx.lineTo(d.x + d.len * gust, d.y - d.len)
@@ -218,7 +220,7 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
           ripples.splice(i, 1)
           continue
         }
-        ctx.strokeStyle = `rgba(${rgb},${(1 - p) * 0.45 * wet})`
+        ctx.strokeStyle = `rgba(${rgb},${(1 - p) * 0.4 * wet * (calm ? 0.45 : 0.8)})`
         ctx.beginPath()
         ctx.ellipse(r.x, r.y, r.r, r.r * 0.32, 0, 0, Math.PI * 2)
         ctx.stroke()
@@ -227,9 +229,12 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
       if (level.storm > 0.3) {
         nextBolt -= dt
         if (nextBolt <= 0) {
-          nextBolt = rand(5, 11)
-          bolt = makeBolt()
-          boltLife = 0.28
+          // Lightning is rare, and inside the workspace it is only a faint, slow glow (no bolt, no white-out).
+          nextBolt = calm ? rand(20, 38) : rand(12, 22)
+          if (!calm) {
+            bolt = makeBolt()
+            boltLife = 0.28
+          }
           flash = 1
         }
       }
@@ -252,9 +257,9 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
       if (boltLife <= 0) bolt = null
     }
     if (flash > 0.01) {
-      ctx.fillStyle = `rgba(240,248,255,${flash * 0.3})`
+      ctx.fillStyle = `rgba(240,248,255,${flash * (calm ? 0.045 : 0.12)})`
       ctx.fillRect(0, 0, w, h)
-      flash *= Math.exp(-dt * 7)
+      flash *= Math.exp(-dt * (calm ? 2.2 : 5))
     }
 
     /* night: stars, fireflies, a shooting star */

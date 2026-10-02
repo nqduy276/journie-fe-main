@@ -24,6 +24,9 @@ type SkyState = {
   weatherMode: WeatherMode
   override: { weather: Weather; until: number } | null
   shift: SkyShift | null
+  /** Moving rain, lightning and fireflies. Off keeps the tint and the clouds but nothing falls. */
+  effects: boolean
+  setEffects: (effects: boolean) => void
   setPhaseMode: (mode: PhaseMode) => void
   /** Choose day, night or auto. A real change of sky plays the moon/sun rising; the same sky just applies. */
   requestPhase: (mode: PhaseMode) => void
@@ -49,6 +52,8 @@ export const useWeatherStore = create<SkyState>()(
       weatherMode: 'auto',
       override: null,
       shift: null,
+      effects: true,
+      setEffects: (effects) => set({ effects }),
       setPhaseMode: (phaseMode) => set({ phaseMode }),
       requestPhase: (mode) => {
         const from = resolvePhase(get().phaseMode)
@@ -64,7 +69,7 @@ export const useWeatherStore = create<SkyState>()(
     {
       name: 'journie-sky',
       version: 1,
-      partialize: (state) => ({ phaseMode: state.phaseMode, weatherMode: state.weatherMode }),
+      partialize: (state) => ({ phaseMode: state.phaseMode, weatherMode: state.weatherMode, effects: state.effects }),
     },
   ),
 )

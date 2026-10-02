@@ -4,7 +4,7 @@ import { DiAvatar } from '../components/mascot/DiAvatar'
 import type { MascotMood } from '../components/mascot/mascot-context'
 
 const NAV: NavIconName[] = ['home', 'plan', 'trips', 'discover', 'profile', 'analytics']
-const MOODS: MascotMood[] = ['idle', 'hiding', 'peeking', 'thinking', 'error', 'joy', 'sleepy', 'wave']
+const MOODS: MascotMood[] = ['idle', 'hiding', 'peeking', 'thinking', 'error', 'joy', 'sleepy', 'wave', 'hungry', 'hot']
 const WEATHER: WeatherKind[] = ['sunny', 'cloudy', 'rain', 'storm', 'night', 'night-cloudy', 'night-rain']
 const SKIES = [
   ['day', 'clear'],
@@ -23,13 +23,13 @@ export function IconSheet() {
         <ul className="flex flex-wrap gap-4">
           {MOODS.map((mood) => (
             <li key={mood} className="w-36 text-center text-xs">
-              <DiAvatar mood={mood} phase="day" weather="clear" className="aspect-[320/300] w-full" />
+              <DiAvatar mood={mood} phase="day" weather="clear" className="aspect-square w-full" />
               {mood}
             </li>
           ))}
           {SKIES.map(([phase, weather]) => (
             <li key={`${phase}-${weather}`} className="w-36 text-center text-xs">
-              <DiAvatar mood="idle" phase={phase} weather={weather} className="aspect-[320/300] w-full" />
+              <DiAvatar mood="idle" phase={phase} weather={weather} className="aspect-square w-full" />
               {phase} {weather}
             </li>
           ))}

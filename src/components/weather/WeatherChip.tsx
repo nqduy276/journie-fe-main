@@ -14,6 +14,8 @@ export function WeatherChip({ tone = 'light', align = 'left', direction = 'down'
   const phaseMode = useWeatherStore((state) => state.phaseMode)
   const weatherMode = useWeatherStore((state) => state.weatherMode)
   const requestPhase = useWeatherStore((state) => state.requestPhase)
+  const effects = useWeatherStore((state) => state.effects)
+  const setEffects = useWeatherStore((state) => state.setEffects)
   const setWeatherMode = useWeatherStore((state) => state.setWeatherMode)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -114,6 +116,15 @@ export function WeatherChip({ tone = 'light', align = 'left', direction = 'down'
                 )
               })}
             </div>
+            <button type="button" role="switch" aria-checked={effects} onClick={() => setEffects(!effects)} className="mt-3 flex w-full items-center justify-between gap-3 border border-forest/15 px-2.5 py-2 text-left text-[0.72rem] font-semibold text-ink/75 transition-colors hover:border-forest/40">
+              <span>
+                {tr('Hạt mưa, chớp, đom đóm chuyển động', 'Moving rain, lightning and fireflies')}
+                <span className="block text-[0.64rem] font-normal text-ink/50">{tr('Tắt nếu thấy rối mắt', 'Turn off if it distracts you')}</span>
+              </span>
+              <span className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${effects ? 'bg-terracotta' : 'bg-ink/25'}`}>
+                <span className={`absolute top-0.5 size-3 rounded-full bg-white transition-all ${effects ? 'left-[0.875rem]' : 'left-0.5'}`} />
+              </span>
+            </button>
             <p className="pt-2.5 text-[0.68rem] leading-snug text-ink/50">{tr('Tự động: ban đêm sau 18:30 và thời tiết theo dự báo của thành phố.', 'Auto: night after 18:30, weather from the city forecast.')}</p>
           </motion.div>
         )}

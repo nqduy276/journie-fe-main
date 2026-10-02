@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useSky, type Phase, type Weather } from '../../store/weatherStore'
+import { useSky, useWeatherStore, type Phase, type Weather } from '../../store/weatherStore'
 
 /** How much of the sun or the moon still shows through the weather. */
 const BODY_SHOW: Record<Weather, number> = { clear: 1, cloudy: 0.62, rain: 0.24, storm: 0.08 }
@@ -26,7 +26,7 @@ const CLOUDS: Record<Weather, { x: number; y: number; w: number; d: number; o: n
   ],
 }
 
-const DROPS: Record<Weather, number> = { clear: 0, cloudy: 0, rain: 30, storm: 48 }
+const DROPS: Record<Weather, number> = { clear: 0, cloudy: 0, rain: 12, storm: 18 }
 
 const TINT: Record<Phase, Record<Weather, string>> = {
   day: {
@@ -65,8 +65,9 @@ function Cloud({ w, o, dark }: { w: number; o: number; dark: boolean }) {
  */
 export function HeroScene() {
   const sky = useSky()
+  const effects = useWeatherStore((state) => state.effects)
   const clouds = CLOUDS[sky.weather]
-  const drops = DROPS[sky.weather]
+  const drops = effects ? DROPS[sky.weather] : 0
   const wet = drops > 0
   const dark = sky.weather === 'rain' || sky.weather === 'storm' || sky.night
 
@@ -109,9 +110,9 @@ export function HeroScene() {
               style={{
                 left: `${(i * 37 + 11) % 104}%`,
                 ['--len' as string]: `${14 + ((i * 13) % 20)}px`,
-                ['--d' as string]: `${(sky.weather === 'storm' ? 0.55 : 0.85) + ((i * 7) % 5) * 0.07}s`,
+                ['--d' as string]: `${(sky.weather === 'storm' ? 1 : 1.5) + ((i * 7) % 5) * 0.12}s`,
                 ['--delay' as string]: `${-((i * 0.37) % 1.4)}s`,
-                opacity: 0.32 + ((i * 11) % 5) * 0.1,
+                opacity: 0.22 + ((i * 11) % 5) * 0.05,
               }}
             />
           ))}
@@ -119,7 +120,7 @@ export function HeroScene() {
         </div>
       )}
 
-      {sky.weather === 'storm' && <div className="hero-flash" />}
+      {effects && sky.weather === 'storm' && <div className="hero-flash" />}
     </div>
   )
 }
