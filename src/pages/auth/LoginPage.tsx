@@ -24,7 +24,7 @@ export function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const lines = {
-    idle: tr('Chào bạn! Mình là Di, chú khỉ cưỡi thảm bay của Journie.', "Hi! I'm Di, Journie's carpet-riding monkey."),
+    idle: tr('Mình là Di, đồng hành với bạn trên mọi chuyến đi.', "I'm Di, with you on every journey."),
     watching: tr('Ghi email nhé. Mình chỉ nhìn thôi!', 'Pop your email in. I only watch!'),
     hiding: tr('Mình nhắm mắt rồi. Mật khẩu của bạn an toàn.', 'Eyes shut. Your password is safe.'),
     peeking: tr('Đèn sáng rồi, mình liếc một chút thôi nha.', 'The lamp is on. Just one little peek!'),

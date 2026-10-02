@@ -2,9 +2,8 @@ import haGiangImage from '../assets/images/ha-giang.jpg'
 import haLongImage from '../assets/images/ha-long.jpg'
 import hoChiMinhCityImage from '../assets/images/ho-chi-minh-city.jpg'
 import hoiAnImage from '../assets/images/hoi-an.jpg'
-import logoLockup from '../assets/images/journie-lockup.png'
-import logoLockupLight from '../assets/images/journie-lockup-light.png'
 import logoMark from '../assets/images/journie-mark.png'
+import logoMarkLight from '../assets/images/journie-mark-light.png'
 import ninhBinhImage from '../assets/images/ninh-binh.jpg'
 import phuQuocImage from '../assets/images/phu-quoc.jpg'
 
@@ -13,8 +12,7 @@ export const siteConfig = {
   heroImage: ninhBinhImage,
   sampleItineraryImage: hoChiMinhCityImage,
   logoMark,
-  logoLockup,
-  logoLockupLight,
+  logoMarkLight,
 } as const
 
 export const sampleItinerary = [

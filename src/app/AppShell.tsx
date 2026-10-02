@@ -21,6 +21,7 @@ import { useMascotPrefs } from '../store/mascotStore'
 import { useSky, useWeatherStore } from '../store/weatherStore'
 import { fmtTime } from '../domain/time'
 import { tripTitle } from '../domain/tripText'
+import { Logo } from '../components/Logo'
 
 type NavItem = { to: string; end?: boolean; icon: NavIconName; vi: string; en: string }
 
@@ -247,7 +248,7 @@ export function AppShell() {
 
       <aside className="sidebar fixed inset-y-0 left-0 z-40 hidden w-[17.5rem] flex-col px-5 py-6 lg:flex">
         <Link to={user.role === 'admin' ? '/app/analytics' : '/app'} className="group flex items-center gap-3" aria-label="Journie">
-          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="-ml-2 h-[5.5rem] w-auto transition-transform duration-500 group-hover:-rotate-3" />
+          <Logo tone="light" height="3.6rem" className="transition-transform duration-500 group-hover:-rotate-3" />
           <span className="sr-only">Journie</span>
         </Link>
 

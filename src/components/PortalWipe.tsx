@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { motion } from 'motion/react'
-import { siteConfig } from '../content/site'
 import { useMotionPrefs } from '../hooks/useMotionPrefs'
 import { usePortalStore } from '../store/portalStore'
+import { Logo } from './Logo'
 
 /**
  * The page-to-page transition: a wash of forest green grows from Di until it fills the
@@ -61,7 +61,7 @@ export function PortalWipe() {
           animate={{ scale: [0.4, 1.1, 1], rotate: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
         >
-          <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="h-44 w-auto sm:h-56" />
+          <Logo tone="light" height="clamp(6.5rem, 18vw, 9rem)" />
         </motion.div>
       </div>
     </motion.div>
