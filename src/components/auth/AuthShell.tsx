@@ -47,7 +47,7 @@ export function AuthShell({ children, lines }: Props) {
 
         <header className="relative z-20 mx-auto flex w-[min(100%-2rem,80rem)] items-center justify-between py-4 sm:py-6">
           <Link to="/" className="group flex items-center gap-2.5" aria-label={tr('Về trang chủ Journie', 'Back to Journie home')}>
-            <img src={siteConfig.logoLockupLight} alt="" className="h-16 w-auto transition-transform duration-500 group-hover:-rotate-3 sm:h-20" />
+            <img src={siteConfig.logoLockupLight} alt="" width="600" height="600" className="h-16 w-auto transition-transform duration-500 group-hover:-rotate-3 sm:h-20" />
             <span className="sr-only">Journie</span>
           </Link>
           <div className="flex items-center gap-3">

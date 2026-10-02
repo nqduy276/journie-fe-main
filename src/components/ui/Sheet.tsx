@@ -73,7 +73,7 @@ export function Sheet({ open, onClose, title, description, children, placement =
                 <X size={20} />
               </button>
             </header>
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
             {footer && <footer className="border-t border-forest/10 bg-cream/50 px-5 py-4 sm:px-6">{footer}</footer>}
           </motion.div>
         </motion.div>

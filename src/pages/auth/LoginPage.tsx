@@ -186,6 +186,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
             name="email"
             autoComplete="email"
             inputMode="email"
+            spellCheck={false}
             placeholder="ten@vi-du.com"
             icon={<Mail size={17} />}
             value={email}

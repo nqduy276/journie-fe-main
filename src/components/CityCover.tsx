@@ -10,7 +10,7 @@ export function CityCover({ city, className = '', children, overlay = 'from-nigh
   return (
     <div className={`relative isolate overflow-hidden ${className}`} style={{ background: tint }}>
       {src ? (
-        <img src={src} alt="" loading="lazy" className="absolute inset-0 -z-10 size-full object-cover" />
+        <img src={src} alt="" loading="lazy" decoding="async" className="absolute inset-0 -z-10 size-full object-cover" />
       ) : (
         <>
           <div className="girih-gold absolute inset-0 -z-10 opacity-90" />

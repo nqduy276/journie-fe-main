@@ -86,7 +86,7 @@ export function PlanPage() {
   })
 
   const generate = useMutation({
-    mutationFn: () => generateItinerary({ text, userId: user.id, profile, overrides: params }, intent!),
+    mutationFn: () => generateItinerary({ text, userId: user.id, lang: language, profile, overrides: params }, intent!),
     onError: () => {
       toast('danger', tr('Không dựng được lịch trình', 'Could not build the itinerary'))
       setPhase('review')
