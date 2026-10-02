@@ -1,18 +1,20 @@
-import { useRef, type PointerEvent } from 'react'
+import { useMemo, useRef, type PointerEvent } from 'react'
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'motion/react'
 import { ArrowDownRight, Check, SunMedium } from 'lucide-react'
 import { Magnetic } from '../components/motion/Magnetic'
 import { RevealHeading } from '../components/motion/RevealHeading'
 import { KarstScene } from '../components/scenes/KarstScene'
 import { WishLamp } from '../components/WishLamp'
-import { siteConfig } from '../content/site'
+import { formatCoords, heroPlace } from '../content/heroPlaces'
 import { useLanguage } from '../hooks/useLanguage'
 import { useMotionPrefs, useParallax } from '../hooks/useMotionPrefs'
 
 const spring = { stiffness: 80, damping: 20, mass: 0.6 }
 
 export function Hero() {
-  const { messages } = useLanguage()
+  const { messages, language } = useLanguage()
+  const place = useMemo(() => heroPlace(), [])
+  const i = language === 'vi' ? 0 : 1
   const { canPointerFx, reduced } = useMotionPrefs()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
@@ -125,10 +127,10 @@ export function Hero() {
               className="relative aspect-[4/5] w-full overflow-hidden rounded-b-2xl rounded-t-[18rem] bg-forest shadow-[0_44px_90px_-34px_rgba(23,63,53,0.6)]"
             >
               <motion.img
-                src={siteConfig.heroImage}
-                alt={messages.hero.imageAlt}
+                src={place.image}
+                alt={place.alt[i]}
                 className="h-full w-full object-cover will-change-transform"
-                style={{ y: photoY, scale: 1.14 }}
+                style={{ y: photoY, scale: 1.14, objectPosition: place.focus }}
                 width="1280"
                 height="854"
                 fetchPriority="high"
@@ -136,9 +138,9 @@ export function Hero() {
               <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent" />
               <div className="absolute bottom-7 left-7 text-paper">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-paper/70">
-                  20.2506° N, 105.9745° E
+                  {formatCoords(place)}
                 </p>
-                <p className="mt-2 font-display text-3xl">{messages.hero.imageCaption}</p>
+                <p className="mt-2 font-display text-3xl">{place.name[i]}</p>
               </div>
             </motion.div>
 
@@ -149,9 +151,9 @@ export function Hero() {
               <div className="scene-bob border border-paper/40 bg-forest/92 px-4 py-3 text-paper shadow-xl backdrop-blur">
                 <p className="flex items-center gap-2 text-xs font-medium">
                   <SunMedium aria-hidden="true" size={15} className="text-sun" />
-                  {messages.hero.weather}
+                  {messages.hero.weather.replace(/\d+°C/, `${place.temp}°C`)}
                 </p>
-                <p className="mt-1 text-[0.65rem] text-paper/60">{messages.hero.weatherNote}</p>
+                <p className="mt-1 text-[0.65rem] text-paper/60">{place.note[i]}</p>
               </div>
             </motion.div>
 

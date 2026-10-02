@@ -43,10 +43,7 @@ const vi = {
     primaryCta: 'Xem hành trình mẫu',
     secondaryCta: `${siteConfig.name} hoạt động thế nào?`,
     benefits: ['Cá nhân hóa theo gu', 'Cân đối thời gian', 'Linh hoạt thay đổi'],
-    imageAlt: 'Du khách chèo thuyền giữa núi đá vôi và sông nước Tràng An, Ninh Bình',
-    imageCaption: 'Tràng An, Ninh Bình',
     weather: 'Sáng mai · 26°C',
-    weatherNote: 'Đẹp trời để đi thuyền',
     wishLabel: 'Chạm vào cây đèn để ước một chuyến đi',
     wishCaption: 'Chạm để ước',
     wishes: [
@@ -216,10 +213,7 @@ const en: Messages = {
     primaryCta: 'View sample itinerary',
     secondaryCta: `How does ${siteConfig.name} work?`,
     benefits: ['Tailored to your style', 'Balanced timing', 'Flexible by design'],
-    imageAlt: 'Travelers rowing among limestone mountains and waterways in Trang An, Ninh Binh',
-    imageCaption: 'Trang An, Ninh Binh',
     weather: 'Tomorrow morning · 26°C',
-    weatherNote: 'Perfect weather for a boat ride',
     wishLabel: 'Rub the lamp to wish for a trip',
     wishCaption: 'Rub to wish',
     wishes: [
