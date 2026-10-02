@@ -57,7 +57,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
     <div className="panel flex flex-col items-center px-6 py-12 text-center">
-      <DiAvatar mood="thinking" trail={false} className="aspect-[300/340] w-24" />
+      <DiAvatar mood="thinking" trail={false} className="aspect-[320/300] w-24" />
       <h3 className="h-display mt-3 text-xl text-forest">{title}</h3>
       <p className="mt-1.5 max-w-sm text-sm text-ink/60">{body}</p>
       {action && <div className="mt-5">{action}</div>}

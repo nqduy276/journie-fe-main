@@ -8,8 +8,9 @@ const MOON_SHOW: Record<Weather, number> = { clear: 1, cloudy: 0.6, rain: 0.28, 
  * The sun by day and the moon by night, parked in the top corner of the workspace. When the time of day
  * changes one sinks and the other rises on the same slow arc (CSS transitions, transform only).
  */
-export function SkyBody({ phase, weather }: { phase: Phase; weather: Weather }) {
+export function SkyBody({ phase, weather, hidden = false }: { phase: Phase; weather: Weather; hidden?: boolean }) {
   const day = phase === 'day'
+  if (hidden) return null
   return (
     <div className="sky-body" aria-hidden="true">
       <div className="sky-sun" data-up={day} style={{ ['--show' as string]: SUN_SHOW[weather] }}>

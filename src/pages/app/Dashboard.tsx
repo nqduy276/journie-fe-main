@@ -5,6 +5,7 @@ import { ArrowRight, CalendarClock, Compass, MapPin, Navigation, Send, Sparkles 
 import { readProfile } from '../../api/profile'
 import { useProfile, useTrips } from '../../api/queries'
 import { WeatherIcon } from '../../components/icons'
+import { Tilt } from '../../components/motion/Tilt'
 import { DiAvatar } from '../../components/mascot/DiAvatar'
 import { CityCover } from '../../components/CityCover'
 import { CountUp } from '../../components/motion/CountUp'
@@ -15,6 +16,7 @@ import { addDays, fmtTime, formatDate, todayIso } from '../../domain/time'
 import type { City, Trip } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
+import { useSky } from '../../store/weatherStore'
 import { tripSpend, tripStopCount } from '../../domain/planner'
 import { formatVnd } from '../../domain/time'
 
@@ -32,6 +34,30 @@ function greeting(hour: number, tr: (vi: string, en: string) => string) {
 }
 
 const dayDiff = (iso: string) => Math.round((new Date(`${iso}T00:00:00`).getTime() - new Date(`${todayIso()}T00:00:00`).getTime()) / 86_400_000)
+
+/** The sun or the moon in the corner of the hero; they swap places when the time of day changes. */
+function HeroSky() {
+  const sky = useSky()
+  return (
+    <div className="pointer-events-none absolute right-[5.5%] top-5 hidden size-[5.2rem] lg:block" aria-hidden="true">
+      <AnimatePresence mode="wait" initial={false}>
+        {sky.night ? (
+          <motion.svg key="moon" viewBox="0 0 100 100" className="size-full overflow-visible" initial={{ y: 46, opacity: 0, rotate: -30 }} animate={{ y: 0, opacity: 1, rotate: 0 }} exit={{ y: 46, opacity: 0, rotate: 30 }} transition={{ type: 'spring', stiffness: 110, damping: 16 }}>
+            <circle cx="50" cy="50" r="46" fill="rgba(255,244,205,0.14)" />
+            <path d="M58 10A40 40 0 1 0 58 90A32 32 0 1 1 58 10Z" fill="#fff1c4" />
+            <circle cx="36" cy="44" r="4" fill="#d9c98f" opacity="0.6" />
+            <circle cx="44" cy="68" r="6" fill="#d9c98f" opacity="0.5" />
+          </motion.svg>
+        ) : (
+          <motion.div key="sun" className="relative size-full" initial={{ y: 46, opacity: 0, rotate: 30 }} animate={{ y: 0, opacity: 1, rotate: 0 }} exit={{ y: 46, opacity: 0, rotate: -30 }} transition={{ type: 'spring', stiffness: 110, damping: 16 }}>
+            <div className="sky-sun-rays" style={{ inset: '-25%' }} />
+            <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_36%_34%,#fff3c4,#f6c75a_55%,#eda63b)] shadow-[0_0_40px_10px_rgba(240,185,75,0.4)]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 function WeatherGlyph({ condition }: { condition: ReturnType<typeof weatherFor>['condition'] }) {
   return <WeatherIcon kind={condition} size={26} />
@@ -73,6 +99,7 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       <section className="panel-night grid gap-6 p-6 sm:p-9 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]" aria-labelledby="greeting">
+        <HeroSky />
         <div>
           <p className="text-sm font-medium text-gold">{formatDate(todayIso(), locale, { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           <h1 id="greeting" className="h-display mt-2 text-[2.3rem] text-paper sm:text-[3.1rem]">
@@ -124,7 +151,7 @@ export function Dashboard() {
 
         <div className="relative hidden items-end justify-center lg:flex">
           <div className="w-[min(100%,15rem)]">
-            <DiAvatar mood={live ? 'joy' : 'idle'} className="aspect-[300/340] w-full" />
+            <DiAvatar mood={live ? 'joy' : 'idle'} className="aspect-[320/300] w-full" />
             
           </div>
         </div>
@@ -197,6 +224,7 @@ export function Dashboard() {
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {recommended.map(({ city }, index) => (
             <motion.li key={city.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ delay: index * 0.08, duration: 0.55 }}>
+              <Tilt className="h-60" max={7}>
               <button
                 type="button"
                 onClick={() => navigate('/app/plan', { state: { wish: tr(`Hai ngày ở ${city.name}, hợp gu tôi.`, `Two days in ${city.nameEn}, to my taste.`) } })}
@@ -213,6 +241,7 @@ export function Dashboard() {
                   </span>
                 </CityCover>
               </button>
+              </Tilt>
             </motion.li>
           ))}
         </ul>

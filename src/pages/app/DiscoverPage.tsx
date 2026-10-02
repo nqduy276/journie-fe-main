@@ -1,4 +1,4 @@
-import { useDeferredValue, useId, useMemo, type ReactNode } from 'react'
+import { useDeferredValue, useId, useMemo, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Heart, List, Map as MapIcon, MapPinned, Search, X } from 'lucide-react'
 import { searchPois, tierOf, type PriceTier, type SearchHit } from '../../api/places'
@@ -8,9 +8,12 @@ import { useProfile, useSaveProfile } from '../../api/queries'
 import { CategoryIcon, SkyIcon, WeatherIcon } from '../../components/icons'
 import { RouteMap } from '../../components/map/RouteMap'
 import { PageHeader } from '../../components/PageHeader'
+import { CityArt, PlaceArt } from '../../components/place/art/PlaceArt'
 import { PoiSheet } from '../../components/place/PoiSheet'
 import { CategoryName, EmptyState } from '../../components/ui/primitives'
+import { HeartBurst } from '../../components/ui/HeartBurst'
 import { StarRating } from '../../components/ui/Stars'
+import { cheer } from '../../lib/cheer'
 import { categories, categoryIds } from '../../domain/categories'
 import { cityImage } from '../../domain/cityMedia'
 import { cities } from '../../domain/pois'
@@ -58,6 +61,7 @@ export function DiscoverPage() {
 
   const toggleSaved = (id: string) => {
     const saved = profile.saved.includes(id)
+    if (!saved) cheer()
     saveProfile.mutate({ ...profile, saved: saved ? profile.saved.filter((p) => p !== id) : [...profile.saved, id] })
   }
 
@@ -277,13 +281,7 @@ function CityStamp({ city, on, label, onClick }: { city: City; on: boolean; labe
         {src ? (
           <img src={src} alt="" loading="lazy" decoding="async" className={`size-full object-cover transition-all duration-500 ${on ? 'scale-110' : 'saturate-[0.65] group-hover:saturate-100'}`} />
         ) : (
-          <>
-            <svg viewBox="0 0 56 56" className="absolute inset-0 size-full" aria-hidden="true">
-              <path d="M0 40L12 26L20 34L32 18L44 34L56 24V56H0Z" fill="rgba(247,242,232,0.18)" />
-              <path d="M0 48L10 38L22 46L34 34L46 44L56 38V56H0Z" fill="rgba(79,184,164,0.32)" />
-            </svg>
-            <span className="h-display relative text-[1.25rem] text-paper">{city.name.replace(/^(Đà|Hà|Hội|Sài|Phú|Ninh) /, '').slice(0, 1)}</span>
-          </>
+          <CityArt city={city.id} className="size-full" />
         )}
         {on && (
           <motion.span initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: 0 }} transition={SPRING} className="absolute inset-0 grid place-items-center bg-terracotta/55 text-paper" aria-hidden="true">
@@ -364,6 +362,7 @@ function Postcard({ hit, index, saved, onToggle, onOpen }: { hit: SearchHit; ind
   const color = categories[poi.cat].color
   const city = cities.find((item) => item.id === poi.city)!
   const tier = tierOf(poi.cost)
+  const [burst, setBurst] = useState(0)
 
   return (
     <motion.li
@@ -374,14 +373,15 @@ function Postcard({ hit, index, saved, onToggle, onOpen }: { hit: SearchHit; ind
       style={{ ['--pc' as string]: color }}
     >
       <button type="button" onClick={onOpen} className="flex h-full w-full flex-col text-left">
-        <span className="postcard-art relative block h-32 overflow-hidden">
+        <span className="postcard-art relative block h-36 overflow-hidden">
+          <PlaceArt poi={poi} className="postcard-scene absolute inset-0 size-full" />
           <svg viewBox="0 0 320 128" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-            <path className="postcard-route" d="M-6 104C54 40 96 112 150 70S244 18 330 62" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="1 9" />
+            <path className="postcard-route" d="M-6 112C54 52 96 118 150 78S244 30 330 70" fill="none" stroke="#fffaf0" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="1 9" />
           </svg>
-          <span className="postcard-icon absolute bottom-2 left-4">
-            <CategoryIcon cat={poi.cat} size={86} />
+          <span className="postcard-icon absolute bottom-2 left-3 grid size-14 place-items-center rounded-full border-2 border-[#173f35] bg-[#fbf5e6] text-[#173f35] shadow-[3px_3px_0_rgba(23,63,53,0.25)]">
+            <CategoryIcon cat={poi.cat} size={42} />
           </span>
-          <span className="absolute right-3 top-3 text-forest/70">
+          <span className="absolute right-2 top-2 text-[#173f35]/85">
             <Postmark city={vi ? city.name : city.nameEn} cat={poi.cat} />
           </span>
         </span>
@@ -410,7 +410,10 @@ function Postcard({ hit, index, saved, onToggle, onOpen }: { hit: SearchHit; ind
 
       <button
         type="button"
-        onClick={onToggle}
+        onClick={() => {
+          if (!saved) setBurst((count) => count + 1)
+          onToggle()
+        }}
         aria-pressed={saved}
         aria-label={saved ? tr('Bỏ yêu thích', 'Remove favourite') : tr('Yêu thích', 'Favourite')}
         className={`absolute left-2 top-2 grid size-10 place-items-center rounded-full bg-paper/85 backdrop-blur-sm transition-colors ${saved ? 'text-terracotta' : 'text-ink/40 hover:text-terracotta'}`}
@@ -418,6 +421,7 @@ function Postcard({ hit, index, saved, onToggle, onOpen }: { hit: SearchHit; ind
         <motion.span animate={saved ? { scale: [1, 1.5, 1], rotate: [0, -14, 0] } : { scale: 1 }} transition={{ duration: 0.4 }}>
           <Heart size={18} fill={saved ? 'currentColor' : 'none'} />
         </motion.span>
+        {burst > 0 && <HeartBurst key={burst} />}
       </button>
     </motion.li>
   )

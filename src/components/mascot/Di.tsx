@@ -203,6 +203,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
   const poseL = useSpring(0, { stiffness: 160, damping: 15, mass: 0.9 })
   const poseR = useSpring(0, { stiffness: 160, damping: 15, mass: 0.9 })
   const target = useRef<{ x: number; y: number } | null>(null)
+  const lastPointer = useRef(0)
 
   const showUmbrella = (wx === 'rain' || wx === 'storm') && ['idle', 'watching', 'thinking', 'error', 'sleepy'].includes(mood)
   const shades = ph === 'day' && wx === 'clear' && ['idle', 'watching', 'wave'].includes(mood)
@@ -239,6 +240,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
   useEffect(() => {
     if (reduced) return
     const onMove = (event: PointerEvent) => {
+      lastPointer.current = performance.now()
       if (!target.current) aim(event.clientX, event.clientY)
     }
     window.addEventListener('pointermove', onMove, { passive: true })
@@ -246,6 +248,18 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
     // aim only reads refs and stable motion values
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reduced])
+
+  // When nobody is moving the pointer, Di glances around on its own.
+  useEffect(() => {
+    if (reduced) return
+    const timer = window.setInterval(() => {
+      if (target.current || performance.now() - lastPointer.current < 5000) return
+      const still = Math.random() < 0.25
+      lookX.set(still ? 0 : Math.random() * 1.6 - 0.8)
+      lookY.set(still ? 0 : Math.random() * 0.9 - 0.4)
+    }, 2200)
+    return () => window.clearInterval(timer)
+  }, [reduced, lookX, lookY])
 
   const happy = mood === 'joy'
   const sleepy = mood === 'sleepy'

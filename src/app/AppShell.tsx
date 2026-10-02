@@ -5,7 +5,7 @@ import { Bell, LogOut } from 'lucide-react'
 import { useTrips } from '../api/queries'
 import { NavIcon, type NavIconName } from '../components/icons'
 import { LangSwitch } from '../components/LangSwitch'
-import { MagicCursor } from '../components/MagicCursor'
+import { MagicCursor, SPARKLE_EVENT } from '../components/MagicCursor'
 import { DiCompanion } from '../components/mascot/DiCompanion'
 import { Toasts } from '../components/ui/Toasts'
 import { SkyBody } from '../components/weather/SkyBody'
@@ -213,6 +213,16 @@ export function AppShell() {
     window.scrollTo({ top: 0 })
   }, [location.pathname])
 
+  // Primary buttons throw a little lamp-dust where they were pressed.
+  useEffect(() => {
+    const onDown = (event: PointerEvent) => {
+      const target = event.target as Element | null
+      if (target?.closest('.btn-gold:not(:disabled)')) window.dispatchEvent(new CustomEvent(SPARKLE_EVENT, { detail: { x: event.clientX, y: event.clientY, count: 14 } }))
+    }
+    window.addEventListener('pointerdown', onDown, { passive: true })
+    return () => window.removeEventListener('pointerdown', onDown)
+  }, [])
+
   // The workspace theme is keyed on the root element so portals (sheets, toasts) follow it too.
   useLayoutEffect(() => {
     const root = document.documentElement
@@ -232,7 +242,7 @@ export function AppShell() {
   return (
     <div className="app-bg app-root min-h-dvh lg:pl-[17.5rem]" data-phase={sky.phase} data-weather={sky.weather}>
       <MagicCursor />
-      <SkyBody phase={sky.phase} weather={sky.weather} />
+      <SkyBody phase={sky.phase} weather={sky.weather} hidden={location.pathname === '/app'} />
       <WeatherLayer phase={sky.phase} weather={sky.weather} calm />
       <a href="#app-main" className="skip-link">
         {tr('Bỏ qua điều hướng', 'Skip navigation')}
@@ -283,6 +293,8 @@ export function AppShell() {
           </button>
         </div>
       </header>
+
+      <motion.div key={location.pathname.split('/').slice(0, 4).join('/')} className="route-ribbon" initial={{ scaleX: 0, opacity: 1 }} animate={{ scaleX: 1, opacity: [1, 1, 0] }} transition={{ duration: 0.9, times: [0, 0.6, 1], ease: 'easeOut' }} aria-hidden="true" />
 
       <main id="app-main" className="relative z-10 mx-auto w-full max-w-[90rem] px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-14 lg:pt-9">
         <motion.div key={location.pathname.split('/').slice(0, 4).join('/')} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>

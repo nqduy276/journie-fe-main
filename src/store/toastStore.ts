@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { cheer } from '../lib/cheer'
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'danger'
 
@@ -27,5 +28,7 @@ export const useToastStore = create<ToastState>((set, get) => ({
   dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((toast) => toast.id !== id) })),
 }))
 
-export const toast = (tone: ToastTone, title: string, body?: string) =>
+export const toast = (tone: ToastTone, title: string, body?: string) => {
+  if (tone === 'success') cheer()
   useToastStore.getState().push({ tone, title, body })
+}

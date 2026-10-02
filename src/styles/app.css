@@ -1262,6 +1262,8 @@ input[type='range'].range:active::-webkit-slider-thumb {
   .di-twinkle,
   .di-umbrella,
   .torch-glow,
+  .header-route,
+  .header-pin,
   .di-zzz,
   .di-drop,
   .sky-cloud,
@@ -1395,7 +1397,7 @@ summary {
 .postcard::after {
   content: '';
   position: absolute;
-  top: 8rem;
+  top: 9rem;
   z-index: 2;
   width: 14px;
   height: 14px;
@@ -1425,14 +1427,29 @@ summary {
 }
 
 .postcard-icon {
-  display: block;
   transform-origin: 50% 90%;
   transition: transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  filter: drop-shadow(0 6px 0 color-mix(in srgb, var(--pc) 18%, transparent));
 }
 
 .postcard:hover .postcard-icon {
-  transform: translateY(-5px) rotate(-7deg) scale(1.08);
+  transform: translateY(-4px) rotate(-8deg) scale(1.08);
+}
+
+.postcard-scene {
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.postcard:hover .postcard-scene {
+  transform: scale(1.06);
+}
+
+.art-steam {
+  animation: art-steam 2.4s ease-in-out infinite;
+}
+
+@keyframes art-steam {
+  0%, 100% { transform: translateY(0); opacity: 0.9; }
+  50% { transform: translateY(-3px); opacity: 0.45; }
 }
 
 .postcard-route {
@@ -1673,4 +1690,45 @@ html[data-app-phase='night'] .postcard-art {
     radial-gradient(1.2px 1.2px at 12px 12px, color-mix(in srgb, var(--pc) 40%, transparent) 99%, transparent 100%) 0 0 / 14px 14px,
     color-mix(in srgb, var(--pc) 16%, #0f2b25);
   color: color-mix(in srgb, var(--pc) 55%, #e6eee7);
+}
+
+.di-dust {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 39;
+  width: 11px;
+  height: 11px;
+  pointer-events: none;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 3px rgba(240, 185, 75, 0.8));
+}
+
+/* a rug-pattern ribbon that unrolls across the top whenever the page changes */
+.route-ribbon {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 70;
+  height: 5px;
+  transform-origin: left center;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, #d96745 0 14px, #f0b94b 14px 20px, #1f5a4b 20px 36px, #f0b94b 36px 42px);
+  box-shadow: 0 2px 10px rgba(240, 185, 75, 0.45);
+}
+
+.header-route {
+  animation: route-flow 1.6s linear infinite;
+}
+
+.header-pin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pin-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes pin-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.35); }
 }
