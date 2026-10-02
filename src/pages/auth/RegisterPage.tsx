@@ -46,7 +46,7 @@ export function RegisterPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const lines = {
-    idle: tr('Bạn mới à? Cho mình biết tên để còn gọi nhé!', 'A new traveler! Tell me your name so I can greet you.'),
+    idle: tr('Mình là Di, đồng hành với bạn trên mọi chuyến đi. Cho mình biết tên nhé!', "I'm Di, with you on every journey. Tell me your name!"),
     watching: tr('Hay quá, mình nhớ rồi.', 'Lovely, I will remember that.'),
     hiding: tr('Chọn mật khẩu mạnh nhé, mình không nhìn đâu.', "Pick a strong one. I'm not looking."),
     peeking: tr('Đèn sáng rồi, mình liếc một chút thôi!', 'The lamp is on. Just one peek!'),
@@ -197,7 +197,7 @@ function RegisterForm({ onFormError }: { onFormError: (message: string | null) =
           disabled={busy}
           trailing={<LampToggle on={lamp} onToggle={(center) => { setLamp(!lamp); if (!lamp) light.aimAt(center.fieldX, center.fieldY) }} labelOn={tr('Tắt đèn pin', 'Turn the torch off')} labelOff={tr('Bật đèn pin: rọi để đọc mật khẩu', 'Turn the torch on: shine it to read the password')} />}
         />
-        <div className="-mt-2 mb-3 flex items-center gap-3" aria-live="polite">
+        <div className="mb-4 mt-1 flex items-center gap-3" aria-live="polite">
           <div className="flex gap-1" aria-hidden="true">
             {[0, 1, 2, 3, 4].map((index) => (
               <motion.span key={index} animate={{ scale: strength > index ? [1, 1.35, 1] : 1, rotate: strength > index ? 45 : 0 }} transition={{ duration: 0.4 }} className={strength > index ? 'text-sun drop-shadow-[0_0_6px_rgba(240,185,75,0.9)]' : 'text-[color:var(--a-ink)] opacity-20'}>

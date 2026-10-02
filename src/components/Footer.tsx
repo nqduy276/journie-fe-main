@@ -3,6 +3,7 @@ import { imageCredits, siteConfig } from '../content/site'
 import { useLanguage } from '../hooks/useLanguage'
 import { SPARKLE_EVENT, type SparkleDetail } from './MagicCursor'
 import { FooterSky } from './scenes/FooterSky'
+import { Logo } from './Logo'
 
 function sparkleAtCenter(event: PointerEvent<HTMLElement>) {
   if (event.pointerType !== 'mouse') return
@@ -23,14 +24,7 @@ export function Footer() {
           <div className="max-w-md">
             <div className="relative inline-block" data-cursor onPointerEnter={sparkleAtCenter}>
               <span aria-hidden="true" className="lamp-glow pointer-events-none absolute -inset-8 rounded-full" />
-              <img
-                src={siteConfig.logoLockupLight}
-                alt={siteConfig.name}
-                className="float-slow relative h-40 w-auto transition-transform duration-700 hover:scale-105 sm:h-44"
-                width="601"
-                height="600"
-                loading="lazy"
-              />
+              <Logo tone="light" height="clamp(6rem, 14vw, 7rem)" className="float-slow relative transition-transform duration-700 hover:scale-105" />
             </div>
             <p className="mt-6 text-sm leading-6 text-paper/65">{messages.footer.description}</p>
             <p className="mt-2 text-xs leading-5 text-paper/45">{messages.footer.brandStory}</p>

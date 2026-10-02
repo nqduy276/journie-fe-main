@@ -16,6 +16,7 @@ import { WeatherLayer } from '../weather/WeatherLayer'
 import { LightContext, type LightControl } from './light-context'
 import { ChestSpot, CliffNoteSpot, ConstellationSpot, FirefliesSpot, FishSpot, FlockSpot, KiteSpot, LanternSpot, LotusSpot } from './LightSpots'
 import { useLit } from './use-lit'
+import { Logo } from '../Logo'
 
 const KEYS = (['day', 'night'] as const).flatMap((phase) => (['clear', 'cloudy', 'rain', 'storm'] as const).map((weather) => `${phase}-${weather}` as const))
 
@@ -230,7 +231,7 @@ export function AuthShell({ children, lines }: Props) {
 
           <header className="relative z-20 mx-auto flex w-[min(100%-2rem,72rem)] items-center justify-between py-4 sm:py-6">
             <Link to="/" className="group flex items-center gap-2.5" aria-label={tr('Về trang chủ Journie', 'Back to Journie home')}>
-              <img src={night ? siteConfig.logoLockupLight : siteConfig.logoLockup} alt="" width="600" height="600" className="h-14 w-auto transition-transform duration-500 group-hover:-rotate-3 sm:h-[4.5rem]" />
+              <Logo tone={night ? 'light' : 'dark'} height="clamp(2.6rem, 6vw, 3.4rem)" className="transition-transform duration-500 group-hover:-rotate-3" />
               <span className="sr-only">Journie</span>
             </Link>
             <div className="flex items-center gap-2.5 sm:gap-4">

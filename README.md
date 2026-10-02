@@ -130,6 +130,9 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   `domain/solverStatus.ts`), place tags are translated (`domain/tags.ts`), the sample trips are shown in the page
   language (`domain/tripText.ts`), and the map's own buttons and the analytics log are localised. Place and street
   names stay as the proper names they are.
+- **Logo** (`components/Logo.tsx`): the lamp mark is the picture (`journie-mark.png` for light backgrounds,
+  `journie-mark-light.png` for dark ones) and the name beneath it is live text in *Journie Display*, so the logo and
+  the headings share one typeface everywhere (sign-in, sidebar, footer, portal transition).
 - **Typeface**: headings use *Journie Display*, drawn for this project. Each letter is a centre-line swept with a
   tilted elliptical nib (so strokes get thick and thin like a broad pen), the dot of the i and j is a small ring
   (a map pin), and every Vietnamese letter is a base glyph plus a diacritic placed by rule. The skeletons and the
@@ -172,7 +175,7 @@ Notes for working on it:
 - Scene sizes that must stay visible next to content are set in `rem`, not as a percentage of the section height.
 - Landing details: `MagicCursor` (glow ring and a dust trail, mouse only; other components can scatter dust with the `journie:sparkle` window event), `WishLamp` in the hero (rub the lamp for a trip wish), a shooting star in the Saigon sky and a night-sky footer.
 - Smoothness: Lenis is driven by motion's frame loop, scroll layers that move are promoted with `will-change`, only the active Explore photo is mounted (Ken Burns runs in CSS), and most animation is transform/opacity so it stays on the compositor. Avoid adding `backdrop-filter` or animated SVG attributes on large areas.
-- The footer uses `journie-lockup-light.png`, a recoloured copy of the lockup (forest green to paper) so the logo reads on the dark footer. Regenerate it if the logo changes.
+- The dark-background logo uses `journie-mark-light.png`, the lamp cropped from a recoloured copy of the lockup (forest green to paper). The wordmark is text, so only the lamp needs regenerating if the logo changes.
 - To add a destination, extend `destinations` in `src/content/site.ts` and add its copy to both languages in `src/i18n/messages.ts`.
 
 ## Images and Licenses
