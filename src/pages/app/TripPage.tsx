@@ -26,6 +26,7 @@ import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
+import { tripRequest, tripTitle } from '../../domain/tripText'
 
 const ADJUST_IDEAS: [string, string][] = [
   ['Bớt đi bộ, ưu tiên xe máy', 'Less walking, prefer a motorbike'],
@@ -138,7 +139,7 @@ export function TripPage() {
 
   const renameBlur = (value: string) => {
     const name = value.trim()
-    if (name && name !== trip.title) commit({ ...trip, title: name }, 'rename')
+    if (name && name !== tripTitle(trip, language)) commit({ ...trip, title: name }, 'rename')
   }
 
   const city = cityById[trip.city]
@@ -153,9 +154,9 @@ export function TripPage() {
             {trip.days.length > 1 && ` – ${formatDate(endDate, locale, { day: 'numeric', month: 'short' })}`}
           </>
         }
-        title={trip.title}
-        titleNode={<EditableTitle value={trip.title} onSave={renameBlur} label={tr('Đổi tên lịch trình', 'Rename itinerary')} />}
-        subtitle={trip.request}
+        title={tripTitle(trip, language)}
+        titleNode={<EditableTitle value={tripTitle(trip, language)} onSave={renameBlur} label={tr('Đổi tên lịch trình', 'Rename itinerary')} />}
+        subtitle={tripRequest(trip, language)}
         actions={
           <>
             <SolverBadge status={trip.solver.status} />
@@ -272,7 +273,7 @@ export function TripPage() {
               ))}
             </div>
             <p className="tabular mt-3 text-[0.7rem] text-ink/40">
-              {trip.solver.model} · {trip.solver.nodes.toLocaleString(locale)} {tr('trạng thái', 'states')} · {trip.solver.ms} ms · v{trip.version}
+              {trip.solver.model.replace('(day-by-day)', tr('(từng ngày)', '(day by day)'))} · {trip.solver.nodes.toLocaleString(locale)} {tr('trạng thái', 'states')} · {trip.solver.ms} ms · v{trip.version}
             </p>
           </section>
         </div>
@@ -335,7 +336,7 @@ export function TripPage() {
           </div>
         }
       >
-        <p className="text-sm text-ink/70">{trip.title}</p>
+        <p className="text-sm text-ink/70">{tripTitle(trip, language)}</p>
       </Sheet>
 
       <PoiSheet />

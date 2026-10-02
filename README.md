@@ -92,17 +92,20 @@ yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midni
 hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
 card. Charts use landing-palette hues that were checked with the dataviz validator.
 
-- **Di** (`components/mascot`) is a monkey on a flying carpet, drawn as a soft toy rather than a flat cartoon: no
-  outlines, a muted brown-and-cream palette with one gold accent, gradient shading, a contact shadow and a rim of
+- **Di** (`components/mascot`) is a small chibi monkey on a flying carpet, proportioned like a desk pet (a big round
+  head on a bean-sized body, stubby limbs, a short carpet) and drawn as a soft toy rather than a flat cartoon: no
+  outlines, a muted caramel-and-cream palette with one gold accent, gradient shading, a contact shadow and a rim of
   light so it has depth. The carpet is a ribbon redrawn every frame so it ripples; the face blinks, the head and
-  eyes turn toward the pointer, the arms cover the eyes for passwords or wave hello, moods are idle, watching,
+  eyes turn toward the pointer, the mitts cover the eyes for passwords or wave hello, moods are idle, watching,
   hiding, peeking, thinking, error, joy, sleepy and wave, and it dresses for the sky (fez or nightcap, sunglasses,
-  umbrella in rain and storm in every mood except the ones that cover the eyes, so the big Di on the dashboard also
-  holds its umbrella). Inside the app `DiCompanion` stays in the bottom corner: it never chases the cursor. It looks
-  toward the pointer and, when you rest on a button or link for a moment, raises the nearer arm and points at it
-  (switch "Di chỉ theo con trỏ" off in the sidebar to stop that). It dozes off after a while, cheers when
-  something is saved, and gives tips for the weather, the hour (breakfast, lunch, dinner, late) and the page, some
-  with a button that opens Discover pre-filtered (indoor places when it rains, food at mealtimes).
+  umbrella in rain and storm in every mood except the ones that cover the eyes). Inside the app `DiCompanion` sits
+  in the bottom corner and never chases the cursor: it looks toward the pointer and, when you rest on a button or
+  link for a moment, raises the nearer arm and points at it (the sidebar switch "Di chỉ vào nơi bạn trỏ" turns the
+  pointing off). It dozes off after a while, cheers when something is saved, and gives tips for the weather, the
+  hour (breakfast, lunch, dinner, late) and the page, some with a button that opens Discover pre-filtered (indoor
+  places when it rains, food at mealtimes). The corner Di publishes its mood and what it points at to
+  `store/diLiveStore.ts`; the big Di on the dashboard (`DiMirror`) reads that, so the two always feel and do the
+  same thing at the same time.
 - **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
   cloudy, rain, storm) are two independent settings, so a rainy night is possible. Both follow the clock and the
   deterministic forecast on `auto`, or can be pinned from the sky chip. Changing the time of day plays `SkySwitch`:
@@ -120,6 +123,11 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   file in and it is picked up, list it in `places/CREDITS.md`); otherwise the photograph of its city, framed
   differently for every place; otherwise the flat illustration (`components/place/art`). Today photographs exist for
   six cities, so Hà Nội and Đà Lạt are the only places still drawn until photos for them are added.
+- **One language at a time**: every visible string follows the language switch. Data keys never reach the screen:
+  the solver verdicts are `Tối ưu / Khả thi / Không khả thi` (`Optimal / Feasible / Infeasible`,
+  `domain/solverStatus.ts`), place tags are translated (`domain/tags.ts`), the sample trips are shown in the page
+  language (`domain/tripText.ts`), and the map's own buttons and the analytics log are localised. Place and street
+  names stay as the proper names they are.
 - **Typeface**: headings use *Journie Display*, drawn for this project. Each letter is a centre-line swept with a
   tilted elliptical nib (so strokes get thick and thin like a broad pen), the dot of the i and j is a small ring
   (a map pin), and every Vietnamese letter is a base glyph plus a diacritic placed by rule. The skeletons and the

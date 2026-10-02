@@ -6,7 +6,7 @@ import { readProfile } from '../../api/profile'
 import { useProfile, useTrips } from '../../api/queries'
 import { WeatherIcon } from '../../components/icons'
 import { Tilt } from '../../components/motion/Tilt'
-import { DiAvatar } from '../../components/mascot/DiAvatar'
+import { DiMirror } from '../../components/mascot/DiMirror'
 import { CityCover } from '../../components/CityCover'
 import { CountUp } from '../../components/motion/CountUp'
 import { EmptyState, Skeleton, SolverBadge } from '../../components/ui/primitives'
@@ -19,6 +19,7 @@ import { useAuthStore } from '../../store/authStore'
 import { HeroScene } from '../../components/weather/HeroScene'
 import { tripSpend, tripStopCount } from '../../domain/planner'
 import { formatVnd } from '../../domain/time'
+import { tripTitle } from '../../domain/tripText'
 
 const PLACEHOLDERS: [string, string][] = [
   ['Ba ngày Hội An, đi chậm, ăn món địa phương…', 'Three slow days in Hoi An, local food…'],
@@ -83,7 +84,7 @@ export function Dashboard() {
           </h1>
           <p className="mt-3 max-w-lg text-[0.98rem] leading-relaxed text-paper/70">
             {live
-              ? tr(`Chuyến “${live.title}” đang diễn ra. Di đang theo dõi giao thông và thời tiết giúp bạn.`, `“${live.title}” is under way. Di is watching traffic and weather for you.`)
+              ? tr(`Chuyến “${tripTitle(live, language)}” đang diễn ra. Di đang theo dõi giao thông và thời tiết giúp bạn.`, `“${tripTitle(live, language)}” is under way. Di is watching traffic and weather for you.`)
               : upcoming.length
                 ? tr(`Bạn có ${upcoming.length} chuyến sắp tới. Muốn thêm một chuyến nữa?`, `You have ${upcoming.length} trip(s) coming up. Another trip?`)
                 : tr('Bạn muốn đi đâu tiếp theo? Hãy kể, Di sẽ dựng lịch trình.', 'Where to next? Tell Di and the itinerary appears.')}
@@ -126,8 +127,8 @@ export function Dashboard() {
         </div>
 
         <div className="relative hidden items-end justify-center lg:flex">
-          <div className="w-[min(100%,15rem)]">
-            <DiAvatar mood={live ? 'joy' : 'idle'} className="aspect-[320/300] w-full" />
+          <div className="w-[min(100%,12rem)]">
+            <DiMirror className="aspect-[320/300] w-full" />
           </div>
         </div>
       </section>
@@ -231,7 +232,7 @@ function profileFit(city: City, interests: Record<string, number | undefined>) {
 }
 
 function LiveCard({ trip }: { trip: Trip }) {
-  const { tr } = useTr()
+  const { tr, language } = useTr()
   const city = cityById[trip.city]
   const stops = trip.days[0].stops
   const next = stops[Math.min(2, stops.length - 1)]
@@ -243,9 +244,9 @@ function LiveCard({ trip }: { trip: Trip }) {
           {tr('Đang diễn ra', 'Live now')}
         </span>
         <div>
-          <h2 className="h-display text-[2rem]">{trip.title}</h2>
+          <h2 className="h-display text-[2rem]">{tripTitle(trip, language)}</h2>
           <p className="mt-1 flex items-center gap-2 text-sm text-paper/75">
-            <MapPin size={15} aria-hidden="true" /> {city.name} · {stops.length} {tr('điểm', 'stops')} · {fmtTime(trip.dayStart)}–{fmtTime(trip.dayEnd)}
+            <MapPin size={15} aria-hidden="true" /> {language === 'vi' ? city.name : city.nameEn} · {stops.length} {tr('điểm', 'stops')} · {fmtTime(trip.dayStart)}–{fmtTime(trip.dayEnd)}
           </p>
           {next && <p className="mt-3 text-sm text-paper/80">{tr('Điểm kế tiếp', 'Up next')}: <strong className="text-gold">{poiById[next.poiId].name}</strong></p>}
           <Link to={`/app/trips/${trip.id}/live`} className="btn-gold mt-5">
@@ -259,7 +260,7 @@ function LiveCard({ trip }: { trip: Trip }) {
 }
 
 function UpcomingCard({ trip }: { trip: Trip }) {
-  const { tr, locale } = useTr()
+  const { tr, locale, language } = useTr()
   const city = cityById[trip.city]
   const diff = dayDiff(trip.startDate)
   const weather = weatherFor(trip.city, trip.startDate)
@@ -271,9 +272,9 @@ function UpcomingCard({ trip }: { trip: Trip }) {
           {diff <= 0 ? tr('Hôm nay', 'Today') : tr(`Còn ${diff} ngày`, `In ${diff} day(s)`)}
         </span>
         <div>
-          <h2 className="h-display text-[2rem]">{trip.title}</h2>
+          <h2 className="h-display text-[2rem]">{tripTitle(trip, language)}</h2>
           <p className="mt-1 text-sm text-paper/75">
-            {city.name} · {formatDate(trip.startDate, locale, { day: 'numeric', month: 'short' })} – {formatDate(addDays(trip.startDate, trip.days.length - 1), locale, { day: 'numeric', month: 'short' })}
+            {language === 'vi' ? city.name : city.nameEn} · {formatDate(trip.startDate, locale, { day: 'numeric', month: 'short' })} – {formatDate(addDays(trip.startDate, trip.days.length - 1), locale, { day: 'numeric', month: 'short' })}
           </p>
           <p className="mt-2 flex items-center gap-2 text-sm text-paper/80">
             <WeatherGlyph condition={weather.condition} /> {weather.tempC}°C · {isRainy(weather) ? tr('Có thể mưa', 'Rain possible') : tr('Thời tiết tốt', 'Fair weather')}
@@ -289,12 +290,12 @@ function UpcomingCard({ trip }: { trip: Trip }) {
 }
 
 function MiniTrip({ trip }: { trip: Trip }) {
-  const { tr, locale } = useTr()
+  const { tr, locale, language } = useTr()
   return (
     <Link to={`/app/trips/${trip.id}`} className="panel group flex items-center gap-4 p-3.5 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-gold">
       <CityCover city={trip.city} className="size-16 shrink-0 rounded-xl" overlay="from-night/30 to-transparent" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[0.95rem] font-semibold text-ink">{trip.title}</p>
+        <p className="truncate text-[0.95rem] font-semibold text-ink">{tripTitle(trip, language)}</p>
         <p className="mt-0.5 text-xs text-ink/55">
           {formatDate(trip.startDate, locale, { day: 'numeric', month: 'short' })} · {trip.days.length} {tr('ngày', 'day(s)')} · {formatVnd(tripSpend(trip), true)}
         </p>

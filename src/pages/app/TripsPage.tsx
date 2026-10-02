@@ -11,6 +11,7 @@ import { tripSpend, tripStopCount } from '../../domain/planner'
 import { addDays, formatDate, formatVnd } from '../../domain/time'
 import type { Trip, TripStatus } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
+import { tripTitle } from '../../domain/tripText'
 
 type Filter = 'all' | TripStatus
 
@@ -96,7 +97,7 @@ function TripCard({ trip }: { trip: Trip }) {
 
   return (
     <article className="panel group overflow-hidden transition-[transform,box-shadow] duration-500 hover:-translate-y-1 hover:shadow-[0_28px_44px_-26px_rgba(19,26,77,0.7)]">
-      <Link to={`/app/trips/${trip.id}`} className="block" aria-label={trip.title}>
+      <Link to={`/app/trips/${trip.id}`} className="block" aria-label={tripTitle(trip, language)}>
         <CityCover city={trip.city} className="h-44" overlay="from-night/95 via-night/45 to-night/5">
           <span className={`absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.7rem] font-bold ${status.cls}`}>
             {trip.status === 'live' && <span className="pulse-dot size-1.5 rounded-full bg-night" aria-hidden="true" />}
@@ -104,7 +105,7 @@ function TripCard({ trip }: { trip: Trip }) {
           </span>
           <ArrowUpRight size={20} className="absolute right-3.5 top-3.5 text-paper/80 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
           <span className="absolute inset-x-4 bottom-3 text-paper">
-            <span className="h-display block text-[1.35rem] leading-tight">{trip.title}</span>
+            <span className="h-display block text-[1.35rem] leading-tight">{tripTitle(trip, language)}</span>
             <span className="text-xs text-paper/75">{language === 'vi' ? city.name : city.nameEn}</span>
           </span>
         </CityCover>

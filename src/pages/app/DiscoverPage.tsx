@@ -335,6 +335,7 @@ function SortTabs<T extends string>({ value, onChange, options }: { value: T; on
 /** A circular postmark: city name running round the rim, category sticker in the middle. */
 function Postmark({ city, cat }: { city: string; cat: CategoryId }) {
   const id = useId()
+  const { tr } = useTr()
   return (
     <svg viewBox="0 0 80 80" className="postmark" aria-hidden="true">
       <defs>
@@ -343,7 +344,7 @@ function Postmark({ city, cat }: { city: string; cat: CategoryId }) {
       <circle cx="40" cy="40" r="37" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="2 3.2" />
       <circle cx="40" cy="40" r="22" fill="none" stroke="currentColor" strokeWidth="1.2" />
       <text fontSize="8.4" fontWeight="700" letterSpacing="1.9" fill="currentColor">
-        <textPath href={`#${id}`}>{`${city.toUpperCase()} • VIỆT NAM • `}</textPath>
+        <textPath href={`#${id}`}>{`${city.toUpperCase()} • ${tr('VIỆT NAM', 'VIETNAM')} • `}</textPath>
       </text>
       <foreignObject x="24" y="24" width="32" height="32">
         <div className="size-full">

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
+import { useTr } from '../../hooks/useTr'
 
 type SheetProps = {
   open: boolean
@@ -16,6 +17,7 @@ type SheetProps = {
 
 /** Accessible dialog: Escape and backdrop close it, focus moves in and returns to the trigger. */
 export function Sheet({ open, onClose, title, description, children, placement = 'right', width = 'max-w-xl', footer }: SheetProps) {
+  const { tr } = useTr()
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const returnTo = useRef<Element | null>(null)
@@ -47,7 +49,7 @@ export function Sheet({ open, onClose, title, description, children, placement =
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <button type="button" aria-label="Close" tabIndex={-1} className="absolute inset-0 cursor-default bg-night/60" onClick={onClose} />
+          <button type="button" aria-label={tr('Đóng', 'Close')} tabIndex={-1} className="absolute inset-0 cursor-default bg-night/60" onClick={onClose} />
           <motion.div
             ref={panelRef}
             role="dialog"
@@ -69,7 +71,7 @@ export function Sheet({ open, onClose, title, description, children, placement =
                 </h2>
                 {description && <p className="mt-1 text-sm text-ink/60">{description}</p>}
               </div>
-              <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center text-ink/55 transition-colors hover:text-terracotta" aria-label="Close">
+              <button type="button" onClick={onClose} className="grid size-10 shrink-0 place-items-center text-ink/55 transition-colors hover:text-terracotta" aria-label={tr('Đóng', 'Close')}>
                 <X size={20} />
               </button>
             </header>

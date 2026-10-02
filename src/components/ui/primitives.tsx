@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { categories } from '../../domain/categories'
+import { SOLVER_STATUS_LABEL } from '../../domain/solverStatus'
 import type { CategoryId, SolverStatus } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
 import { CategoryIcon } from '../icons'
@@ -31,7 +32,7 @@ const STATUS_STYLE: Record<SolverStatus, string> = {
   INFEASIBLE: 'bg-pomegranate/12 text-pomegranate ring-pomegranate/40',
 }
 
-/** Solver state, stated plainly (report §5.7): FEASIBLE is not the same claim as OPTIMAL. */
+/** Solver state, stated plainly (report §5.7): feasible is not the same claim as optimal. */
 export function SolverBadge({ status }: { status: SolverStatus }) {
   const { tr } = useTr()
   const meaning: Record<SolverStatus, string> = {
@@ -45,7 +46,7 @@ export function SolverBadge({ status }: { status: SolverStatus }) {
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.68rem] font-bold tracking-wide ring-1 ${STATUS_STYLE[status]}`}
     >
       <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-      {status}
+      {tr(...SOLVER_STATUS_LABEL[status])}
     </span>
   )
 }
