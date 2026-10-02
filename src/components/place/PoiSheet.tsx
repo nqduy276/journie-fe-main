@@ -13,7 +13,7 @@ import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
-import { StarRating } from '../art/Khatam'
+import { StarRating } from '../ui/Stars'
 import { CategoryGlyph, CategoryName, Skeleton } from '../ui/primitives'
 import { Sheet } from '../ui/Sheet'
 

@@ -6,14 +6,14 @@ import type { CategoryId, City, CityId, Poi } from './types'
  * the production service would read them from PostgreSQL + PostGIS (report §5.4).
  */
 export const cities: City[] = [
-  { id: 'ha-noi', name: 'Hà Nội', nameEn: 'Hanoi', lat: 21.0285, lng: 105.8542, roadKmh: 20, radiusKm: 8, tint: '#4a2c2a', tagline: ['Nghìn năm văn hiến, phố cổ ngổn ngang', 'A thousand years of culture in tangled old streets'] },
+  { id: 'ha-noi', name: 'Hà Nội', nameEn: 'Hanoi', lat: 21.0285, lng: 105.8542, roadKmh: 20, radiusKm: 8, tint: '#7a3f2c', tagline: ['Nghìn năm văn hiến, phố cổ ngổn ngang', 'A thousand years of culture in tangled old streets'] },
   { id: 'ninh-binh', name: 'Ninh Bình', nameEn: 'Ninh Binh', lat: 20.2506, lng: 105.9745, roadKmh: 30, radiusKm: 20, tint: '#173f35', tagline: ['Núi đá vôi soi bóng nước', 'Limestone cliffs in still water'] },
-  { id: 'ha-long', name: 'Hạ Long', nameEn: 'Ha Long', lat: 20.9101, lng: 107.1839, roadKmh: 28, radiusKm: 16, tint: '#0c3440', tagline: ['Kỳ quan của đảo đá và sương sớm', 'Islands of stone and morning mist'] },
+  { id: 'ha-long', name: 'Hạ Long', nameEn: 'Ha Long', lat: 20.9101, lng: 107.1839, roadKmh: 28, radiusKm: 16, tint: '#14463f', tagline: ['Kỳ quan của đảo đá và sương sớm', 'Islands of stone and morning mist'] },
   { id: 'ha-giang', name: 'Hà Giang', nameEn: 'Ha Giang', lat: 23.0, lng: 105.2, roadKmh: 22, radiusKm: 55, tint: '#0f3128', tagline: ['Cao nguyên đá, đèo mây và hoa tam giác mạch', 'Stone plateau, cloud passes and buckwheat flowers'] },
-  { id: 'hoi-an', name: 'Hội An', nameEn: 'Hoi An', lat: 15.8801, lng: 108.338, roadKmh: 24, radiusKm: 8, tint: '#3a2310', tagline: ['Phố cổ đèn lồng, đi chậm mới thấy', 'Lantern-lit old town, best at a slow pace'] },
-  { id: 'sai-gon', name: 'Sài Gòn', nameEn: 'Saigon', lat: 10.7769, lng: 106.7009, roadKmh: 17, radiusKm: 9, tint: '#14202b', tagline: ['Thành phố không ngủ bên sông', 'The city that never sleeps, by the river'] },
-  { id: 'phu-quoc', name: 'Phú Quốc', nameEn: 'Phu Quoc', lat: 10.19, lng: 104.0, roadKmh: 34, radiusKm: 28, tint: '#103a43', tagline: ['Biển xanh, hoàng hôn và hải sản tươi', 'Blue sea, sunsets and fresh seafood'] },
-  { id: 'da-lat', name: 'Đà Lạt', nameEn: 'Da Lat', lat: 11.9404, lng: 108.4583, roadKmh: 25, radiusKm: 12, tint: '#2c3a22', tagline: ['Sương mù, đồi thông và cà phê', 'Mist, pine hills and coffee'] },
+  { id: 'hoi-an', name: 'Hội An', nameEn: 'Hoi An', lat: 15.8801, lng: 108.338, roadKmh: 24, radiusKm: 8, tint: '#5a3a1c', tagline: ['Phố cổ đèn lồng, đi chậm mới thấy', 'Lantern-lit old town, best at a slow pace'] },
+  { id: 'sai-gon', name: 'Sài Gòn', nameEn: 'Saigon', lat: 10.7769, lng: 106.7009, roadKmh: 17, radiusKm: 9, tint: '#1d3a33', tagline: ['Thành phố không ngủ bên sông', 'The city that never sleeps, by the river'] },
+  { id: 'phu-quoc', name: 'Phú Quốc', nameEn: 'Phu Quoc', lat: 10.19, lng: 104.0, roadKmh: 34, radiusKm: 28, tint: '#14464a', tagline: ['Biển xanh, hoàng hôn và hải sản tươi', 'Blue sea, sunsets and fresh seafood'] },
+  { id: 'da-lat', name: 'Đà Lạt', nameEn: 'Da Lat', lat: 11.9404, lng: 108.4583, roadKmh: 25, radiusKm: 12, tint: '#2f4a2b', tagline: ['Sương mù, đồi thông và cà phê', 'Mist, pine hills and coffee'] },
 ]
 
 export const cityById = Object.fromEntries(cities.map((c) => [c.id, c])) as Record<CityId, City>

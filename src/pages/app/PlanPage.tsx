@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, Check, CloudSun, Heart, Loader2, Lock, Minus, Plus, Save, Sparkles, Wand2 } from 'lucide-react'
+import { ArrowLeft, Check, Heart, Loader2, Lock, Minus, Plus, Save, Sparkles, Wand2 } from 'lucide-react'
 import { analyzeRequest, generateItinerary, topPicks, type PlanReport } from '../../api/planner'
 import { readProfile } from '../../api/profile'
 import { track } from '../../api/analytics'
 import { useCreateTrip, useProfile } from '../../api/queries'
 import { Khatam } from '../../components/art/Khatam'
-import { GenieAvatar } from '../../components/auth/GenieAvatar'
+import { JoAvatar } from '../../components/mascot/JoAvatar'
 import { CityCover } from '../../components/CityCover'
 import { RouteMap } from '../../components/map/RouteMap'
 import { DayTabs, TripStats } from '../../components/trip/parts'
@@ -16,6 +16,7 @@ import { describeTrip } from '../../components/trip/explain'
 import { Timeline } from '../../components/trip/Timeline'
 import { Segmented, SolverBadge } from '../../components/ui/primitives'
 import { PageHeader } from '../../components/PageHeader'
+import { WeatherIcon } from '../../components/icons'
 import { weatherFor } from '../../domain/conditions'
 import { explainPoi } from '../../domain/scoring'
 import { cities, cityById, poiById } from '../../domain/pois'
@@ -40,7 +41,7 @@ const EXAMPLES: [string, string][] = [
 ]
 
 const STAGES = [
-  { vi: 'Đọc lời ước (LLM)', en: 'Reading your wish (LLM)' },
+  { vi: 'Đọc yêu cầu của bạn (LLM)', en: 'Reading your request (LLM)' },
   { vi: 'Thu thập thời tiết, giao thông, địa điểm', en: 'Gathering weather, traffic and places' },
   { vi: 'Chấm điểm từng địa điểm', en: 'Scoring each place' },
   { vi: 'Chọn và sắp xếp (CP-SAT)', en: 'Selecting and sequencing (CP-SAT)' },
@@ -82,7 +83,7 @@ export function PlanPage() {
       }))
       setPhase('review')
     },
-    onError: () => toast('danger', tr('Chưa đọc được lời ước', 'Could not read your wish'), tr('Thử lại sau giây lát.', 'Please try again in a moment.')),
+    onError: () => toast('danger', tr('Chưa đọc được yêu cầu', 'Could not read your request'), tr('Thử lại sau giây lát.', 'Please try again in a moment.')),
   })
 
   const generate = useMutation({
@@ -154,17 +155,17 @@ export function PlanPage() {
   return (
     <>
       <PageHeader
-        title={phase === 'result' ? tr('Lịch trình của bạn đã sẵn sàng', 'Your itinerary is ready') : tr('Ước một chuyến đi', 'Wish for a trip')}
+        title={phase === 'result' ? tr('Lịch trình của bạn đã sẵn sàng', 'Your itinerary is ready') : tr('Lên một chuyến đi', 'Plan a trip')}
         subtitle={
           phase === 'result'
             ? tr('Xem lại, đổi tên và lưu để bắt đầu chỉnh sửa.', 'Review it, rename it and save to start editing.')
-            : tr('Kể bằng lời của bạn: đi đâu, mấy ngày, thích gì, ngân sách. Jinnie lo phần còn lại.', 'Say it your way: where, how long, what you like, your budget. Jinnie does the rest.')
+            : tr('Kể bằng lời của bạn: đi đâu, mấy ngày, thích gì, ngân sách. Jo lo phần còn lại.', 'Say it your way: where, how long, what you like, your budget. Jo does the rest.')
         }
         actions={
           phase !== 'compose' && (
             <button type="button" className="btn-ghost btn-sm" onClick={phase === 'review' ? reset : () => (phase === 'result' ? reset() : undefined)} disabled={phase === 'generating'}>
               <ArrowLeft size={15} aria-hidden="true" />
-              {tr('Ước lại', 'Wish again')}
+              {tr('Làm lại', 'Start over')}
             </button>
           )
         }
@@ -217,11 +218,11 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
       <div className="panel-night p-5 sm:p-7">
         <div className="flex items-start gap-4">
           <div className="hidden w-24 shrink-0 sm:block">
-            <GenieAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-[360/470] w-full" />
+            <JoAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-[300/340] w-full" />
           </div>
           <div className="min-w-0 flex-1">
             <label htmlFor="wish" className="h-display text-[1.45rem] text-paper">
-              {tr('Điều ước du lịch của bạn là gì?', 'What is your travel wish?')}
+              {tr('Bạn muốn đi đâu, làm gì?', 'Where to, and what for?')}
             </label>
             <p className="mt-1 text-sm text-paper/60">{tr('Càng cụ thể, kế hoạch càng hợp bạn. Dị ứng và giờ giấc sẽ được coi là ràng buộc cứng.', 'The more specific, the better the fit. Allergies and times become hard constraints.')}</p>
           </div>
@@ -242,7 +243,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
           <p className="tabular text-xs text-paper/45">{text.length}/600 · Ctrl + Enter</p>
           <button type="button" className="btn-gold" onClick={onSubmit} disabled={!ready || busy}>
             {busy ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Wand2 size={18} aria-hidden="true" />}
-            {busy ? tr('Jinnie đang đọc…', 'Jinnie is reading…') : tr('Gửi điều ước', 'Send my wish')}
+            {busy ? tr('Jo đang đọc…', 'Jo is reading…') : tr('Gửi cho Jo', 'Send to Jo')}
           </button>
         </div>
       </div>
@@ -269,7 +270,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
   )
 }
 
-/* ───────── 2. review what Jinnie understood ───────── */
+/* ───────── 2. review what Jo understood ───────── */
 
 function Review({ text, intent, params, setParams, onGenerate }: { text: string; intent: Intent; params: Params; setParams: (value: Params) => void; onGenerate: () => void }) {
   const { tr, language, locale } = useTr()
@@ -283,7 +284,7 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
       <div className="space-y-6">
         <section className="panel p-5 sm:p-6" aria-labelledby="understood">
           <h2 id="understood" className="h-display text-xl text-forest">
-            {tr('Jinnie đã hiểu thế này', 'Here is what Jinnie understood')}
+            {tr('Jo đã hiểu thế này', 'Here is what Jo understood')}
           </h2>
           <p className="mt-2 border-l-2 border-gold pl-3 font-display text-[0.98rem] italic leading-relaxed text-ink/70">“{text}”</p>
           <ul className="mt-4 flex flex-wrap gap-2" aria-label={tr('Yêu cầu đã trích xuất', 'Extracted requirements')}>
@@ -295,7 +296,7 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 420, damping: 22, delay: index * 0.07 }}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.8rem] font-semibold ${
-                  chip.kind === 'hard' ? 'bg-lapis text-paper' : 'border border-gold bg-gold/15 text-[#7a4f00]'
+                  chip.kind === 'hard' ? 'bg-lapis text-paper' : 'border border-gold bg-gold/15 text-sun-ink'
                 }`}
               >
                 {chip.kind === 'hard' ? <Lock size={12} aria-hidden="true" /> : <Heart size={12} aria-hidden="true" />}
@@ -428,11 +429,12 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
       <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
         <div className="panel-night p-5">
           <p className="flex items-center gap-2 text-sm font-bold text-gold">
-            <CloudSun size={17} aria-hidden="true" /> {tr('Dữ liệu thời gian thực', 'Real-time data')}
+            {tr('Dữ liệu thời gian thực', 'Real-time data')}
           </p>
           {weather && params.city ? (
             <div className="mt-3 space-y-3">
               <div className="flex items-end gap-3">
+                <WeatherIcon kind={weather.condition} size={52} />
                 <span className="h-display text-5xl text-paper">{weather.tempC}°</span>
                 <span className="pb-1.5 text-sm text-paper/70">
                   {vi ? cityById[params.city].name : cityById[params.city].nameEn} ·{' '}
@@ -476,10 +478,10 @@ function Pipeline({ stage, report, params, intent }: { stage: number; report?: P
     <div className="panel-night mx-auto max-w-3xl p-6 sm:p-9">
       <div className="flex items-center gap-5">
         <div className="w-24 shrink-0">
-          <GenieAvatar mood="thinking" className="aspect-[360/470] w-full" />
+          <JoAvatar mood="thinking" className="aspect-[300/340] w-full" />
         </div>
         <div>
-          <h2 className="h-display text-[1.6rem] text-paper">{tr('Jinnie đang xoa đèn…', 'Jinnie is rubbing the lamp…')}</h2>
+          <h2 className="h-display text-[1.6rem] text-paper">{tr('Jo đang xoa đèn…', 'Jo is rubbing the lamp…')}</h2>
           <p className="mt-1 text-sm text-paper/60">{tr('Mỗi bước dưới đây là một phần thật của quy trình lập lịch.', 'Each step below is a real part of the planning pipeline.')}</p>
         </div>
       </div>

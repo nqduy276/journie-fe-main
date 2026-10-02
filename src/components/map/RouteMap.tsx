@@ -86,7 +86,7 @@ export function RouteMap({ stops, activeUid, onSelect, me, className = '', extra
     const points = stops.map((stop) => poiById[stop.poiId])
     const latlngs = points.map((poi) => [poi.lat, poi.lng] as [number, number])
 
-    const straight = L.polyline(latlngs, { color: '#25399b', weight: 3, opacity: 0.55, dashArray: '2 9', lineCap: 'round', className: 'route-line' }).addTo(group)
+    const straight = L.polyline(latlngs, { color: '#173f35', weight: 3, opacity: 0.6, dashArray: '2 9', lineCap: 'round', className: 'route-line' }).addTo(group)
 
     stops.forEach((stop, index) => {
       const poi = poiById[stop.poiId]
@@ -102,7 +102,7 @@ export function RouteMap({ stops, activeUid, onSelect, me, className = '', extra
     })
 
     extras?.forEach((extra) => {
-      const dot = L.circleMarker([extra.lat, extra.lng], { radius: 7, color: '#fff', weight: 2, fillColor: extra.color ?? '#c2335d', fillOpacity: 1 }).addTo(group)
+      const dot = L.circleMarker([extra.lat, extra.lng], { radius: 7, color: '#fff', weight: 2, fillColor: extra.color ?? '#d96745', fillOpacity: 1 }).addTo(group)
       dot.bindTooltip(extra.label, { direction: 'top', offset: [0, -6] })
       dot.on('click', () => onExtraRef.current?.(extra.id))
     })

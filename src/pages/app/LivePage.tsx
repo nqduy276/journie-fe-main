@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { AlertTriangle, ArrowLeft, Check, CloudRain, Flag, Navigation, Pause, Play, Radar, Siren, Timer, TrafficCone, Store, Zap } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Check, Flag, Navigation, Pause, Play, Radar, Siren, Timer, TrafficCone, Store, Zap } from 'lucide-react'
 import { track } from '../../api/analytics'
 import { useSaveTrip, useTrip } from '../../api/queries'
+import { WeatherIcon } from '../../components/icons'
 import { RouteMap } from '../../components/map/RouteMap'
 import { PoiSheet } from '../../components/place/PoiSheet'
 import { Timeline } from '../../components/trip/Timeline'
@@ -17,6 +18,7 @@ import { addDays, fmtMinutes, fmtTime, formatVnd, todayIso } from '../../domain/
 import type { Disruption, Stop, Trip } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
 import { useNotificationStore } from '../../store/notificationStore'
+import { useWeatherStore } from '../../store/weatherStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
 
@@ -105,9 +107,11 @@ export function LivePage() {
     (disruption: Disruption, at: number) => {
       if (!trip) return
       setEvent({ disruption, at })
+      // Heavy rain is not just a card: the whole app turns rainy until the traveler decides what to do.
+      if (disruption.kind === 'weather') useWeatherStore.getState().setOverride('rain', 5 * 60_000)
       track({ type: 'replan_suggested', city: trip.city, reason: disruption.kind })
       const label = disruptionMeta[disruption.kind]
-      pushNote({ kind: disruption.kind, vi: `${label.vi} trong chuyến “${trip.title}”`, en: `${label.en} on “${trip.title}”`, bodyVi: 'Jinnie đề xuất điều chỉnh phần còn lại của ngày.', bodyEn: 'Jinnie suggests adjusting the rest of the day.', to: `/app/trips/${trip.id}/live` })
+      pushNote({ kind: disruption.kind, vi: `${label.vi} trong chuyến “${trip.title}”`, en: `${label.en} on “${trip.title}”`, bodyVi: 'Jo đề xuất điều chỉnh phần còn lại của ngày.', bodyEn: 'Jo suggests adjusting the rest of the day.', to: `/app/trips/${trip.id}/live` })
       addLog(tr(`Phát hiện: ${label.vi}`, `Detected: ${label.en}`), 'warn', at)
     },
     [addLog, pushNote, tr, trip],
@@ -181,12 +185,14 @@ export function LivePage() {
     addLog(tr('Đã áp dụng phương án mới', 'Applied the new plan'), 'ok', now)
     setSheet(false)
     setEvent(null)
+    if (event.disruption.kind === 'weather') useWeatherStore.getState().clearOverride()
   }
 
   const dismiss = () => {
     if (event) track({ type: 'replan_dismissed', city: trip.city, reason: event.disruption.kind })
     setSheet(false)
     setEvent(null)
+    if (event?.disruption.kind === 'weather') useWeatherStore.getState().clearOverride()
     addLog(tr('Bạn giữ nguyên lịch cũ', 'You kept the original plan'), 'ok', now)
   }
 
@@ -204,7 +210,7 @@ export function LivePage() {
           </Link>
         }
         title={trip.title}
-        subtitle={tr(`${city.name} · đồng hồ mô phỏng, bạn có thể tua nhanh để xem Jinnie theo dõi chuyến đi.`, `${city.nameEn} · a simulated clock; speed it up to watch Jinnie track the trip.`)}
+        subtitle={tr(`${city.name} · đồng hồ mô phỏng, bạn có thể tua nhanh để xem Jo theo dõi chuyến đi.`, `${city.nameEn} · a simulated clock; speed it up to watch Jo track the trip.`)}
         actions={
           <>
             <button type="button" className="btn-ghost btn-sm" onClick={() => setPlaying((value) => !value)} aria-pressed={playing}>
@@ -230,7 +236,7 @@ export function LivePage() {
               <span className="pulse-dot absolute size-12 rounded-full text-sun" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-ink">{tr('Jinnie phát hiện: ', 'Jinnie noticed: ')}{vi ? disruptionMeta[event.disruption.kind].vi : disruptionMeta[event.disruption.kind].en}</p>
+              <p className="font-bold text-ink">{tr('Jo phát hiện: ', 'Jo noticed: ')}{vi ? disruptionMeta[event.disruption.kind].vi : disruptionMeta[event.disruption.kind].en}</p>
               <p className="text-sm text-ink/70">{describeDisruption(event.disruption, vi)}</p>
             </div>
             <button type="button" className="btn-ghost btn-sm" onClick={dismiss}>
@@ -274,7 +280,7 @@ export function LivePage() {
                 </div>
                 <div>
                   <dt className="text-[0.7rem] text-ink/50">{tr('Dư thời gian', 'Slack')}</dt>
-                  <dd className={`tabular font-bold ${slack < 30 ? 'text-pomegranate' : 'text-[#0b7f75]'}`}>{fmtMinutes(Math.max(0, slack), vi)}</dd>
+                  <dd className={`tabular font-bold ${slack < 30 ? 'text-pomegranate' : 'text-jade-ink'}`}>{fmtMinutes(Math.max(0, slack), vi)}</dd>
                 </div>
               </dl>
             </div>
@@ -284,12 +290,12 @@ export function LivePage() {
                 <Radar size={16} className="text-lapis" aria-hidden="true" /> {tr('Nhật ký theo dõi', 'Monitor log')}
               </h2>
               <ul className="mt-3 space-y-1.5" aria-live="polite">
-                {log.length === 0 && <li className="text-xs text-ink/50">{tr('Jinnie sẽ kiểm tra giao thông và thời tiết mỗi 10 phút.', 'Jinnie checks traffic and weather every 10 minutes.')}</li>}
+                {log.length === 0 && <li className="text-xs text-ink/50">{tr('Jo sẽ kiểm tra giao thông và thời tiết mỗi 10 phút.', 'Jo checks traffic and weather every 10 minutes.')}</li>}
                 <AnimatePresence initial={false}>
                   {log.map((line) => (
                     <motion.li key={line.id} layout initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} className="flex gap-2 text-xs">
                       <span className="tabular w-10 shrink-0 text-ink/45">{fmtTime(line.at)}</span>
-                      <span className={line.tone === 'warn' ? 'font-semibold text-[#8a5a00]' : 'text-ink/70'}>{line.text}</span>
+                      <span className={line.tone === 'warn' ? 'font-semibold text-sun-ink' : 'text-ink/70'}>{line.text}</span>
                     </motion.li>
                   ))}
                 </AnimatePresence>
@@ -312,13 +318,13 @@ export function LivePage() {
               {(
                 [
                   { icon: TrafficCone, vi: 'Kẹt xe', en: 'Traffic', d: { kind: 'traffic', minutes: 25 } as Disruption },
-                  { icon: CloudRain, vi: 'Mưa lớn', en: 'Heavy rain', d: { kind: 'weather', until: now + 90 } as Disruption },
+                  { icon: 'rain', vi: 'Mưa lớn', en: 'Heavy rain', d: { kind: 'weather', until: now + 90 } as Disruption },
                   { icon: Store, vi: 'Đóng cửa', en: 'Closure', d: (stops.find((stop) => stop.start > now) ? { kind: 'closure', poiId: stops.find((stop) => stop.start > now)!.poiId } : null) as Disruption | null },
                   { icon: Timer, vi: 'Trễ 30′', en: 'Late 30′', d: { kind: 'delay', minutes: 30 } as Disruption },
                 ] as const
               ).map((item) => (
                 <button key={item.vi} type="button" disabled={!item.d || !!event || finished} onClick={() => item.d && inject(item.d)} className="flex flex-col items-center gap-1.5 rounded-xl border border-forest/15 bg-white/70 px-2 py-3 text-xs font-semibold text-ink/80 transition-[border-color,transform,background-color] duration-300 hover:-translate-y-0.5 hover:border-sun hover:bg-sun/10 disabled:opacity-40 disabled:hover:translate-y-0">
-                  <item.icon size={20} className="text-[#b9770e]" aria-hidden="true" />
+                  {item.icon === 'rain' ? <WeatherIcon kind="rain" size={28} /> : <item.icon size={20} className="text-sun-ink" aria-hidden="true" />}
                   {tr(item.vi, item.en)}
                 </button>
               ))}
@@ -413,8 +419,8 @@ function TimeRing({ value, label, sub }: { value: number; label: string; sub: st
         />
         <defs>
           <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#2ec4b6" />
-            <stop offset="1" stopColor="#f6cb5a" />
+            <stop offset="0" stopColor="#4fb8a4" />
+            <stop offset="1" stopColor="#f0b94b" />
           </linearGradient>
         </defs>
       </svg>
@@ -530,7 +536,7 @@ function ReplanSheet({ open, onClose, event, result, chosen, lambda, setLambda, 
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
               { v: chosen.kept.length, l: tr('Giữ lại', 'Kept'), c: 'text-lapis' },
-              { v: chosen.added.length, l: tr('Thêm mới', 'Added'), c: 'text-[#0b7f75]' },
+              { v: chosen.added.length, l: tr('Thêm mới', 'Added'), c: 'text-jade-ink' },
               { v: chosen.dropped.length, l: tr('Bỏ', 'Dropped'), c: 'text-pomegranate' },
             ].map((item) => (
               <div key={item.l} className="panel p-3">
@@ -546,7 +552,7 @@ function ReplanSheet({ open, onClose, event, result, chosen, lambda, setLambda, 
             {chosen.stops.map((stop) => {
               const isNew = chosen.added.includes(stop.poiId)
               return (
-                <li key={stop.uid} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${isNew ? 'bg-firuze/15 font-semibold text-[#0b7f75]' : 'bg-white/70 text-ink/80'}`}>
+                <li key={stop.uid} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${isNew ? 'bg-firuze/15 font-semibold text-jade-ink' : 'bg-white/70 text-ink/80'}`}>
                   <span className="tabular w-11 shrink-0 text-xs text-ink/50">{fmtTime(stop.start)}</span>
                   <span className="min-w-0 flex-1 truncate">{poiById[stop.poiId].name}</span>
                   {isNew && <span className="rounded-full bg-firuze px-2 py-0.5 text-[0.65rem] font-bold text-white">{tr('Mới', 'New')}</span>}

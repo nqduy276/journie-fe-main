@@ -6,7 +6,7 @@ type PortalState = {
   phase: PortalPhase
   to: string
   origin: { x: number; y: number }
-  /** Start the genie-portal transition toward `to`, growing from a screen position. */
+  /** Start the page transition toward `to`, growing from a screen position. */
   open: (to: string, origin?: { x: number; y: number }) => void
   setPhase: (phase: PortalPhase) => void
 }

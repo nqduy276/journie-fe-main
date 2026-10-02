@@ -4,8 +4,8 @@ import { useToastStore, type ToastTone } from '../../store/toastStore'
 
 const TONES: Record<ToastTone, { icon: typeof Info; ring: string; text: string }> = {
   info: { icon: Info, ring: 'border-lapis/40', text: 'text-lapis' },
-  success: { icon: CheckCircle2, ring: 'border-firuze/60', text: 'text-[#0b7f75]' },
-  warning: { icon: AlertTriangle, ring: 'border-sun/70', text: 'text-[#8a5a00]' },
+  success: { icon: CheckCircle2, ring: 'border-firuze/60', text: 'text-jade-ink' },
+  warning: { icon: AlertTriangle, ring: 'border-sun/70', text: 'text-sun-ink' },
   danger: { icon: XCircle, ring: 'border-pomegranate/60', text: 'text-pomegranate' },
 }
 

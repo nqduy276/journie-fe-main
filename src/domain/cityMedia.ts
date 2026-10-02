@@ -6,7 +6,7 @@ import phuQuocImage from '../assets/images/phu-quoc.jpg'
 import saiGonImage from '../assets/images/ho-chi-minh-city.jpg'
 import type { CityId } from './types'
 
-/** Photos exist for six destinations; Hà Nội and Đà Lạt fall back to a tinted girih cover. */
+/** Photos exist for six destinations; Hà Nội and Đà Lạt fall back to a drawn ridge-and-sunrise cover. */
 export const cityImage: Partial<Record<CityId, string>> = {
   'ha-giang': haGiangImage,
   'ha-long': haLongImage,
