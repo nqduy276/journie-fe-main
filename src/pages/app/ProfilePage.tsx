@@ -164,7 +164,7 @@ export function ProfilePage() {
               {tr('Nhịp đi & ngân sách', 'Pace & budget')}
             </h2>
             <div className="mt-4 max-w-md">
-              <Segmented label="p-pace" value={draft.pace} onChange={(pace) => patch({ pace })} options={[{ value: 'slow', label: tr('Thong thả', 'Slow') }, { value: 'balanced', label: tr('Vừa phải', 'Balanced') }, { value: 'fast', label: tr('Nhiều điểm', 'Packed') }]} />
+              <Segmented label={tr('Nhịp độ chuyến đi', 'Trip pace')} value={draft.pace} onChange={(pace) => patch({ pace })} options={[{ value: 'slow', label: tr('Thong thả', 'Slow') }, { value: 'balanced', label: tr('Vừa phải', 'Balanced') }, { value: 'fast', label: tr('Nhiều điểm', 'Packed') }]} />
             </div>
             <div className="mt-6 max-w-md">
               <div className="mb-1 flex items-baseline justify-between">

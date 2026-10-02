@@ -3,6 +3,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { categories } from '../../domain/categories'
 import { poiById } from '../../domain/pois'
+import { useTr } from '../../hooks/useTr'
 import type { Stop } from '../../domain/types'
 
 type Props = {
@@ -45,6 +46,7 @@ async function roadGeometry(coords: { lat: number; lng: number }[], signal: Abor
  * map is always legible offline.
  */
 export function RouteMap({ stops, activeUid, onSelect, me, className = '', extras, onExtraClick, fitKey }: Props) {
+  const { tr } = useTr()
   const host = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
   const layer = useRef<L.LayerGroup | null>(null)
@@ -66,6 +68,7 @@ export function RouteMap({ stops, activeUid, onSelect, me, className = '', extra
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(instance)
     L.control.zoom({ position: 'bottomright' }).addTo(instance)
+    instance.attributionControl.setPrefix(false)
     layer.current = L.layerGroup().addTo(instance)
     map.current = instance
     return () => {
@@ -154,5 +157,16 @@ export function RouteMap({ stops, activeUid, onSelect, me, className = '', extra
     }
   }, [me])
 
-  return <div ref={host} className={`journie-map ${className}`} role="application" aria-label="Map" />
+  // Leaflet's own zoom buttons are English; keep them in the page language.
+  useEffect(() => {
+    const root = host.current
+    if (!root) return
+    for (const [selector, label] of [['.leaflet-control-zoom-in', tr('Phóng to', 'Zoom in')], ['.leaflet-control-zoom-out', tr('Thu nhỏ', 'Zoom out')]] as const) {
+      const button = root.querySelector(selector)
+      button?.setAttribute('title', label)
+      button?.setAttribute('aria-label', label)
+    }
+  }, [tr])
+
+  return <div ref={host} className={`journie-map ${className}`} role="application" aria-label={tr('Bản đồ lịch trình', 'Itinerary map')} />
 }

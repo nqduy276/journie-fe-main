@@ -1,18 +1,19 @@
 import { useEffect, useId, useRef } from 'react'
 import { motion, useAnimationFrame, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
+import { useTr } from '../../hooks/useTr'
 import { useSky, type Phase, type Weather } from '../../store/weatherStore'
 import { useMascot, type MascotMood } from './mascot-context'
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-/* A short, muted palette: taupe fur, cream face, one deep green rug with a gold edge, one terracotta hat. */
-const FUR_HI = '#b4927a'
-const FUR = '#8a6a54'
-const FUR_LO = '#5c4435'
-const CREAM = '#f3e6d2'
-const CREAM_LO = '#e2cdb0'
+/* A short, muted palette: caramel fur, cream face, one deep green rug with a gold edge, one terracotta hat. */
+const FUR_HI = '#c49c7c'
+const FUR = '#996f56'
+const FUR_LO = '#5f4234'
+const CREAM = '#f8ecd9'
+const CREAM_LO = '#e6d0b2'
 const EYE = '#1d1511'
 const BROW = '#4a3426'
 const GOLD = '#e9c97f'
@@ -27,13 +28,13 @@ const CAP_LO = '#4d4c88'
 type Point = readonly [number, number]
 
 /**
- * Arm keyframes. Pose 0 = hands on knees, 1 = hands over the eyes, 2 = arm up (wave, cheer),
+ * Arm keyframes. Pose 0 = arms down by the sides, 1 = mitts over the eyes, 2 = arm up (wave, cheer),
  * 3 = holding an umbrella. One spring per arm interpolates between them, so every mood is a number.
  * A fourth state, pointing, blends toward a hand position aimed at a control on the page.
  */
 const ARMS = {
-  left: { shoulder: [126, 194] as Point, elbow: [[92, 216], [96, 172], [68, 168], [92, 216]] as Point[], hand: [[106, 244], [141, 122], [72, 108], [106, 244]] as Point[] },
-  right: { shoulder: [194, 194] as Point, elbow: [[228, 216], [224, 172], [252, 168], [232, 190]] as Point[], hand: [[214, 244], [179, 122], [248, 108], [230, 140]] as Point[] },
+  left: { shoulder: [126, 214] as Point, elbow: [[112, 230], [104, 190], [84, 212], [112, 230]] as Point[], hand: [[116, 242], [138, 139], [58, 168], [116, 242]] as Point[] },
+  right: { shoulder: [194, 214] as Point, elbow: [[208, 230], [216, 190], [236, 212], [244, 206]] as Point[], hand: [[204, 242], [182, 139], [262, 168], [252, 172]] as Point[] },
 } as const
 
 function sample(keys: Point[], pose: number): Point {
@@ -102,13 +103,13 @@ function Arm({ side, pose, aim }: { side: 'left' | 'right'; pose: MotionValue<nu
   const finger = useTransform(aim.w, (w) => clamp(w * 1.4 - 0.4, 0, 1))
   return (
     <g>
-      <motion.path d={d} stroke="#2a1a12" strokeOpacity="0.22" strokeWidth="19" strokeLinecap="round" fill="none" transform="translate(1.5 3.5)" />
-      <motion.path d={d} stroke={FUR} strokeWidth="17" strokeLinecap="round" fill="none" />
+      <motion.path d={d} stroke="#2a1a12" strokeOpacity="0.22" strokeWidth="18" strokeLinecap="round" fill="none" transform="translate(1.5 3.5)" />
+      <motion.path d={d} stroke={FUR} strokeWidth="16" strokeLinecap="round" fill="none" />
       <motion.path d={d} stroke={FUR_HI} strokeOpacity="0.32" strokeWidth="5" strokeLinecap="round" fill="none" transform="translate(-2.5 -2.5)" />
       <motion.g style={{ x: handX, y: handY }}>
         <circle r="12.5" fill="#2a1a12" opacity="0.2" cx="1.5" cy="3" />
-        <circle r="12" fill={FUR} />
-        <circle r="5.5" cx="-3.5" cy="-3.5" fill={FUR_HI} opacity="0.5" />
+        <circle r="11.5" fill={FUR} />
+        <circle r="5" cx="-3.5" cy="-3.5" fill={FUR_HI} opacity="0.55" />
         <motion.g style={{ rotate: aim.angle, scale: finger, originX: 0, originY: 0 }}>
           <rect x="5" y="-3.8" width="15" height="7.6" rx="3.8" fill={FUR} />
           <rect x="7" y="-2.6" width="11" height="2.6" rx="1.3" fill={FUR_HI} opacity="0.5" />
@@ -120,8 +121,8 @@ function Arm({ side, pose, aim }: { side: 'left' | 'right'; pose: MotionValue<nu
 
 /* ───────── the flying carpet: a ribbon that ripples, drawn fresh every frame ───────── */
 
-const RUG_L = 34
-const RUG_R = 286
+const RUG_L = 54
+const RUG_R = 266
 const RUG_MID = (RUG_L + RUG_R) / 2
 const RUG_HALF = (RUG_R - RUG_L) / 2
 const STEPS = 30
@@ -129,40 +130,40 @@ const STEPS = 30
 function rugEdge(x: number, t: number, base: number, amp: number, phase: number) {
   const u = (x - RUG_MID) / RUG_HALF
   const wave = Math.sin(u * 3.1 + t * 2 + phase) * amp + Math.sin(u * 6.3 - t * 1.3 + phase) * amp * 0.3
-  const curl = Math.abs(u) ** 3 * 14
+  const curl = Math.abs(u) ** 3 * 9
   return base + wave - curl
 }
 
 const fmt = (n: number) => n.toFixed(1)
 
 function buildRug(t: number, energy: number) {
-  const amp = 3.4 + energy * 5
+  const amp = 2.2 + energy * 4
   const top: Point[] = []
   const bot: Point[] = []
   for (let i = 0; i <= STEPS; i += 1) {
     const x = lerp(RUG_L, RUG_R, i / STEPS)
-    top.push([x, rugEdge(x, t, 254, amp, 0)])
-    bot.push([x, rugEdge(x, t, 283, amp, 0.7)])
+    top.push([x, rugEdge(x, t, 262, amp, 0)])
+    bot.push([x, rugEdge(x, t, 284, amp, 0.7)])
   }
   const at = (i: number, k: number): Point => [top[i][0], lerp(top[i][1], bot[i][1], k)]
   const poly = (pts: Point[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${fmt(p[0])} ${fmt(p[1])}`).join('')
   const body = `${poly(top)}${[...bot].reverse().map((p) => `L${fmt(p[0])} ${fmt(p[1])}`).join('')}Z`
   const trim = poly(top.map((_, i) => at(i, 0.26)))
   let dots = ''
-  for (const u of [-0.5, -0.25, 0, 0.25, 0.5]) {
+  for (const u of [-0.45, 0, 0.45]) {
     const i = Math.round(((u * RUG_HALF + RUG_HALF) / (RUG_HALF * 2)) * STEPS)
     const c = at(i, 0.62)
     const slope = (at(Math.min(STEPS, i + 1), 0.62)[1] - at(Math.max(0, i - 1), 0.62)[1]) / 2
-    const r = 3.6
+    const r = 3
     dots += `M${fmt(c[0] - r)} ${fmt(c[1] - slope)}L${fmt(c[0])} ${fmt(c[1] - r - slope)}L${fmt(c[0] + r)} ${fmt(c[1] + slope)}L${fmt(c[0])} ${fmt(c[1] + r + slope)}Z`
   }
   const tassel = (side: -1 | 1) => {
     const i = side < 0 ? 0 : STEPS
     let d = ''
     for (let k = 0; k <= 3; k += 1) {
-      const p = at(i, 0.14 + k * 0.24)
+      const p = at(i, 0.16 + k * 0.22)
       const sway = Math.sin(t * 2.6 + k * 0.9) * 1.8
-      d += `M${fmt(p[0])} ${fmt(p[1])}Q${fmt(p[0] + side * 7)} ${fmt(p[1] + 0.8 + sway)} ${fmt(p[0] + side * 13)} ${fmt(p[1] + 2.4 + sway)}`
+      d += `M${fmt(p[0])} ${fmt(p[1])}Q${fmt(p[0] + side * 5)} ${fmt(p[1] + 0.6 + sway)} ${fmt(p[0] + side * 10)} ${fmt(p[1] + 1.8 + sway)}`
     }
     return d
   }
@@ -215,8 +216,8 @@ type Props = {
 }
 
 /**
- * Di: a small monkey on a flying carpet, drawn as a soft toy: no outlines, a few muted colours, gradients and
- * shadows for depth. Looks at the pointer, points at the control under it, watches the field you are typing in,
+ * Di: a small chibi monkey on a flying carpet, proportioned like a desk pet (a big round head on a bean-sized
+ * body, stubby limbs) and drawn as a soft toy: no outlines, a few muted colours, gradients and shadows for depth. Looks at the pointer, points at the control under it, watches the field you are typing in,
  * covers its eyes for passwords, shakes its head on errors and dresses for the sky (fez or nightcap, sunglasses,
  * umbrella). The umbrella stays up whatever the mood while it rains.
  */
@@ -226,6 +227,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
   const ph = phase ?? sky.phase
   const wx = weather ?? sky.weather
   const { reduced } = useMotionPrefs()
+  const { tr } = useTr()
   const svgRef = useRef<SVGSVGElement>(null)
   const uid = useId().replace(/:/g, '')
 
@@ -296,10 +298,10 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
     const dist = Math.hypot(px - sx, py - sy) || 1
     const dx = (px - sx) / dist
     const dy = (py - sy) / dist
-    const reach = clamp(dist * 0.5, 62, 92)
+    const reach = clamp(dist * 0.45, 46, 70)
     const hx = sx + dx * reach
-    const hy = sy + dy * reach + 4
-    const aim = { hx, hy, ex: sx + dx * reach * 0.5 + (side === 'left' ? -8 : 8), ey: sy + dy * reach * 0.5 + 14, angle: ((Math.atan2(dy, dx) * 180) / Math.PI + (side === 'left' ? 360 : 0)) % 360 }
+    const hy = sy + dy * reach + 3
+    const aim = { hx, hy, ex: sx + dx * reach * 0.5 + (side === 'left' ? -7 : 7), ey: sy + dy * reach * 0.5 + 12, angle: ((Math.atan2(dy, dx) * 180) / Math.PI + (side === 'left' ? 360 : 0)) % 360 }
     if (side === 'left') {
       setLeft(aim)
       setRight(null)
@@ -314,7 +316,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
     if (!svg) return
     const box = svg.getBoundingClientRect()
     const headX = box.left + box.width * 0.5
-    const headY = box.top + box.height * 0.38
+    const headY = box.top + box.height * 0.44
     lookX.set(clamp((x - headX) / (box.width * 0.9), -1, 1))
     lookY.set(clamp((y - headY) / (box.height * 0.9), -1, 1))
   }
@@ -371,15 +373,15 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
           transition={{ duration: 0.9, ease: 'easeOut' }}
         >
           <div className="di-float size-full">
-            <svg ref={svgRef} viewBox="0 0 320 300" className="size-full overflow-visible" role="img" aria-label="Di, linh vật của Journie">
+            <svg ref={svgRef} viewBox="0 0 320 300" className="size-full overflow-visible" role="img" aria-label={tr('Di, linh vật của Journie', 'Di, the Journie mascot')}>
               <defs>
-                <radialGradient id={`${uid}-fur`} cx="0.34" cy="0.28" r="0.85">
+                <radialGradient id={`${uid}-fur`} cx="0.34" cy="0.26" r="0.9">
                   <stop offset="0" stopColor={FUR_HI} />
-                  <stop offset="0.55" stopColor={FUR} />
+                  <stop offset="0.5" stopColor={FUR} />
                   <stop offset="1" stopColor={FUR_LO} />
                 </radialGradient>
-                <radialGradient id={`${uid}-face`} cx="0.5" cy="0.38" r="0.7">
-                  <stop offset="0" stopColor="#fbf2e3" />
+                <radialGradient id={`${uid}-face`} gradientUnits="userSpaceOnUse" cx="156" cy="132" r="84">
+                  <stop offset="0" stopColor="#fdf6ea" />
                   <stop offset="1" stopColor={CREAM_LO} />
                 </radialGradient>
                 <radialGradient id={`${uid}-belly`} cx="0.5" cy="0.3" r="0.8">
@@ -403,192 +405,202 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
                   <stop offset="1" stopColor="#120e0b" />
                 </linearGradient>
                 <radialGradient id={`${uid}-glow`} cx="0.5" cy="0.5" r="0.5">
-                  <stop offset="0" stopColor="#4fb8a4" stopOpacity="0.38" />
+                  <stop offset="0" stopColor="#4fb8a4" stopOpacity="0.34" />
                   <stop offset="1" stopColor="#4fb8a4" stopOpacity="0" />
                 </radialGradient>
                 <filter id={`${uid}-soft`} x="-30%" y="-60%" width="160%" height="220%">
                   <feGaussianBlur stdDeviation="5" />
                 </filter>
                 <filter id={`${uid}-soft2`} x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="2.4" />
+                  <feGaussianBlur stdDeviation="2.6" />
                 </filter>
               </defs>
 
               {/* floor of light and contact shadow */}
-              <ellipse className="di-shadow" cx="160" cy="292" rx="118" ry="12" fill={g('glow')} />
-              <ellipse className="di-shadow" cx="160" cy="294" rx="84" ry="7" fill="#08201a" opacity="0.4" filter={g('soft')} />
+              <ellipse className="di-shadow" cx="160" cy="294" rx="104" ry="10" fill={g('glow')} />
+              <ellipse className="di-shadow" cx="160" cy="295" rx="74" ry="6" fill="#08201a" opacity="0.4" filter={g('soft')} />
 
               {trail && (
                 <g>
-                  <Sparkle x={14} y={236} size={7} delay={0} />
-                  <Sparkle x={306} y={252} size={6} delay={1.2} />
+                  <Sparkle x={26} y={246} size={7} delay={0} />
+                  <Sparkle x={296} y={256} size={6} delay={1.2} />
                 </g>
               )}
 
               {/* tail, behind everything */}
-              <g className="di-tail" style={{ transformOrigin: '204px 234px', transformBox: 'view-box' }}>
-                <path d="M204 238C250 240 268 200 244 176C235 168 227 178 236 185" stroke="#2a1a12" strokeOpacity="0.25" strokeWidth="14" strokeLinecap="round" fill="none" transform="translate(1 3)" />
-                <path d="M204 238C250 240 268 200 244 176C235 168 227 178 236 185" stroke={FUR} strokeWidth="11" strokeLinecap="round" fill="none" />
-                <path d="M204 236C248 238 264 202 244 178" stroke={FUR_HI} strokeOpacity="0.45" strokeWidth="3.4" strokeLinecap="round" fill="none" transform="translate(-1 -2)" />
+              <g className="di-tail" style={{ transformOrigin: '196px 242px', transformBox: 'view-box' }}>
+                <path d="M196 242C238 248 264 216 248 190C242 182 233 189 240 196" stroke="#2a1a12" strokeOpacity="0.25" strokeWidth="12" strokeLinecap="round" fill="none" transform="translate(1 3)" />
+                <path d="M196 242C238 248 264 216 248 190C242 182 233 189 240 196" stroke={FUR} strokeWidth="10" strokeLinecap="round" fill="none" />
+                <path d="M198 240C236 244 260 216 247 192" stroke={FUR_HI} strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" fill="none" transform="translate(-1 -2)" />
               </g>
 
-              <motion.g style={{ rotate: rugTilt, originX: '50%', originY: '88%', transformBox: 'view-box' }}>
+              <motion.g style={{ rotate: rugTilt, originX: '50%', originY: '90%', transformBox: 'view-box' }}>
                 <Carpet time={time} energy={energy ?? calmEnergy} uid={uid} />
               </motion.g>
 
-              {/* feet resting on the rug */}
+              {/* little feet resting on the rug */}
               <g>
-                <ellipse cx="116" cy="256" rx="22" ry="12" fill="#1a110c" opacity="0.28" filter={g('soft2')} />
-                <ellipse cx="204" cy="256" rx="22" ry="12" fill="#1a110c" opacity="0.28" filter={g('soft2')} />
-                <ellipse cx="116" cy="251" rx="21" ry="12.5" fill={g('fur')} />
-                <ellipse cx="204" cy="251" rx="21" ry="12.5" fill={g('fur')} />
-                <ellipse cx="109" cy="253" rx="8" ry="5" fill={CREAM_LO} opacity="0.7" />
-                <ellipse cx="211" cy="253" rx="8" ry="5" fill={CREAM_LO} opacity="0.7" />
+                <ellipse cx="128" cy="262" rx="19" ry="9" fill="#1a110c" opacity="0.28" filter={g('soft2')} />
+                <ellipse cx="192" cy="262" rx="19" ry="9" fill="#1a110c" opacity="0.28" filter={g('soft2')} />
+                <ellipse cx="128" cy="256" rx="19" ry="11.5" fill={g('fur')} />
+                <ellipse cx="192" cy="256" rx="19" ry="11.5" fill={g('fur')} />
+                <ellipse cx="122" cy="258" rx="7" ry="4.4" fill={CREAM_LO} opacity="0.75" />
+                <ellipse cx="198" cy="258" rx="7" ry="4.4" fill={CREAM_LO} opacity="0.75" />
               </g>
 
-              {/* body */}
+              {/* body: a small bean under a big head */}
               <motion.g style={{ x: bodyShift }}>
-                <ellipse cx="160" cy="214" rx="46" ry="42" fill="#1a110c" opacity="0.22" filter={g('soft2')} transform="translate(2 6)" />
-                <ellipse cx="160" cy="208" rx="45" ry="46" fill={g('fur')} />
-                <ellipse cx="160" cy="216" rx="27" ry="30" fill={g('belly')} />
-                <ellipse cx="146" cy="190" rx="12" ry="22" fill="#fff" opacity="0.13" transform="rotate(14 146 190)" filter={g('soft2')} />
+                <ellipse cx="160" cy="234" rx="43" ry="34" fill="#1a110c" opacity="0.22" filter={g('soft2')} transform="translate(2 6)" />
+                <ellipse cx="160" cy="228" rx="42" ry="36" fill={g('fur')} />
+                <ellipse cx="160" cy="236" rx="25" ry="22" fill={g('belly')} />
+                <ellipse cx="146" cy="214" rx="9" ry="14" fill="#fff" opacity="0.13" transform="rotate(14 146 214)" filter={g('soft2')} />
               </motion.g>
 
-              {/* head */}
-              <motion.g style={{ rotate: headTilt, x: lean, originX: '160px', originY: '150px', transformBox: 'view-box' }}>
-                <circle cx="96" cy="118" r="22" fill={g('fur')} />
-                <circle cx="96" cy="119" r="12" fill="#d3a28d" opacity="0.7" />
-                <circle cx="224" cy="118" r="22" fill={g('fur')} />
-                <circle cx="224" cy="119" r="12" fill="#d3a28d" opacity="0.7" />
-                <circle cx="160" cy="114" r="64" fill="#1a110c" opacity="0.2" filter={g('soft2')} transform="translate(2 5)" />
-                <circle cx="160" cy="112" r="64" fill={g('fur')} />
-                <ellipse cx="138" cy="70" rx="26" ry="11" fill="#fff" opacity="0.2" transform="rotate(-18 138 70)" filter={g('soft2')} />
-                <path d="M160 100C150 84 110 88 110 120C110 148 138 172 160 172C182 172 210 148 210 120C210 88 170 84 160 100Z" fill="#2a1a12" opacity="0.14" filter={g('soft2')} transform="translate(0 2)" />
-                <path d="M160 100C150 84 110 88 110 120C110 148 138 172 160 172C182 172 210 148 210 120C210 88 170 84 160 100Z" fill={g('face')} />
+              {/* head: the big round part of the pet */}
+              <motion.g animate={{ y: covering ? 8 : 0 }} transition={{ type: 'spring', stiffness: 220, damping: 18 }}>
+                <motion.g style={{ rotate: headTilt, x: lean, originX: '160px', originY: '190px', transformBox: 'view-box' }}>
+                  <circle cx="80" cy="110" r="24" fill={g('fur')} />
+                  <circle cx="81" cy="111" r="13" fill="#d9aa95" opacity="0.75" />
+                  <circle cx="240" cy="110" r="24" fill={g('fur')} />
+                  <circle cx="239" cy="111" r="13" fill="#d9aa95" opacity="0.75" />
+                  <circle cx="160" cy="134" r="82" fill="#1a110c" opacity="0.2" filter={g('soft2')} transform="translate(2 6)" />
+                  <circle cx="160" cy="130" r="82" fill={g('fur')} />
+                  <ellipse cx="128" cy="74" rx="30" ry="12" fill="#fff" opacity="0.22" transform="rotate(-20 128 74)" filter={g('soft2')} />
+                  <g fill="#2a1a12" opacity="0.13" filter={g('soft2')} transform="translate(0 3)">
+                    <circle cx="132" cy="124" r="37" />
+                    <circle cx="188" cy="124" r="37" />
+                    <ellipse cx="160" cy="150" rx="60" ry="46" />
+                  </g>
+                  <g fill={g('face')}>
+                    <circle cx="132" cy="124" r="37" />
+                    <circle cx="188" cy="124" r="37" />
+                    <ellipse cx="160" cy="150" rx="60" ry="46" />
+                  </g>
 
-                <motion.g style={{ x: faceX, y: faceY }}>
-                  <motion.g style={{ x: eyeX, y: eyeY }}>
-                    {!happy && !sleepy && (
-                      <g className="di-eyes">
-                        {[139, 181].map((cx) => (
-                          <g key={cx}>
-                            <ellipse cx={cx} cy="119" rx={mood === 'error' ? 9.5 : 10.5} ry={mood === 'error' ? 11 : 12.5} fill={EYE} />
-                            <ellipse cx={cx} cy="125" rx="6" ry="4" fill="#4a3a30" opacity="0.5" />
-                            <circle cx={cx + 3.4} cy="114" r="3.8" fill="#fff" opacity="0.95" />
-                            <circle cx={cx - 3} cy="124" r="1.7" fill="#fff" opacity="0.55" />
-                          </g>
-                        ))}
+                  <motion.g style={{ x: faceX, y: faceY }}>
+                    <motion.g style={{ x: eyeX, y: eyeY }}>
+                      {!happy && !sleepy && !covering && (
+                        <g className="di-eyes">
+                          {[133, 187].map((cx) => (
+                            <g key={cx}>
+                              <ellipse cx={cx} cy="128" rx={mood === 'error' ? 10.5 : 11.5} ry={mood === 'error' ? 12 : 14} fill={EYE} />
+                              <ellipse cx={cx} cy="134" rx="6.5" ry="4.4" fill="#4a3a30" opacity="0.5" />
+                              <circle cx={cx + 3.8} cy="122" r="4.4" fill="#fff" opacity="0.95" />
+                              <circle cx={cx - 3.2} cy="133" r="1.9" fill="#fff" opacity="0.55" />
+                            </g>
+                          ))}
+                        </g>
+                      )}
+                    </motion.g>
+                    {happy && (
+                      <g stroke={EYE} strokeWidth="5" strokeLinecap="round" fill="none">
+                        <path d="M120 133Q133 116 146 133" />
+                        <path d="M174 133Q187 116 200 133" />
                       </g>
                     )}
+                    {sleepy && (
+                      <g stroke={EYE} strokeWidth="5" strokeLinecap="round" fill="none">
+                        <path d="M120 127Q133 138 146 127" />
+                        <path d="M174 127Q187 138 200 127" />
+                      </g>
+                    )}
+                    {shades && (
+                      <g>
+                        <rect x="110" y="111" width="47" height="33" rx="14" fill={g('lens')} />
+                        <rect x="163" y="111" width="47" height="33" rx="14" fill={g('lens')} />
+                        <path d="M157 122H163" stroke="#1d1511" strokeWidth="4" />
+                        <path d="M110 120L97 114M210 120L223 114" stroke="#1d1511" strokeWidth="3.4" strokeLinecap="round" />
+                        <path d="M117 119L131 117M170 119L184 117" stroke="#fff" strokeOpacity="0.35" strokeWidth="2.8" strokeLinecap="round" />
+                      </g>
+                    )}
+                    {worried && !happy && !sleepy && !shades && (
+                      <g stroke={BROW} strokeWidth="3.4" strokeLinecap="round" fill="none" opacity="0.85">
+                        <path d="M118 106Q131 99 146 108M174 108Q189 99 202 106" />
+                      </g>
+                    )}
+                    <ellipse cx="106" cy="154" rx="11" ry="6.5" fill="#e8988a" opacity={happy ? 0.42 : 0.24} />
+                    <ellipse cx="214" cy="154" rx="11" ry="6.5" fill="#e8988a" opacity={happy ? 0.42 : 0.24} />
+                    <ellipse cx="160" cy="149" rx="7.5" ry="5" fill="#5c4435" />
+                    <ellipse cx="158" cy="147.5" rx="2.4" ry="1.4" fill="#fff" opacity="0.4" />
+                    {happy ? (
+                      <g>
+                        <path d="M145 159Q160 184 175 159Z" fill="#6e2a1e" />
+                        <path d="M153 170Q160 178 167 170Q160 166 153 170Z" fill="#e48b74" />
+                      </g>
+                    ) : mood === 'error' ? (
+                      <ellipse cx="160" cy="165" rx="6" ry="7.6" fill="#6e2a1e" />
+                    ) : mood === 'thinking' || covering ? (
+                      <path d="M148 164Q154 159 160 164T172 164" stroke={BROW} strokeWidth="3.2" strokeLinecap="round" fill="none" />
+                    ) : sleepy ? (
+                      <ellipse cx="160" cy="164" rx="4.6" ry="3.4" fill="#6e2a1e" />
+                    ) : (
+                      <path d="M148 158Q160 171 172 158" stroke={BROW} strokeWidth="3.4" strokeLinecap="round" fill="none" />
+                    )}
                   </motion.g>
-                  {happy && (
-                    <g stroke={EYE} strokeWidth="4.6" strokeLinecap="round" fill="none">
-                      <path d="M127 123Q139 108 151 123" />
-                      <path d="M169 123Q181 108 193 123" />
-                    </g>
-                  )}
-                  {sleepy && (
-                    <g stroke={EYE} strokeWidth="4.6" strokeLinecap="round" fill="none">
-                      <path d="M127 119Q139 128 151 119" />
-                      <path d="M169 119Q181 128 193 119" />
-                    </g>
-                  )}
-                  {shades && (
+
+                  {/* head wear: a fez by day, a nightcap after dark */}
+                  {!cap ? (
                     <g>
-                      <rect x="121" y="105" width="38" height="28" rx="13" fill={g('lens')} />
-                      <rect x="161" y="105" width="38" height="28" rx="13" fill={g('lens')} />
-                      <path d="M159 113H161" stroke="#1d1511" strokeWidth="4" />
-                      <path d="M121 111L109 106M199 111L211 106" stroke="#1d1511" strokeWidth="3.4" strokeLinecap="round" />
-                      <path d="M127 112L139 110M167 112L179 110" stroke="#fff" strokeOpacity="0.35" strokeWidth="2.6" strokeLinecap="round" />
+                      <ellipse cx="160" cy="68" rx="42" ry="9" fill="#1a110c" opacity="0.3" filter={g('soft2')} />
+                      <path d="M121 68L131 28Q160 19 189 28L199 68Q160 80 121 68Z" fill={g('fez')} />
+                      <path d="M131 28Q160 19 189 28L190 35Q160 26 130 35Z" fill="#fff" opacity="0.14" />
+                      <path d="M122 62Q160 74 198 62" stroke={GOLD} strokeWidth="3.2" strokeLinecap="round" fill="none" />
+                      <ellipse cx="160" cy="27" rx="29" ry="6.5" fill={FEZ_HI} />
+                      <g className="di-tassel" style={{ transformOrigin: '160px 26px', transformBox: 'view-box' }}>
+                        <path d="M160 26C176 26 188 38 190 55" stroke={GOLD_LO} strokeWidth="2.6" strokeLinecap="round" fill="none" />
+                        <circle cx="190" cy="59" r="6" fill={GOLD} />
+                        <circle cx="188" cy="57" r="2.2" fill="#fff" opacity="0.5" />
+                      </g>
                     </g>
-                  )}
-                  {worried && !happy && !sleepy && !shades && (
-                    <g stroke={BROW} strokeWidth="3.2" strokeLinecap="round" fill="none" opacity="0.85">
-                      <path d="M127 100Q138 94 151 102M169 102Q182 94 193 100" />
-                    </g>
-                  )}
-                  <ellipse cx="122" cy="146" rx="10" ry="6" fill="#e8988a" opacity={happy ? 0.38 : 0.2} />
-                  <ellipse cx="198" cy="146" rx="10" ry="6" fill="#e8988a" opacity={happy ? 0.38 : 0.2} />
-                  <ellipse cx="160" cy="141" rx="7.5" ry="5" fill="#5c4435" />
-                  <ellipse cx="158" cy="139.5" rx="2.4" ry="1.4" fill="#fff" opacity="0.4" />
-                  {happy ? (
-                    <g>
-                      <path d="M144 152Q160 176 176 152Z" fill="#6e2a1e" />
-                      <path d="M152 162Q160 170 168 162Q160 158 152 162Z" fill="#e48b74" />
-                    </g>
-                  ) : mood === 'error' ? (
-                    <ellipse cx="160" cy="158" rx="6" ry="7.6" fill="#6e2a1e" />
-                  ) : mood === 'thinking' || covering ? (
-                    <path d="M148 157Q154 152 160 157T172 157" stroke={BROW} strokeWidth="3.2" strokeLinecap="round" fill="none" />
-                  ) : sleepy ? (
-                    <ellipse cx="160" cy="157" rx="4.6" ry="3.4" fill="#6e2a1e" />
                   ) : (
-                    <path d="M147 151Q160 164 173 151" stroke={BROW} strokeWidth="3.4" strokeLinecap="round" fill="none" />
+                    <g>
+                      <ellipse cx="160" cy="72" rx="46" ry="9" fill="#1a110c" opacity="0.3" filter={g('soft2')} />
+                      <path d="M110 74C112 32 148 8 198 22C222 29 238 25 256 46C240 56 218 56 202 51C170 42 134 52 110 74Z" fill={g('cap')} />
+                      <path d="M109 76C140 56 176 54 206 60" stroke={CREAM} strokeOpacity="0.9" strokeWidth="7.5" strokeLinecap="round" fill="none" />
+                      <circle cx="257" cy="46" r="9.5" fill={CREAM} />
+                      <circle cx="254" cy="43" r="3" fill="#fff" opacity="0.6" />
+                    </g>
                   )}
                 </motion.g>
-
-                {/* head wear: a fez by day, a nightcap after dark */}
-                {!cap ? (
-                  <g>
-                    <ellipse cx="160" cy="78" rx="44" ry="9" fill="#1a110c" opacity="0.3" filter={g('soft2')} />
-                    <path d="M120 78L130 40Q160 31 190 40L200 78Q160 89 120 78Z" fill={g('fez')} />
-                    <path d="M130 40Q160 31 190 40L191 47Q160 38 129 47Z" fill="#fff" opacity="0.14" />
-                    <path d="M121 72Q160 83 199 72" stroke={GOLD} strokeWidth="3.2" strokeLinecap="round" fill="none" />
-                    <ellipse cx="160" cy="38" rx="30" ry="6.5" fill={FEZ_HI} />
-                    <g className="di-tassel" style={{ transformOrigin: '160px 36px', transformBox: 'view-box' }}>
-                      <path d="M160 36C175 36 186 47 188 63" stroke={GOLD_LO} strokeWidth="2.6" strokeLinecap="round" fill="none" />
-                      <circle cx="188" cy="67" r="6" fill={GOLD} />
-                      <circle cx="186" cy="65" r="2.2" fill="#fff" opacity="0.5" />
-                    </g>
-                  </g>
-                ) : (
-                  <g>
-                    <ellipse cx="160" cy="80" rx="46" ry="9" fill="#1a110c" opacity="0.3" filter={g('soft2')} />
-                    <path d="M108 82C112 46 150 24 202 42C222 49 238 44 252 62C236 72 214 72 200 67C170 57 134 63 108 82Z" fill={g('cap')} />
-                    <path d="M107 84C140 64 176 64 204 71" stroke={CREAM} strokeOpacity="0.9" strokeWidth="7" strokeLinecap="round" fill="none" />
-                    <circle cx="253" cy="62" r="9" fill={CREAM} />
-                    <circle cx="250" cy="59" r="3" fill="#fff" opacity="0.6" />
-                  </g>
-                )}
               </motion.g>
 
-              {/* arms on top so hands can cover the face */}
+              {/* arms on top so mitts can cover the face */}
               <Arm side="left" pose={poseL} aim={left.aim} />
               <Arm side="right" pose={poseR} aim={right.aim} />
 
               {showUmbrella && (
                 <g className="di-umbrella">
-                  <path d="M230 142V30" stroke="#3a2a20" strokeWidth="4.4" strokeLinecap="round" />
-                  <ellipse cx="231" cy="52" rx="62" ry="10" fill="#08201a" opacity="0.25" filter={g('soft2')} />
-                  <path d="M168 46C168 -6 294 -6 294 46C283 36 273 36 262 46C251 36 241 36 231 46C221 36 211 36 200 46C190 36 180 36 168 46Z" fill={g('fez')} />
-                  <path d="M168 46C180 36 190 36 200 46C211 36 221 36 231 46C241 36 251 36 262 46C273 36 283 36 294 46" stroke="#fff" strokeOpacity="0.18" strokeWidth="2" fill="none" />
-                  <path d="M231 4C209 10 191 25 185 46M231 4C253 10 271 25 277 46" stroke="#fff" strokeOpacity="0.16" strokeWidth="2" fill="none" />
-                  {[196, 224, 252, 276].map((x, i) => (
-                    <path key={x} className="di-drop" style={{ animationDelay: `${i * 0.33}s` }} d={`M${x} 68q-3.6 6.5 0 9q3.6 -2.8 0 -9Z`} fill="#b5e3d8" opacity="0.85" />
+                  <path d="M252 172V40" stroke="#3a2a20" strokeWidth="4.4" strokeLinecap="round" />
+                  <ellipse cx="252" cy="58" rx="58" ry="9" fill="#08201a" opacity="0.25" filter={g('soft2')} />
+                  <path d="M196 52C196 -2 308 -2 308 52C298 42 289 42 280 52C271 42 262 42 252 52C243 42 233 42 224 52C215 42 206 42 196 52Z" fill={g('fez')} />
+                  <path d="M196 52C206 42 215 42 224 52C233 42 243 42 252 52C262 42 271 42 280 52C289 42 298 42 308 52" stroke="#fff" strokeOpacity="0.18" strokeWidth="2" fill="none" />
+                  <path d="M252 8C232 14 214 28 208 52M252 8C272 14 290 28 296 52" stroke="#fff" strokeOpacity="0.16" strokeWidth="2" fill="none" />
+                  {[216, 240, 266, 290].map((x, i) => (
+                    <path key={x} className="di-drop" style={{ animationDelay: `${i * 0.33}s` }} d={`M${x} 72q-3.6 6.5 0 9q3.6 -2.8 0 -9Z`} fill="#b5e3d8" opacity="0.85" />
                   ))}
                 </g>
               )}
 
               {mood === 'error' && (
                 <g key={`sweat-${errorTick}`} className="di-drop" style={{ animationIterationCount: 2 }}>
-                  <path d="M214 92c-7 10-10 15-10 20a10 10 0 0 0 20 0c0-5-3-10-10-20Z" fill="#b9e6dc" opacity="0.9" />
+                  <path d="M228 98c-7 10-10 15-10 20a10 10 0 0 0 20 0c0-5-3-10-10-20Z" fill="#b9e6dc" opacity="0.9" />
                 </g>
               )}
 
               {sleepy && (
                 <g fontFamily="'Journie Display', serif" fontWeight="600" fill="#d9f0e8" opacity="0.9">
-                  <text className="di-zzz" x="214" y="56" fontSize="28">z</text>
-                  <text className="di-zzz" style={{ animationDelay: '0.9s' }} x="232" y="40" fontSize="21">z</text>
-                  <text className="di-zzz" style={{ animationDelay: '1.7s' }} x="246" y="26" fontSize="15">z</text>
+                  <text className="di-zzz" x="236" y="62" fontSize="28">z</text>
+                  <text className="di-zzz" style={{ animationDelay: '0.9s' }} x="254" y="44" fontSize="21">z</text>
+                  <text className="di-zzz" style={{ animationDelay: '1.7s' }} x="268" y="28" fontSize="15">z</text>
                 </g>
               )}
 
               {happy && (
                 <>
-                  <Sparkle x={30} y={84} size={10} delay={0} />
-                  <Sparkle x={292} y={70} size={12} delay={0.4} />
-                  <Sparkle x={304} y={176} size={8} delay={0.8} />
-                  <Sparkle x={14} y={180} size={9} delay={0.2} />
+                  <Sparkle x={28} y={84} size={10} delay={0} />
+                  <Sparkle x={294} y={74} size={12} delay={0.4} />
+                  <Sparkle x={302} y={176} size={8} delay={0.8} />
+                  <Sparkle x={16} y={184} size={9} delay={0.2} />
                 </>
               )}
             </svg>

@@ -19,6 +19,8 @@ import { StarRating } from '../ui/Stars'
 import { CategoryIcon } from '../icons'
 import { CategoryGlyph, CategoryName, Skeleton } from '../ui/primitives'
 import { Sheet } from '../ui/Sheet'
+import { tripTitle } from '../../domain/tripText'
+import { tagLabel } from '../../domain/tags'
 
 /** Venue details, reviews and "add to trip". Shared by Discover, the editor and the live view. */
 export function PoiSheet() {
@@ -126,7 +128,7 @@ export function PoiSheet() {
           <div className="flex flex-wrap gap-1.5" aria-label={tr('Dịch vụ và đặc điểm', 'Services and features')}>
             {poi.tags.map((tag) => (
               <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-lapis/8 px-2.5 py-1 text-[0.72rem] font-semibold text-lapis">
-                <Tag size={11} aria-hidden="true" /> {tag.replace(/-/g, ' ')}
+                <Tag size={11} aria-hidden="true" /> {tagLabel(tag, language)}
               </span>
             ))}
           </div>
@@ -184,7 +186,7 @@ export function PoiSheet() {
                 <select id="trip-pick" value={selectedTrip?.id} onChange={(event) => setTripId(event.target.value)} className="mt-1 h-11 w-full rounded-lg border border-forest/20 bg-white px-3 text-sm outline-none focus:border-lapis">
                   {candidates.map((trip) => (
                     <option key={trip.id} value={trip.id}>
-                      {trip.title}
+                      {tripTitle(trip, language)}
                     </option>
                   ))}
                 </select>

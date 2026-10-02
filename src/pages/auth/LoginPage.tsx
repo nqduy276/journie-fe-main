@@ -284,7 +284,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
         <button type="button" className="demo-chip" onClick={() => fillDemo('admin')} disabled={busy}>
           <ShieldCheck size={16} aria-hidden="true" />
           <span>
-            <strong>Business Admin</strong>
+            <strong>{tr('Quản trị viên', 'Business Admin')}</strong>
             <small>{tr('Báo cáo, phân tích', 'Reports, analytics')}</small>
           </span>
         </button>

@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { CHEER_EVENT } from '../../lib/cheer'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
 import { useTr } from '../../hooks/useTr'
+import { useDiLive } from '../../store/diLiveStore'
 import { useMascotPrefs } from '../../store/mascotStore'
 import { useUiStore } from '../../store/uiStore'
 import { useSky, type Weather } from '../../store/weatherStore'
@@ -70,9 +71,8 @@ export function DiCompanion() {
   const location = useLocation()
   const navigate = useNavigate()
   const { canPointerFx } = useMotionPrefs()
-  const hidden = useMascotPrefs((state) => state.hidden)
   const point = useMascotPrefs((state) => state.point)
-  const setHidden = useMascotPrefs((state) => state.setHidden)
+  const publish = useDiLive((state) => state.publish)
 
   const [mood, setMood] = useState<MascotMood>('wave')
   const [tip, setTip] = useState<Tip | null>(null)
@@ -100,7 +100,7 @@ export function DiCompanion() {
 
   // Point at the control the pointer is resting on.
   useEffect(() => {
-    if (!point || !canPointerFx || hidden) return
+    if (!point || !canPointerFx) return
     let timer = 0
     const onOver = (event: PointerEvent) => {
       window.clearTimeout(timer)
@@ -128,41 +128,37 @@ export function DiCompanion() {
       document.removeEventListener('pointerleave', onOut)
       document.removeEventListener('pointerdown', onOut)
     }
-  }, [point, canPointerFx, hidden])
+  }, [point, canPointerFx])
 
   // Something nice happened elsewhere in the app: cheer.
   useEffect(() => {
-    if (hidden) return
     const onCheer = () => feel('joy', 1200)
     window.addEventListener(CHEER_EVENT, onCheer)
     return () => window.removeEventListener(CHEER_EVENT, onCheer)
-  }, [hidden, feel])
+  }, [feel])
 
   // Greeting.
   useEffect(() => {
-    if (hidden) return
     const hello = window.setTimeout(() => say({ vi: 'Chào bạn, mình là Di! Mình sẽ nhìn theo bạn và nhắc mọi thứ nhé.', en: 'Hi, I am Di! I will keep an eye on you and keep you posted.' }, 6000), 1400)
     const settle = window.setTimeout(() => setMood('idle'), 2800)
     return () => {
       window.clearTimeout(hello)
       window.clearTimeout(settle)
     }
-  }, [hidden, say])
+  }, [say])
 
   // Notices when the weather changes.
   useEffect(() => {
-    if (hidden) return
     const previous = lastWeather.current
     lastWeather.current = sky.key
     if (previous === null || previous === sky.key) return
     const tips = WEATHER_TIPS[sky.phase][sky.weather]
     say(tips[tipIndex.current % tips.length], 8000)
     feel(sky.weather === 'storm' ? 'error' : 'wave', 1800)
-  }, [sky.key, sky.phase, sky.weather, hidden, say, feel])
+  }, [sky.key, sky.phase, sky.weather, say, feel])
 
   // Tips that fit the hour, once each, and one about the page you land on.
   useEffect(() => {
-    if (hidden) return
     const timer = window.setTimeout(() => {
       const hour = hourTip(new Date())
       if (hour && !seenSlots.current.has(hour.slot)) {
@@ -174,11 +170,10 @@ export function DiCompanion() {
       if (hit) say(hit.tip, 6000)
     }, 2600)
     return () => window.clearTimeout(timer)
-  }, [location.pathname, hidden, say])
+  }, [location.pathname, say])
 
   // Falls asleep after a while, wakes on any activity.
   useEffect(() => {
-    if (hidden) return
     const arm = () => {
       window.clearTimeout(sleepTimer.current)
       sleepTimer.current = window.setTimeout(() => {
@@ -201,7 +196,12 @@ export function DiCompanion() {
       window.clearTimeout(sleepTimer.current)
       events.forEach((name) => window.removeEventListener(name, onActivity))
     }
-  }, [hidden, feel])
+  }, [feel])
+
+  // Share what Di feels and points at with the other Di on screen.
+  useEffect(() => {
+    publish({ mood, pointAt })
+  }, [mood, pointAt, publish])
 
   useEffect(
     () => () => {
@@ -228,10 +228,8 @@ export function DiCompanion() {
     feel('joy', 1000)
   }
 
-  if (hidden) return null
-
   return (
-    <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[6.6rem] sm:right-3 sm:w-[7.6rem] lg:bottom-2 lg:right-5 lg:w-[8.6rem]" aria-live="polite">
+    <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[5rem] sm:right-3 sm:w-[5.6rem] lg:bottom-2 lg:right-5 lg:w-[6.2rem]" aria-live="polite">
       <AnimatePresence>
         {tip && (
           <motion.div
@@ -258,12 +256,9 @@ export function DiCompanion() {
         )}
       </AnimatePresence>
 
-      <motion.div initial={{ y: 40, opacity: 0, scale: 0.8 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 15, delay: 0.4 }} className="group relative">
+      <motion.div initial={{ y: 40, opacity: 0, scale: 0.8 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 15, delay: 0.4 }} className="relative">
         <button type="button" onClick={poke} className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-105 active:scale-95" aria-label={tr('Hỏi Di một gợi ý', 'Ask Di for a tip')}>
           <DiAvatar mood={mood} pointAt={pointAt} className="aspect-[320/300] w-full" />
-        </button>
-        <button type="button" onClick={() => setHidden(true)} className="pointer-events-auto absolute -left-1 top-0 hidden size-6 place-items-center rounded-full border border-[#173f35]/25 bg-[#f7f2e8]/90 text-[#173f35]/65 transition-colors hover:text-terracotta group-hover:grid group-focus-within:grid" aria-label={tr('Cho Di nghỉ', 'Let Di rest')} title={tr('Cho Di nghỉ', 'Let Di rest')}>
-          <X size={12} />
         </button>
       </motion.div>
     </div>

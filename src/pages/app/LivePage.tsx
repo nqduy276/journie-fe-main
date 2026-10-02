@@ -21,6 +21,7 @@ import { useNotificationStore } from '../../store/notificationStore'
 import { useWeatherStore } from '../../store/weatherStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
+import { tripTitle } from '../../domain/tripText'
 
 /** Speed of the demo clock in simulated minutes per real second. */
 const SPEEDS = [
@@ -209,7 +210,7 @@ export function LivePage() {
             <ArrowLeft size={14} aria-hidden="true" /> {tr('Về lịch trình', 'Back to itinerary')}
           </Link>
         }
-        title={trip.title}
+        title={tripTitle(trip, language)}
         subtitle={tr(`${city.name} · đồng hồ mô phỏng, bạn có thể tua nhanh để xem Di theo dõi chuyến đi.`, `${city.nameEn} · a simulated clock; speed it up to watch Di track the trip.`)}
         actions={
           <>
@@ -217,7 +218,7 @@ export function LivePage() {
               {playing ? <Pause size={15} aria-hidden="true" /> : <Play size={15} aria-hidden="true" />}
               {playing ? tr('Tạm dừng', 'Pause') : tr('Tiếp tục', 'Resume')}
             </button>
-            <Segmented label="speed" value={speed} onChange={setSpeed} options={SPEEDS.map((item) => ({ value: item.id, label: item.label }))} />
+            <Segmented label={tr('Tốc độ mô phỏng', 'Simulation speed')} value={speed} onChange={setSpeed} options={SPEEDS.map((item) => ({ value: item.id, label: item.label }))} />
           </>
         }
       />

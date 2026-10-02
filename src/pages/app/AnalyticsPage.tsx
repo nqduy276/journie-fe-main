@@ -1,14 +1,36 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Activity, BrainCircuit, Download, Radio, Route, Table2, Users, Wand2 } from 'lucide-react'
-import type { AnalyticsReport, DailyPoint } from '../../api/analytics'
+import type { AnalyticsEvent, AnalyticsReport, DailyPoint } from '../../api/analytics'
 import { useAnalytics } from '../../api/queries'
 import { CountUp } from '../../components/motion/CountUp'
 import { PageHeader } from '../../components/PageHeader'
 import { Skeleton } from '../../components/ui/primitives'
 import { disruptionMeta } from '../../domain/replan'
 import { cityById } from '../../domain/pois'
+import { SOLVER_STATUS_LABEL } from '../../domain/solverStatus'
 import { useTr } from '../../hooks/useTr'
+
+/** How the interaction log's data keys read in each language. */
+const EVENT_LABEL: Record<AnalyticsEvent['type'], [vi: string, en: string]> = {
+  trip_created: ['Tạo lịch trình', 'Itinerary created'],
+  trip_edited: ['Chỉnh lịch trình', 'Itinerary edited'],
+  replan_suggested: ['Gợi ý đổi lịch', 'Replan suggested'],
+  replan_accepted: ['Chấp nhận đổi lịch', 'Replan accepted'],
+  replan_dismissed: ['Giữ lịch cũ', 'Replan dismissed'],
+  trip_started: ['Bắt đầu chuyến đi', 'Trip started'],
+  search: ['Tìm kiếm', 'Search'],
+}
+const DETAIL_LABEL: Record<string, [vi: string, en: string]> = {
+  reorder: ['đổi thứ tự', 'reorder'],
+  duration: ['đổi thời lượng', 'duration'],
+  remove: ['bỏ điểm', 'remove stop'],
+  add: ['thêm điểm', 'add stop'],
+  lock: ['khoá điểm', 'lock stop'],
+  rename: ['đổi tên', 'rename'],
+  'auto-adjust': ['Di tự điều chỉnh', 'auto-adjust'],
+  'add-from-sheet': ['thêm từ Khám phá', 'add from Discover'],
+}
 
 /* Landing-palette hues, checked with the dataviz validator against the panel surface (#fbf8f0):
    categorical  #0f9a80 (jade) · #d95a2b (terracotta)   (all checks pass, CVD ΔE 12, normal ΔE 26)
@@ -395,8 +417,8 @@ export function AnalyticsPage() {
             <Card title={tr('Phân bố λ được chọn', 'Chosen λ distribution')} subtitle={tr('λ nhỏ nghiêng về trải nghiệm, lớn nghiêng về ổn định.', 'Small λ favours experience, large favours stability.')}>
               <HBars rows={data.lambdaBins.map((bin) => ({ label: `${bin.from.toFixed(1)}–${bin.to.toFixed(1)}`, value: bin.count }))} />
             </Card>
-            <Card title={tr('Trạng thái bộ giải', 'Solver outcomes')} subtitle={tr('FEASIBLE: thỏa ràng buộc, chưa chứng minh tối ưu.', 'FEASIBLE: constraints met, optimality not proven.')}>
-              <HBars rows={data.statuses.map((s) => ({ label: s.key, value: s.count }))} />
+            <Card title={tr('Trạng thái bộ giải', 'Solver outcomes')} subtitle={tr('Khả thi: thỏa ràng buộc, chưa chứng minh tối ưu.', 'Feasible: constraints met, optimality not proven.')}>
+              <HBars rows={data.statuses.map((s) => ({ label: tr(...SOLVER_STATUS_LABEL[s.key]), value: s.count }))} />
             </Card>
           </div>
 
@@ -408,8 +430,8 @@ export function AnalyticsPage() {
                 {data.live.map((event, index) => (
                   <li key={event.t + index} className="tabular flex items-center gap-3 py-2 text-sm">
                     <span className="w-16 text-xs text-ink/45">{new Date(event.t).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</span>
-                    <span className="font-semibold text-ink">{event.type.replace(/_/g, ' ')}</span>
-                    <span className="text-ink/55">{[event.city && cityById[event.city].name, event.reason, event.lambda !== undefined && `λ ${event.lambda}`, event.detail].filter(Boolean).join(' · ')}</span>
+                    <span className="font-semibold text-ink">{tr(...EVENT_LABEL[event.type])}</span>
+                    <span className="text-ink/55">{[event.city && (vi ? cityById[event.city].name : cityById[event.city].nameEn), event.reason && (vi ? disruptionMeta[event.reason].vi : disruptionMeta[event.reason].en), event.lambda !== undefined && `λ ${event.lambda}`, event.detail && (DETAIL_LABEL[event.detail] ? tr(...DETAIL_LABEL[event.detail]) : event.detail)].filter(Boolean).join(' · ')}</span>
                   </li>
                 ))}
               </ul>

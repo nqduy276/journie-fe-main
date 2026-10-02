@@ -20,6 +20,7 @@ import { usePortalStore } from '../store/portalStore'
 import { useMascotPrefs } from '../store/mascotStore'
 import { useSky } from '../store/weatherStore'
 import { fmtTime } from '../domain/time'
+import { tripTitle } from '../domain/tripText'
 
 type NavItem = { to: string; end?: boolean; icon: NavIconName; vi: string; en: string }
 
@@ -75,30 +76,25 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
   )
 }
 
-/** Di's two switches: out or resting, and trailing the pointer or waiting in the corner. */
+/** Whether Di points at the control under the pointer (it always looks toward the pointer). */
 function DiControls() {
   const { tr } = useTr()
-  const hidden = useMascotPrefs((state) => state.hidden)
   const point = useMascotPrefs((state) => state.point)
-  const setHidden = useMascotPrefs((state) => state.setHidden)
   const setPoint = useMascotPrefs((state) => state.setPoint)
   return (
-    <div className="mb-3 flex items-center justify-between gap-2 border border-paper/12 px-3 py-2 text-[0.72rem] text-paper/75">
-      <button type="button" role="switch" aria-checked={point && !hidden} disabled={hidden} onClick={() => setPoint(!point)} className="flex items-center gap-2 disabled:opacity-40">
-        <span className={`relative h-4 w-7 rounded-full transition-colors ${point && !hidden ? 'bg-sun' : 'bg-paper/25'}`}>
-          <span className={`absolute top-0.5 size-3 rounded-full bg-night transition-all ${point && !hidden ? 'left-[0.875rem]' : 'left-0.5'}`} />
+    <div className="mb-3 border border-paper/12 px-3 py-2 text-[0.72rem] text-paper/75">
+      <button type="button" role="switch" aria-checked={point} onClick={() => setPoint(!point)} className="flex items-center gap-2">
+        <span className={`relative h-4 w-7 rounded-full transition-colors ${point ? 'bg-sun' : 'bg-paper/25'}`}>
+          <span className={`absolute top-0.5 size-3 rounded-full bg-night transition-all ${point ? 'left-[0.875rem]' : 'left-0.5'}`} />
         </span>
-        {tr('Di chỉ theo con trỏ', 'Di points along')}
-      </button>
-      <button type="button" onClick={() => setHidden(!hidden)} className="font-semibold text-sun transition-colors hover:text-terracotta">
-        {hidden ? tr('Gọi Di', 'Call Di') : tr('Cho Di nghỉ', 'Rest Di')}
+        {tr('Di chỉ vào nơi bạn trỏ', 'Di points where you point')}
       </button>
     </div>
   )
 }
 
 function LiveChip() {
-  const { tr } = useTr()
+  const { tr, language } = useTr()
   const { data: trips } = useTrips()
   const live = trips?.find((trip) => trip.status === 'live')
   if (!live) return null
@@ -112,9 +108,9 @@ function LiveChip() {
         <span className="pulse-dot size-2 rounded-full bg-firuze" aria-hidden="true" />
         {tr('Đang đi', 'On the road')}
       </span>
-      <span className="mt-1 block text-sm font-semibold text-paper">{live.title}</span>
+      <span className="mt-1 block text-sm font-semibold text-paper">{tripTitle(live, language)}</span>
       <span className="mt-0.5 block text-xs text-paper/60">
-        {city.name} · {fmtTime(live.dayStart)}–{fmtTime(live.dayEnd)}
+        {language === 'vi' ? city.name : city.nameEn} · {fmtTime(live.dayStart)}–{fmtTime(live.dayEnd)}
       </span>
     </Link>
   )
@@ -266,7 +262,7 @@ export function AppShell() {
             <Avatar name={user.name} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-paper">{user.name}</p>
-              <p className="truncate text-xs text-paper/55">{user.role === 'admin' ? 'Business Admin' : tr('Lữ khách', 'Traveler')}</p>
+              <p className="truncate text-xs text-paper/55">{user.role === 'admin' ? tr('Quản trị viên', 'Business admin') : tr('Lữ khách', 'Traveler')}</p>
             </div>
             <button type="button" onClick={logout} className="grid size-10 place-items-center text-paper/55 transition-colors hover:text-terracotta" aria-label={tr('Đăng xuất', 'Sign out')} title={tr('Đăng xuất', 'Sign out')}>
               <LogOut size={18} />

@@ -21,6 +21,7 @@ import { weatherFor } from '../../domain/conditions'
 import { explainPoi } from '../../domain/scoring'
 import { cities, cityById, poiById } from '../../domain/pois'
 import { retimeDay, tripCost } from '../../domain/solver'
+import { SOLVER_STATUS_LABEL } from '../../domain/solverStatus'
 import { formatVnd, todayIso } from '../../domain/time'
 import type { Intent } from '../../domain/nlp'
 import type { CityId, Pace, TransportPref } from '../../domain/types'
@@ -396,7 +397,7 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
             <div>
               <p className="mb-2 text-[0.8rem] font-semibold text-ink/75">{tr('Nhịp độ', 'Pace')}</p>
               <Segmented
-                label="pace"
+                label={tr('Nhịp độ', 'Pace')}
                 value={params.pace}
                 onChange={(value) => set('pace', value)}
                 options={[
@@ -412,7 +413,7 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
             <div>
               <p className="mb-2 text-[0.8rem] font-semibold text-ink/75">{tr('Di chuyển', 'Getting around')}</p>
               <Segmented
-                label="transport"
+                label={tr('Di chuyển', 'Getting around')}
                 value={params.transport}
                 onChange={(value) => set('transport', value)}
                 options={[
@@ -469,7 +470,7 @@ function Pipeline({ stage, report, params, intent }: { stage: number; report?: P
     tr(`${intent?.chips.length ?? 0} yêu cầu: ${intent?.chips.filter((chip) => chip.kind === 'hard').length ?? 0} cứng, ${intent?.chips.filter((chip) => chip.kind === 'soft').length ?? 0} mềm`, `${intent?.chips.length ?? 0} requirements: ${intent?.chips.filter((chip) => chip.kind === 'hard').length ?? 0} hard, ${intent?.chips.filter((chip) => chip.kind === 'soft').length ?? 0} soft`),
     report ? `${report.weather.tempC}°C · ${tr('mưa', 'rain')} ${report.weather.rainChance}% · ${report.considered} ${tr('địa điểm', 'places')}` : '…',
     report ? tr(`Công thức S = αC + βR + γP + δB + εG, loại ${report.excluded} điểm`, `S = αC + βR + γP + δB + εG, ${report.excluded} excluded`) : '…',
-    report ? `${report.trip.solver.status} · ${report.trip.solver.nodes.toLocaleString(vi ? 'vi-VN' : 'en-US')} ${tr('trạng thái', 'states')} · ${report.trip.solver.ms} ms` : '…',
+    report ? `${tr(...SOLVER_STATUS_LABEL[report.trip.solver.status])} · ${report.trip.solver.nodes.toLocaleString(vi ? 'vi-VN' : 'en-US')} ${tr('trạng thái', 'states')} · ${report.trip.solver.ms} ms` : '…',
     tr('Ước lượng quãng đường bằng bảng OSRM', 'Travel times from the OSRM table'),
     report ? tr(`${report.trip.days.reduce((n, day) => n + day.stops.length, 0)} điểm, ${params.days} ngày`, `${report.trip.days.reduce((n, day) => n + day.stops.length, 0)} stops over ${params.days} day(s)`) : '…',
   ]
