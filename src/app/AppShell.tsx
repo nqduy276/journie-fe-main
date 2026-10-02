@@ -79,16 +79,16 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
 function DiControls() {
   const { tr } = useTr()
   const hidden = useMascotPrefs((state) => state.hidden)
-  const follow = useMascotPrefs((state) => state.follow)
+  const point = useMascotPrefs((state) => state.point)
   const setHidden = useMascotPrefs((state) => state.setHidden)
-  const setFollow = useMascotPrefs((state) => state.setFollow)
+  const setPoint = useMascotPrefs((state) => state.setPoint)
   return (
     <div className="mb-3 flex items-center justify-between gap-2 border border-paper/12 px-3 py-2 text-[0.72rem] text-paper/75">
-      <button type="button" role="switch" aria-checked={follow && !hidden} disabled={hidden} onClick={() => setFollow(!follow)} className="flex items-center gap-2 disabled:opacity-40">
-        <span className={`relative h-4 w-7 rounded-full transition-colors ${follow && !hidden ? 'bg-sun' : 'bg-paper/25'}`}>
-          <span className={`absolute top-0.5 size-3 rounded-full bg-night transition-all ${follow && !hidden ? 'left-[0.875rem]' : 'left-0.5'}`} />
+      <button type="button" role="switch" aria-checked={point && !hidden} disabled={hidden} onClick={() => setPoint(!point)} className="flex items-center gap-2 disabled:opacity-40">
+        <span className={`relative h-4 w-7 rounded-full transition-colors ${point && !hidden ? 'bg-sun' : 'bg-paper/25'}`}>
+          <span className={`absolute top-0.5 size-3 rounded-full bg-night transition-all ${point && !hidden ? 'left-[0.875rem]' : 'left-0.5'}`} />
         </span>
-        {tr('Di theo con trỏ', 'Di follows')}
+        {tr('Di chỉ theo con trỏ', 'Di points along')}
       </button>
       <button type="button" onClick={() => setHidden(!hidden)} className="font-semibold text-sun transition-colors hover:text-terracotta">
         {hidden ? tr('Gọi Di', 'Call Di') : tr('Cho Di nghỉ', 'Rest Di')}

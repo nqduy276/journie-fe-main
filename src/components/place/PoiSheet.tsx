@@ -14,7 +14,7 @@ import { useTr } from '../../hooks/useTr'
 import { useAuthStore } from '../../store/authStore'
 import { toast } from '../../store/toastStore'
 import { useUiStore } from '../../store/uiStore'
-import { PlaceArt } from './art/PlaceArt'
+import { PlaceImage } from './PlaceImage'
 import { StarRating } from '../ui/Stars'
 import { CategoryIcon } from '../icons'
 import { CategoryGlyph, CategoryName, Skeleton } from '../ui/primitives'
@@ -65,7 +65,9 @@ export function PoiSheet() {
       {poi && (
         <div className="space-y-6">
           <div className="relative -mx-1 overflow-hidden border border-forest/20">
-            <PlaceArt poi={poi} className="aspect-[5/2] w-full" />
+            <div className="relative aspect-[5/2] w-full overflow-hidden">
+              <PlaceImage poi={poi} />
+            </div>
             <span className="absolute bottom-2 left-2 grid size-12 place-items-center rounded-full border border-forest/25 bg-paper/90 text-forest shadow-sm">
               <CategoryIcon cat={poi.cat} size={34} />
             </span>

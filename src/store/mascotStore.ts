@@ -1,22 +1,22 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-/** Di's preferences: whether it is out at all, and whether it trails the pointer or waits in the corner. */
+/** Di's preferences: whether it is out at all, and whether it points at the control under the pointer. */
 type MascotPrefs = {
   hidden: boolean
-  follow: boolean
+  point: boolean
   setHidden: (hidden: boolean) => void
-  setFollow: (follow: boolean) => void
+  setPoint: (point: boolean) => void
 }
 
 export const useMascotPrefs = create<MascotPrefs>()(
   persist(
     (set) => ({
       hidden: false,
-      follow: true,
+      point: true,
       setHidden: (hidden) => set({ hidden }),
-      setFollow: (follow) => set({ follow }),
+      setPoint: (point) => set({ point }),
     }),
-    { name: 'journie-di', version: 1 },
+    { name: 'journie-di-prefs', version: 1 },
   ),
 )

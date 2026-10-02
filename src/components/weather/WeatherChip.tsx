@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Wand2 } from 'lucide-react'
 import { useTr } from '../../hooks/useTr'
-import { withSkyTransition } from '../../lib/skyTransition'
 import { PHASE_LABEL, WEATHER_LABEL, useSky, useWeatherStore, type PhaseMode, type Weather, type WeatherMode } from '../../store/weatherStore'
 import { SkyIcon } from '../icons'
 
@@ -14,7 +13,7 @@ export function WeatherChip({ tone = 'light', align = 'left', direction = 'down'
   const sky = useSky()
   const phaseMode = useWeatherStore((state) => state.phaseMode)
   const weatherMode = useWeatherStore((state) => state.weatherMode)
-  const setPhaseMode = useWeatherStore((state) => state.setPhaseMode)
+  const requestPhase = useWeatherStore((state) => state.requestPhase)
   const setWeatherMode = useWeatherStore((state) => state.setWeatherMode)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -34,9 +33,10 @@ export function WeatherChip({ tone = 'light', align = 'left', direction = 'down'
     }
   }, [open])
 
-  const pickPhase = (next: PhaseMode, event: React.MouseEvent) => {
+  const pickPhase = (next: PhaseMode) => {
     if (next === phaseMode) return
-    withSkyTransition(() => setPhaseMode(next), { x: event.clientX, y: event.clientY })
+    setOpen(false)
+    requestPhase(next)
   }
   const pickWeather = (next: WeatherMode) => setWeatherMode(next)
 
@@ -88,7 +88,7 @@ export function WeatherChip({ tone = 'light', align = 'left', direction = 'down'
               {phaseOptions.map((option) => {
                 const active = phaseMode === option.value
                 return (
-                  <button key={option.value} type="button" role="radio" aria-checked={active} onClick={(event) => pickPhase(option.value, event)} className={`flex flex-col items-center gap-0.5 border px-1 py-2 text-[0.68rem] font-semibold transition-colors ${active ? 'border-terracotta bg-terracotta/12 text-terracotta' : 'border-forest/15 text-ink/70 hover:border-forest/40'}`}>
+                  <button key={option.value} type="button" role="radio" aria-checked={active} onClick={() => pickPhase(option.value)} className={`flex flex-col items-center gap-0.5 border px-1 py-2 text-[0.68rem] font-semibold transition-colors ${active ? 'border-terracotta bg-terracotta/12 text-terracotta' : 'border-forest/15 text-ink/70 hover:border-forest/40'}`}>
                     <span className="grid h-6 place-items-center">{option.node}</span>
                     {option.label}
                   </button>

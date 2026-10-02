@@ -22,12 +22,12 @@ npm run preview  # Preview the production build locally
 src/
 ├── api/                 # FastAPI-shaped mock endpoints (auth, trips, planner, places, profile, analytics) + TanStack Query hooks
 ├── app/                 # Signed-in workspace: AppShell, routes, route guards
-├── assets/images/       # Destination images and Journie brand assets
+├── assets/images/       # Destination images, Journie brand assets, and `places/` for per-place photos (see below)
 ├── components/
 │   ├── art/             # Khatam star, dividers
 │   ├── auth/            # Auth shell (split card, day/night sky), lamp toggle, mascot-aware fields
 │   ├── icons/           # Journie's own duotone icon set: categories, weather, navigation (preview at /__icons in dev)
-│   ├── mascot/          # Di, the carpet-riding monkey, and DiCompanion, the pet that trails the pointer inside the app
+│   ├── mascot/          # Di, the carpet-riding monkey, and DiCompanion, the pet that sits in the corner and looks or points
 │   ├── map/             # Leaflet route map (OSRM geometry with an offline-safe fallback)
 │   ├── motion/          # Reusable motion: RevealHeading, Magnetic, Tilt, CountUp, Coordinates
 │   ├── place/           # POI detail sheet (info, reviews, add to trip) and art/: the place illustrations (/__art in dev)
@@ -42,7 +42,7 @@ src/
 ├── layouts/             # Landing page chrome
 ├── pages/               # auth/, app/ (workspace pages) and the landing page
 ├── sections/            # One file per landing page section
-├── lib/                 # Small helpers: sky View Transition, cheer event
+├── lib/                 # Small helpers: cheer event
 ├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, sky, Di preferences
 ├── styles/app.css       # Workspace, night theme, auth torch, mascot and postcard styling (landing palette)
 ├── App.tsx
@@ -92,22 +92,34 @@ yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midni
 hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
 card. Charts use landing-palette hues that were checked with the dataviz validator.
 
-- **Di** (`components/mascot`) is a monkey on a flying carpet. The carpet is a ribbon redrawn every frame so it
-  ripples (faster when Di flies); the face blinks and follows the pointer, the arms cover the eyes for passwords or
-  wave hello, moods are idle, watching, hiding, peeking, thinking, error, joy, sleepy and wave, and it dresses for the
-  sky (fez or nightcap, sunglasses, umbrella). When nobody moves the mouse Di glances around on its own. Inside the
-  app `DiCompanion` trails the pointer on a spring with a stardust tail (or waits in the corner on touch screens, or
-  when you switch "Di theo con trỏ" off in the sidebar), dozes off after a while, cheers when something is saved, and
-  gives tips for the weather, the hour (breakfast, lunch, dinner, late) and the page, some with a button that
-  opens Discover pre-filtered (indoor places when it rains, food at mealtimes).
+- **Di** (`components/mascot`) is a monkey on a flying carpet, drawn as a soft toy rather than a flat cartoon: no
+  outlines, a muted brown-and-cream palette with one gold accent, gradient shading, a contact shadow and a rim of
+  light so it has depth. The carpet is a ribbon redrawn every frame so it ripples; the face blinks, the head and
+  eyes turn toward the pointer, the arms cover the eyes for passwords or wave hello, moods are idle, watching,
+  hiding, peeking, thinking, error, joy, sleepy and wave, and it dresses for the sky (fez or nightcap, sunglasses,
+  umbrella in rain and storm in every mood except the ones that cover the eyes, so the big Di on the dashboard also
+  holds its umbrella). Inside the app `DiCompanion` stays in the bottom corner: it never chases the cursor. It looks
+  toward the pointer and, when you rest on a button or link for a moment, raises the nearer arm and points at it
+  (switch "Di chỉ theo con trỏ" off in the sidebar to stop that). It dozes off after a while, cheers when
+  something is saved, and gives tips for the weather, the hour (breakfast, lunch, dinner, late) and the page, some
+  with a button that opens Discover pre-filtered (indoor places when it rains, food at mealtimes).
 - **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
   cloudy, rain, storm) are two independent settings, so a rainy night is possible. Both follow the clock and the
-  deterministic forecast on `auto`, or can be pinned from the sky chip; switching day and night plays a circular
-  View Transition from the click. The workspace has a real night theme (`html[data-app-phase='night']` flips the
-  foreground tokens and surfaces, inverts map tiles), `SkyBody` parks the sun or the moon in the corner, and
-  `WeatherLayer` draws clouds in CSS and everything that moves (rain with ground ripples, lightning, fireflies,
-  stars, sun motes) on one canvas that stops itself when idle and pauses when the tab is hidden. On the live-trip
-  page, "heavy rain" turns the whole app rainy until the traveler decides on a replan.
+  deterministic forecast on `auto`, or can be pinned from the sky chip. Changing the time of day plays `SkySwitch`:
+  a quiet landscape fills the screen, the old sun or moon sinks behind the ridges, the new one climbs slowly up
+  from them (dusk or dawn glow, stars fading in or out) and only then does the app switch theme underneath; people
+  who prefer reduced motion get the plain switch. The workspace has a real night theme
+  (`html[data-app-phase='night']` flips the foreground tokens and surfaces, inverts map tiles), `SkyBody` parks the
+  sun or the moon in the corner, `HeroScene` puts the weather behind the dashboard hero (dimmed sun or moon,
+  drifting clouds, a rain veil, lightning in storms), and `WeatherLayer` draws clouds in CSS and everything that
+  moves (rain with ground ripples, lightning, fireflies, stars, sun motes) on one canvas that stops itself when
+  idle and pauses when the tab is hidden. On the live-trip page, "heavy rain" turns the whole app rainy until the
+  traveler decides on a replan.
+- **Pictures of places** (`domain/placeMedia.ts`, `components/place/PlaceImage.tsx`): real photographs first,
+  drawings only when there is no photograph. A place uses, in order: `src/assets/images/places/<poi-id>.jpg` (drop a
+  file in and it is picked up, list it in `places/CREDITS.md`); otherwise the photograph of its city, framed
+  differently for every place; otherwise the flat illustration (`components/place/art`). Today photographs exist for
+  six cities, so Hà Nội and Đà Lạt are the only places still drawn until photos for them are added.
 - **Typeface**: headings use *Journie Display*, drawn for this project. Each letter is a centre-line swept with a
   tilted elliptical nib (so strokes get thick and thin like a broad pen), the dot of the i and j is a small ring
   (a map pin), and every Vietnamese letter is a base glyph plus a diacritic placed by rule. The skeletons and the
