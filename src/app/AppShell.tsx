@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { Bell, LogOut } from 'lucide-react'
@@ -6,8 +6,9 @@ import { useTrips } from '../api/queries'
 import { NavIcon, type NavIconName } from '../components/icons'
 import { LangSwitch } from '../components/LangSwitch'
 import { MagicCursor } from '../components/MagicCursor'
-import { JoCompanion } from '../components/mascot/JoCompanion'
+import { DiCompanion } from '../components/mascot/DiCompanion'
 import { Toasts } from '../components/ui/Toasts'
+import { SkyBody } from '../components/weather/SkyBody'
 import { WeatherChip } from '../components/weather/WeatherChip'
 import { WeatherLayer } from '../components/weather/WeatherLayer'
 import { siteConfig } from '../content/site'
@@ -16,6 +17,7 @@ import { useTr } from '../hooks/useTr'
 import { useAuthStore } from '../store/authStore'
 import { useNotificationStore } from '../store/notificationStore'
 import { usePortalStore } from '../store/portalStore'
+import { useMascotPrefs } from '../store/mascotStore'
 import { useSky } from '../store/weatherStore'
 import { fmtTime } from '../domain/time'
 
@@ -70,6 +72,28 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
         </NavLink>
       ))}
     </nav>
+  )
+}
+
+/** Di's two switches: out or resting, and trailing the pointer or waiting in the corner. */
+function DiControls() {
+  const { tr } = useTr()
+  const hidden = useMascotPrefs((state) => state.hidden)
+  const follow = useMascotPrefs((state) => state.follow)
+  const setHidden = useMascotPrefs((state) => state.setHidden)
+  const setFollow = useMascotPrefs((state) => state.setFollow)
+  return (
+    <div className="mb-3 flex items-center justify-between gap-2 border border-paper/12 px-3 py-2 text-[0.72rem] text-paper/75">
+      <button type="button" role="switch" aria-checked={follow && !hidden} disabled={hidden} onClick={() => setFollow(!follow)} className="flex items-center gap-2 disabled:opacity-40">
+        <span className={`relative h-4 w-7 rounded-full transition-colors ${follow && !hidden ? 'bg-sun' : 'bg-paper/25'}`}>
+          <span className={`absolute top-0.5 size-3 rounded-full bg-night transition-all ${follow && !hidden ? 'left-[0.875rem]' : 'left-0.5'}`} />
+        </span>
+        {tr('Di theo con trỏ', 'Di follows')}
+      </button>
+      <button type="button" onClick={() => setHidden(!hidden)} className="font-semibold text-sun transition-colors hover:text-terracotta">
+        {hidden ? tr('Gọi Di', 'Call Di') : tr('Cho Di nghỉ', 'Rest Di')}
+      </button>
+    </div>
   )
 }
 
@@ -158,7 +182,7 @@ function NotificationBell({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
               )}
             </div>
             <ul className="max-h-80 overflow-y-auto">
-              {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-ink/55">{tr('Chưa có thông báo. Jo sẽ báo khi kế hoạch cần đổi.', 'Nothing yet. Jo will tell you when a plan needs to change.')}</li>}
+              {items.length === 0 && <li className="px-4 py-8 text-center text-sm text-ink/55">{tr('Chưa có thông báo. Di sẽ báo khi kế hoạch cần đổi.', 'Nothing yet. Di will tell you when a plan needs to change.')}</li>}
               {items.map((item) => (
                 <li key={item.id} className="border-b border-forest/8 px-4 py-3 last:border-0">
                   <Link to={item.to ?? '/app'} onClick={() => setOpen(false)} className="block">
@@ -189,15 +213,27 @@ export function AppShell() {
     window.scrollTo({ top: 0 })
   }, [location.pathname])
 
+  // The workspace theme is keyed on the root element so portals (sheets, toasts) follow it too.
+  useLayoutEffect(() => {
+    const root = document.documentElement
+    root.dataset.appPhase = sky.phase
+    root.dataset.appWeather = sky.weather
+    return () => {
+      delete root.dataset.appPhase
+      delete root.dataset.appWeather
+    }
+  }, [sky.phase, sky.weather])
+
   const logout = () => {
     signOut()
     openPortal('/login')
   }
 
   return (
-    <div className="app-bg app-root min-h-dvh lg:pl-[17.5rem]" data-sky={sky.kind}>
+    <div className="app-bg app-root min-h-dvh lg:pl-[17.5rem]" data-phase={sky.phase} data-weather={sky.weather}>
       <MagicCursor />
-      <WeatherLayer kind={sky.kind} tone="light" plain calm />
+      <SkyBody phase={sky.phase} weather={sky.weather} />
+      <WeatherLayer phase={sky.phase} weather={sky.weather} calm />
       <a href="#app-main" className="skip-link">
         {tr('Bỏ qua điều hướng', 'Skip navigation')}
       </a>
@@ -214,6 +250,7 @@ export function AppShell() {
         </div>
 
         <div className="mt-4 border-t border-paper/12 pt-4">
+          <DiControls />
           <WeatherChip tone="dark" direction="up" />
           <div className="mt-4 flex items-center gap-3">
             <Avatar name={user.name} />
@@ -254,7 +291,7 @@ export function AppShell() {
       </main>
 
       <MobileTabs items={items} />
-      <JoCompanion />
+      <DiCompanion />
       <Toasts />
     </div>
   )

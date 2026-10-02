@@ -7,7 +7,8 @@ import { demoAccounts, login, requestPasswordReset } from '../../api/auth'
 import { ApiError } from '../../api/http'
 import { Khatam, StarRule } from '../../components/art/Khatam'
 import { AuthShell } from '../../components/auth/AuthShell'
-import { LampBeam, LampToggle } from '../../components/auth/LampToggle'
+import { useLight } from '../../components/auth/light-context'
+import { LampToggle } from '../../components/auth/LampToggle'
 import { useMascotField } from '../../components/auth/useMascotField'
 import { useMascot } from '../../components/mascot/mascot-context'
 import { Field } from '../../components/ui/Field'
@@ -23,7 +24,7 @@ export function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const lines = {
-    idle: tr('Chào bạn! Mình là Jo, tấm bản đồ biết đi của Journie.', "Hi! I'm Jo, Journie's walking map pin."),
+    idle: tr('Chào bạn! Mình là Di, chú khỉ cưỡi thảm bay của Journie.', "Hi! I'm Di, Journie's carpet-riding monkey."),
     watching: tr('Ghi email nhé. Mình chỉ nhìn thôi!', 'Pop your email in. I only watch!'),
     hiding: tr('Mình nhắm mắt rồi. Mật khẩu của bạn an toàn.', 'Eyes shut. Your password is safe.'),
     peeking: tr('Đèn sáng rồi, mình liếc một chút thôi nha.', 'The lamp is on. Just one little peek!'),
@@ -47,7 +48,9 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [lamp, setLamp] = useState(false)
+  const light = useLight()
+  const lamp = light.on
+  const setLamp = light.setOn
   const [remember, setRemember] = useState(true)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [forgot, setForgot] = useState(false)
@@ -121,7 +124,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
     mutation.mutate({ email, password })
   }
 
-  /** One-tap demo: types the credentials in character by character while Jo reacts, then signs in. */
+  /** One-tap demo: types the credentials in character by character while Di reacts, then signs in. */
   const fillDemo = (kind: keyof typeof demoAccounts) => {
     if (busy) return
     const account = demoAccounts[kind]
@@ -165,7 +168,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
   return (
     <form onSubmit={submit} noValidate>
       <h1 className="h-display text-[2.2rem] text-[color:var(--a-ink)] sm:text-[2.6rem]">{tr('Đăng nhập', 'Sign in')}</h1>
-      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[color:var(--a-muted)]">{tr('Mở tiếp những lịch trình của bạn, Jo giữ chỗ sẵn rồi.', 'Pick your itineraries back up. Jo saved your spot.')}</p>
+      <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-[color:var(--a-muted)]">{tr('Mở tiếp những lịch trình của bạn, Di giữ chỗ sẵn rồi.', 'Pick your itineraries back up. Di saved your spot.')}</p>
 
       <div className="mt-6">
         <Field
@@ -191,7 +194,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
         />
         <Field
           label={tr('Mật khẩu', 'Password')}
-          type={lamp ? 'text' : 'password'}
+          type="password"
           name="password"
           autoComplete="current-password"
           placeholder="••••••••"
@@ -199,7 +202,8 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
           value={password}
           error={errors.password}
           inputRef={passwordField.ref}
-          inputClassName={lamp ? 'font-mono lit-text' : ''}
+          lit={{ on: lamp, value: password }}
+          hint={lamp ? tr('Rọi đèn vào ô này để đọc mật khẩu.', 'Shine the light on this field to read the password.') : tr('Mẹo: bật đèn pin để đọc mật khẩu và tìm bí mật quanh trang.', 'Tip: switch on the torch to read the password and find secrets around the page.')}
           onFocus={passwordField.onFocus}
           onBlur={passwordField.onBlur}
           onChange={(event) => {
@@ -208,8 +212,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
             passwordField.track()
           }}
           disabled={busy}
-          trailing={<LampToggle on={lamp} onToggle={() => setLamp((value) => !value)} labelOn={tr('Tắt đèn, ẩn mật khẩu', 'Turn the lamp off and hide the password')} labelOff={tr('Bật đèn để xem mật khẩu', 'Turn the lamp on to see the password')} />}
-          beam={<LampBeam on={lamp} />}
+          trailing={<LampToggle on={lamp} onToggle={(center) => { setLamp(!lamp); if (!lamp) light.aimAt(center.fieldX, center.fieldY) }} labelOn={tr('Tắt đèn pin', 'Turn the torch off')} labelOff={tr('Bật đèn pin: rọi để đọc mật khẩu', 'Turn the torch on: shine it to read the password')} />}
         />
       </div>
 
@@ -230,7 +233,7 @@ function LoginForm({ onFormError }: { onFormError: (message: string | null) => v
         {forgot && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="mt-3 border border-dashed border-[color:var(--a-line)] p-3">
-              <p className="text-xs leading-relaxed text-[color:var(--a-muted)]">{tr('Jo sẽ gửi liên kết đặt lại mật khẩu tới email ở trên.', 'Jo will send a reset link to the email above.')}</p>
+              <p className="text-xs leading-relaxed text-[color:var(--a-muted)]">{tr('Di sẽ gửi liên kết đặt lại mật khẩu tới email ở trên.', 'Di will send a reset link to the email above.')}</p>
               <button type="button" className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[color:var(--a-accent)] disabled:opacity-50" disabled={reset.isPending || !validEmail} onClick={() => reset.mutate(email.trim())}>
                 {reset.isPending && <Loader2 size={13} className="animate-spin" aria-hidden="true" />}
                 {validEmail ? tr('Gửi liên kết', 'Send link') : tr('Nhập email hợp lệ trước', 'Enter a valid email first')}

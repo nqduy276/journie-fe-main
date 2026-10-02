@@ -8,7 +8,7 @@ import { readProfile } from '../../api/profile'
 import { track } from '../../api/analytics'
 import { useCreateTrip, useProfile } from '../../api/queries'
 import { Khatam } from '../../components/art/Khatam'
-import { JoAvatar } from '../../components/mascot/JoAvatar'
+import { DiAvatar } from '../../components/mascot/DiAvatar'
 import { CityCover } from '../../components/CityCover'
 import { RouteMap } from '../../components/map/RouteMap'
 import { DayTabs, TripStats } from '../../components/trip/parts'
@@ -159,7 +159,7 @@ export function PlanPage() {
         subtitle={
           phase === 'result'
             ? tr('Xem lại, đổi tên và lưu để bắt đầu chỉnh sửa.', 'Review it, rename it and save to start editing.')
-            : tr('Kể bằng lời của bạn: đi đâu, mấy ngày, thích gì, ngân sách. Jo lo phần còn lại.', 'Say it your way: where, how long, what you like, your budget. Jo does the rest.')
+            : tr('Kể bằng lời của bạn: đi đâu, mấy ngày, thích gì, ngân sách. Di lo phần còn lại.', 'Say it your way: where, how long, what you like, your budget. Di does the rest.')
         }
         actions={
           phase !== 'compose' && (
@@ -218,7 +218,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
       <div className="panel-night p-5 sm:p-7">
         <div className="flex items-start gap-4">
           <div className="hidden w-24 shrink-0 sm:block">
-            <JoAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-[300/340] w-full" />
+            <DiAvatar mood={busy ? 'thinking' : text ? 'watching' : 'idle'} className="aspect-[300/340] w-full" />
           </div>
           <div className="min-w-0 flex-1">
             <label htmlFor="wish" className="h-display text-[1.45rem] text-paper">
@@ -243,7 +243,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
           <p className="tabular text-xs text-paper/45">{text.length}/600 · Ctrl + Enter</p>
           <button type="button" className="btn-gold" onClick={onSubmit} disabled={!ready || busy}>
             {busy ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <Wand2 size={18} aria-hidden="true" />}
-            {busy ? tr('Jo đang đọc…', 'Jo is reading…') : tr('Gửi cho Jo', 'Send to Jo')}
+            {busy ? tr('Di đang đọc…', 'Di is reading…') : tr('Gửi cho Di', 'Send to Di')}
           </button>
         </div>
       </div>
@@ -270,7 +270,7 @@ function Composer({ text, setText, busy, onSubmit }: { text: string; setText: (v
   )
 }
 
-/* ───────── 2. review what Jo understood ───────── */
+/* ───────── 2. review what Di understood ───────── */
 
 function Review({ text, intent, params, setParams, onGenerate }: { text: string; intent: Intent; params: Params; setParams: (value: Params) => void; onGenerate: () => void }) {
   const { tr, language, locale } = useTr()
@@ -284,7 +284,7 @@ function Review({ text, intent, params, setParams, onGenerate }: { text: string;
       <div className="space-y-6">
         <section className="panel p-5 sm:p-6" aria-labelledby="understood">
           <h2 id="understood" className="h-display text-xl text-forest">
-            {tr('Jo đã hiểu thế này', 'Here is what Jo understood')}
+            {tr('Di đã hiểu thế này', 'Here is what Di understood')}
           </h2>
           <p className="mt-2 border-l-2 border-gold pl-3 font-display text-[0.98rem] italic leading-relaxed text-ink/70">“{text}”</p>
           <ul className="mt-4 flex flex-wrap gap-2" aria-label={tr('Yêu cầu đã trích xuất', 'Extracted requirements')}>
@@ -478,10 +478,10 @@ function Pipeline({ stage, report, params, intent }: { stage: number; report?: P
     <div className="panel-night mx-auto max-w-3xl p-6 sm:p-9">
       <div className="flex items-center gap-5">
         <div className="w-24 shrink-0">
-          <JoAvatar mood="thinking" className="aspect-[300/340] w-full" />
+          <DiAvatar mood="thinking" className="aspect-[300/340] w-full" />
         </div>
         <div>
-          <h2 className="h-display text-[1.6rem] text-paper">{tr('Jo đang xoa đèn…', 'Jo is rubbing the lamp…')}</h2>
+          <h2 className="h-display text-[1.6rem] text-paper">{tr('Di đang xoa đèn…', 'Di is rubbing the lamp…')}</h2>
           <p className="mt-1 text-sm text-paper/60">{tr('Mỗi bước dưới đây là một phần thật của quy trình lập lịch.', 'Each step below is a real part of the planning pipeline.')}</p>
         </div>
       </div>

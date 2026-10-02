@@ -17,7 +17,7 @@ export function readOnboarding(userId: string): string[] {
 export type Profile = {
   userId: string
   name: string
-  /** The traveler's own words about how they like to travel; Jo reads interests and "avoid" out of it. */
+  /** The traveler's own words about how they like to travel; Di reads interests and "avoid" out of it. */
   about: string
   pace: Pace
   budgetPerDay: number

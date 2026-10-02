@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useMascot } from '../mascot/mascot-context'
 
 /**
- * Wires an input to Jo: it looks along the text while you type, and covers its eyes
+ * Wires an input to Di: it looks along the text while you type, and covers its eyes
  * (or peeks, when the lamp reveals the password) on secret fields.
  */
 export function useMascotField(kind: 'text' | 'secret', revealed = false) {

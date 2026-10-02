@@ -4,57 +4,83 @@ import { persist } from 'zustand/middleware'
 import { isRainy, weatherFor } from '../domain/conditions'
 import { addDays, todayIso } from '../domain/time'
 import type { CityId } from '../domain/types'
-import type { WeatherKind } from '../components/icons'
 
 /**
- * The sky the whole app is under. `auto` follows the clock (night after dusk) and the forecast for
- * the traveler's city; a person can pin any sky from the weather chip, and live trips override it
- * for a while when a real disruption (heavy rain) is detected.
+ * The sky the whole app is under, as two independent things: the time of day (day or night) and the
+ * weather (clear, cloudy, rain, storm). A rainy night is night AND rain. Both follow the clock and the
+ * forecast on `auto`; a person can pin either from the sky chip, and live trips override the weather for
+ * a while when a real disruption (heavy rain) is detected.
  */
-export type WeatherMode = 'auto' | WeatherKind
+export type Phase = 'day' | 'night'
+export type Weather = 'clear' | 'cloudy' | 'rain' | 'storm'
+export type PhaseMode = 'auto' | Phase
+export type WeatherMode = 'auto' | Weather
 
-type WeatherState = {
-  mode: WeatherMode
-  override: { kind: WeatherKind; until: number } | null
-  setMode: (mode: WeatherMode) => void
-  /** Force a sky for `ms` milliseconds, e.g. when the monitor reports heavy rain. */
-  setOverride: (kind: WeatherKind, ms?: number) => void
+type SkyState = {
+  phaseMode: PhaseMode
+  weatherMode: WeatherMode
+  override: { weather: Weather; until: number } | null
+  setPhaseMode: (mode: PhaseMode) => void
+  setWeatherMode: (mode: WeatherMode) => void
+  /** Force a weather for `ms` milliseconds, e.g. when the monitor reports heavy rain. */
+  setOverride: (weather: Weather, ms?: number) => void
   clearOverride: () => void
 }
 
-export const useWeatherStore = create<WeatherState>()(
+export const useWeatherStore = create<SkyState>()(
   persist(
     (set) => ({
-      mode: 'auto',
+      phaseMode: 'auto',
+      weatherMode: 'auto',
       override: null,
-      setMode: (mode) => set({ mode, override: null }),
-      setOverride: (kind, ms = 120_000) => set({ override: { kind, until: Date.now() + ms } }),
+      setPhaseMode: (phaseMode) => set({ phaseMode }),
+      setWeatherMode: (weatherMode) => set({ weatherMode, override: null }),
+      setOverride: (weather, ms = 120_000) => set({ override: { weather, until: Date.now() + ms } }),
       clearOverride: () => set({ override: null }),
     }),
-    { name: 'journie-weather', version: 1, partialize: (state) => ({ mode: state.mode }) },
+    {
+      name: 'journie-sky',
+      version: 1,
+      partialize: (state) => ({ phaseMode: state.phaseMode, weatherMode: state.weatherMode }),
+    },
   ),
 )
+
+export const WEATHER_LABEL: Record<Weather, [string, string]> = {
+  clear: ['Quang đãng', 'Clear'],
+  cloudy: ['Nhiều mây', 'Cloudy'],
+  rain: ['Mưa', 'Rain'],
+  storm: ['Dông', 'Storm'],
+}
+
+export const PHASE_LABEL: Record<Phase, [string, string]> = {
+  day: ['Ban ngày', 'Daytime'],
+  night: ['Ban đêm', 'Night'],
+}
 
 const isNightHour = (date: Date) => {
   const minutes = date.getHours() * 60 + date.getMinutes()
   return minutes >= 18 * 60 + 30 || minutes < 5 * 60 + 30
 }
 
-const BASE_TEMP: Record<WeatherKind, number> = { sunny: 33, cloudy: 29, rain: 25, storm: 24, night: 26 }
+const BASE_TEMP: Record<Weather, number> = { clear: 33, cloudy: 29, rain: 26, storm: 25 }
 
-export type SkyInfo = { kind: WeatherKind; tempC: number; auto: boolean; label: [vi: string, en: string] }
-
-export const SKY_LABEL: Record<WeatherKind, [string, string]> = {
-  sunny: ['Nắng đẹp', 'Sunny'],
-  cloudy: ['Nhiều mây', 'Cloudy'],
-  rain: ['Mưa', 'Rain'],
-  storm: ['Dông', 'Storm'],
-  night: ['Đêm', 'Night'],
+export type SkyInfo = {
+  phase: Phase
+  weather: Weather
+  tempC: number
+  autoPhase: boolean
+  autoWeather: boolean
+  /** Handy for CSS: "night-rain", "day-clear"… */
+  key: `${Phase}-${Weather}`
+  night: boolean
+  label: [vi: string, en: string]
 }
 
 /** Current sky for a city. Re-evaluates every minute and when an override expires. */
 export function useSky(city: CityId = 'sai-gon'): SkyInfo {
-  const mode = useWeatherStore((state) => state.mode)
+  const phaseMode = useWeatherStore((state) => state.phaseMode)
+  const weatherMode = useWeatherStore((state) => state.weatherMode)
   const override = useWeatherStore((state) => state.override)
   const clearOverride = useWeatherStore((state) => state.clearOverride)
   const [now, setNow] = useState(() => new Date())
@@ -71,13 +97,22 @@ export function useSky(city: CityId = 'sai-gon'): SkyInfo {
     return () => window.clearTimeout(timer)
   }, [override, clearOverride])
 
-  if (override && override.until > now.getTime()) {
-    return { kind: override.kind, tempC: BASE_TEMP[override.kind], auto: false, label: SKY_LABEL[override.kind] }
-  }
-  if (mode !== 'auto') return { kind: mode, tempC: BASE_TEMP[mode], auto: false, label: SKY_LABEL[mode] }
-
   const forecast = weatherFor(city, addDays(todayIso(), 0))
-  if (isNightHour(now)) return { kind: 'night', tempC: forecast.tempC - 3, auto: true, label: SKY_LABEL.night }
-  const kind: WeatherKind = forecast.condition === 'storm' ? 'storm' : isRainy(forecast) ? 'rain' : forecast.condition === 'cloudy' ? 'cloudy' : 'sunny'
-  return { kind, tempC: forecast.tempC, auto: true, label: SKY_LABEL[kind] }
+  const forecastWeather: Weather = forecast.condition === 'storm' ? 'storm' : isRainy(forecast) ? 'rain' : forecast.condition === 'cloudy' ? 'cloudy' : 'clear'
+
+  const phase: Phase = phaseMode === 'auto' ? (isNightHour(now) ? 'night' : 'day') : phaseMode
+  const overridden = !!override && override.until > now.getTime()
+  const weather: Weather = overridden ? override.weather : weatherMode === 'auto' ? forecastWeather : weatherMode
+  const tempC = Math.round(weatherMode === 'auto' && !overridden ? forecast.tempC - (phase === 'night' ? 3 : 0) : BASE_TEMP[weather] - (phase === 'night' ? 4 : 0))
+
+  return {
+    phase,
+    weather,
+    tempC,
+    autoPhase: phaseMode === 'auto',
+    autoWeather: weatherMode === 'auto' && !overridden,
+    key: `${phase}-${weather}`,
+    night: phase === 'night',
+    label: WEATHER_LABEL[weather],
+  }
 }

@@ -1,69 +1,48 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 
-/** The brand lamp as a password toggle. Rub it and a beam of light sweeps across the field, revealing what is typed. */
-export function LampToggle({ on, onToggle, labelOn, labelOff }: { on: boolean; onToggle: () => void; labelOn: string; labelOff: string }) {
+/** A little torch. On, it glows and the whole page gets a soft light that follows the pointer. */
+export function LampToggle({ on, onToggle, labelOn, labelOff }: { on: boolean; onToggle: (aim: { fieldX: number; fieldY: number }) => void; labelOn: string; labelOff: string }) {
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={(event) => {
+        // when the torch comes on it starts over the middle of the field it belongs to
+        const shell = event.currentTarget.closest('.field-shell') ?? event.currentTarget
+        const box = shell.getBoundingClientRect()
+        onToggle({ fieldX: box.left + box.width * 0.42, fieldY: box.top + box.height / 2 })
+      }}
       aria-pressed={on}
       aria-label={on ? labelOn : labelOff}
       title={on ? labelOn : labelOff}
-      className="grid size-10 place-items-center text-[color:var(--a-muted)] transition-colors hover:text-[color:var(--a-accent)]"
+      className="torch-btn relative grid size-10 place-items-center transition-colors"
+      data-on={on}
     >
       <motion.svg
         viewBox="0 0 32 32"
         width="27"
         height="27"
-        className={on ? 'lamp-on' : ''}
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
         aria-hidden="true"
-        animate={on ? { rotate: [0, -10, 8, -4, 0] } : { rotate: 0 }}
+        animate={on ? { rotate: [0, -14, 10, -5, 0] } : { rotate: 0 }}
         transition={{ duration: 0.7 }}
       >
-        <path d="M5 21C5 25 9 27 15 27S24 25 25 21Z" fill="currentColor" fillOpacity={on ? 0.25 : 0.08} />
-        <path d="M11 16C11 12 14 10 17 10S23 12 23 16" />
-        <path d="M17 10V8M15 8H19" />
-        <path d="M25 18C27 17 29 15 30 12" />
-        <path d="M5 21C3 21 2 19 3 17" />
-        <path d="M12 27V29H20V27" />
-        <AnimatePresence>
-          {on && (
-            <motion.path
-              d="M30 12C28 8 31 6 29 3C26 7 27 9 30 12Z"
-              fill="currentColor"
-              stroke="none"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [1, 1.2, 0.95, 1.15], opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.8, repeat: Infinity, repeatType: 'mirror' }}
-              style={{ transformBox: 'fill-box', transformOrigin: '50% 100%' }}
-            />
-          )}
-        </AnimatePresence>
+        {/* handle and head of a torch, tilted */}
+        <g transform="rotate(-38 16 16)">
+          <path d="M12.5 24H19.5L18.2 14H13.8Z" fill="currentColor" fillOpacity={on ? 0.28 : 0.08} />
+          <path d="M11 14H21L22.8 8.8H9.2Z" fill="currentColor" fillOpacity={on ? 0.5 : 0.14} />
+          <path d="M14.5 17.5V20.5" />
+        </g>
+        {on && (
+          <>
+            <path d="M25 5.5L27.5 3.5M27.4 10.2L30 10.6M20.6 3.4L20.8 1" strokeWidth="1.7" />
+          </>
+        )}
       </motion.svg>
+      {on && <span className="torch-glow" aria-hidden="true" />}
     </button>
-  )
-}
-
-/** The beam drawn over a field while the lamp is on. */
-export function LampBeam({ on }: { on: boolean }) {
-  return (
-    <AnimatePresence>
-      {on && (
-        <motion.div
-          className="lamp-beam"
-          initial={{ scaleX: 0.1, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 1, rotate: [0, -6, 5, -3, 0] }}
-          exit={{ scaleX: 0.2, opacity: 0 }}
-          transition={{ scaleX: { type: 'spring', stiffness: 120, damping: 16 }, opacity: { duration: 0.3 }, rotate: { duration: 2.4, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.2 } }}
-          aria-hidden="true"
-        />
-      )}
-    </AnimatePresence>
   )
 }

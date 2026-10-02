@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useReducedMotion } from 'motion/react'
-import type { WeatherKind } from '../icons'
-
-type Tone = 'light' | 'dark'
+import type { Phase, Weather } from '../../store/weatherStore'
 
 /**
- * Weather over the whole screen. Sky tints, clouds and sun rays are cheap CSS layers that cross-fade;
- * the particles (rain with ground ripples, lightning, fireflies, stars, sun motes) live on one canvas
- * that fades each effect in and out, stops itself when nothing is moving and pauses when the tab is hidden.
+ * Weather over the whole screen. Clouds are a cheap CSS layer that cross-fades; everything that
+ * moves (rain with ground ripples, lightning, fireflies, stars, sun motes) lives on one canvas that
+ * fades each effect in and out, stops itself when nothing is moving and pauses when the tab is hidden.
+ * Time of day and weather are independent, so a rainy night has stars behind the clouds, light rain
+ * and no sun.
  */
-
-const KINDS: WeatherKind[] = ['sunny', 'cloudy', 'rain', 'storm', 'night']
 
 type Cloud = { top: string; scale: number; dur: number; delay: number; opacity: number }
 
@@ -32,44 +30,44 @@ function CloudShape() {
   )
 }
 
-type Props = { kind: WeatherKind; tone?: Tone; className?: string; /** Skip the full-screen tints and sun rays (the page paints its own sky). */ plain?: boolean; /** Gentler particles and clouds so content stays easy to read (used behind the workspace). */ calm?: boolean }
+const CLOUD_COLOR: Record<Phase, Record<Weather, string>> = {
+  day: { clear: 'rgba(255,255,255,0.55)', cloudy: 'rgba(255,255,255,0.78)', rain: 'rgba(120,140,133,0.6)', storm: 'rgba(52,72,68,0.7)' },
+  night: { clear: 'rgba(79,184,164,0.0)', cloudy: 'rgba(120,175,164,0.2)', rain: 'rgba(70,112,106,0.3)', storm: 'rgba(14,34,30,0.7)' },
+}
 
-export function WeatherLayer({ kind, tone = 'light', className = '', plain = false, calm = false }: Props) {
+type Props = {
+  phase: Phase
+  weather: Weather
+  className?: string
+  /** Gentler particles and clouds so content stays easy to read (used behind the workspace). */
+  calm?: boolean
+}
+
+export function WeatherLayer({ phase, weather, className = '', calm = false }: Props) {
   const reduced = useReducedMotion() ?? false
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const kindRef = useRef(kind)
-  const toneRef = useRef(tone)
-  const calmRef = useRef(calm)
+  const skyRef = useRef({ phase, weather, calm })
   const wake = useRef<() => void>(() => undefined)
 
   useEffect(() => {
-    kindRef.current = kind
-    toneRef.current = tone
-    calmRef.current = calm
+    skyRef.current = { phase, weather, calm }
     wake.current()
-  }, [kind, tone, calm])
+  }, [phase, weather, calm])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas || reduced) return
-    return startEngine(canvas, kindRef, toneRef, calmRef, (fn) => {
+    return startEngine(canvas, skyRef, (fn) => {
       wake.current = fn
     })
   }, [reduced])
 
-  const cloudColor = useMemo(
-    () => ({ sunny: 'rgba(255,255,255,0.55)', cloudy: 'rgba(255,255,255,0.78)', rain: 'rgba(120,140,133,0.6)', storm: 'rgba(52,72,68,0.7)', night: 'rgba(79,184,164,0.1)' })[kind],
-    [kind],
-  )
-  const showClouds = kind !== 'night'
+  const cloudColor = CLOUD_COLOR[phase][weather]
+  const cloudOpacity = useMemo(() => (weather === 'clear' ? (phase === 'day' ? 0.7 : 0) : 1) * (calm ? 0.55 : 1), [weather, phase, calm])
 
   return (
     <div className={className} aria-hidden="true">
-      {!plain && KINDS.map((k) => <div key={k} className="sky-wash" data-kind={k} data-on={k === kind} />)}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden transition-opacity duration-[1400ms]"
-        style={{ opacity: showClouds ? (kind === 'sunny' ? 0.7 : 1) * (calm ? 0.5 : 1) : 0, color: cloudColor }}
-      >
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden transition-[opacity,color] duration-[1400ms]" style={{ opacity: cloudOpacity, color: cloudColor }}>
         {CLOUDS.map((cloud, index) => (
           <div key={index} className="sky-cloud" style={{ top: cloud.top, ['--dur' as string]: `${cloud.dur}s`, ['--delay' as string]: `${cloud.delay}s`, opacity: cloud.opacity }}>
             <div style={{ transform: `scale(${cloud.scale})`, transformOrigin: 'left top' }}>
@@ -78,7 +76,6 @@ export function WeatherLayer({ kind, tone = 'light', className = '', plain = fal
           </div>
         ))}
       </div>
-      {!plain && <div className="sun-rays transition-opacity duration-[1400ms]" style={{ opacity: kind === 'sunny' ? 1 : 0 }} />}
       <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-[45] size-full" />
     </div>
   )
@@ -94,13 +91,9 @@ type Mote = { x: number; y: number; ph: number; s: number; r: number }
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a)
 
-function startEngine(
-  canvas: HTMLCanvasElement,
-  kindRef: { current: WeatherKind },
-  toneRef: { current: Tone },
-  calmRef: { current: boolean },
-  register: (wake: () => void) => void,
-) {
+type SkyRef = { current: { phase: Phase; weather: Weather; calm: boolean } }
+
+function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake: () => void) => void) {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -118,7 +111,7 @@ function startEngine(
   let time = 0
 
   // Per-effect intensity, eased toward 1 when active and 0 otherwise.
-  const level = { rain: 0, storm: 0, night: 0, sun: 0 }
+  const level = { rain: 0, storm: 0, night: 0, sun: 0, clarity: 1 }
 
   const drops: Drop[] = []
   const ripples: Ripple[] = []
@@ -172,20 +165,23 @@ function startEngine(
     const dt = Math.min(0.05, (now - last) / 1000 || 0.016)
     last = now
     time += dt
-    const kind = kindRef.current
-    const dark = toneRef.current === 'dark'
-    const calm = calmRef.current
+    const { phase, weather, calm } = skyRef.current
+    const dark = phase === 'night'
     const ease = 1 - Math.exp(-dt * 2.2)
     const target = {
-      rain: kind === 'rain' ? 1 : 0,
-      storm: kind === 'storm' ? 1 : 0,
-      night: kind === 'night' ? 1 : 0,
-      sun: kind === 'sunny' ? 1 : 0,
+      rain: weather === 'rain' ? 1 : 0,
+      storm: weather === 'storm' ? 1 : 0,
+      night: phase === 'night' ? 1 : 0,
+      sun: phase === 'day' ? (weather === 'clear' ? 1 : weather === 'cloudy' ? 0.35 : 0) : 0,
+      // how much of the night sky is visible through the weather
+      clarity: { clear: 1, cloudy: 0.55, rain: 0.14, storm: 0 }[weather],
     }
+
     ;(Object.keys(level) as (keyof typeof level)[]).forEach((key) => {
       level[key] += (target[key] - level[key]) * ease
     })
 
+    const clarity = level.clarity
     ctx.clearRect(0, 0, w, h)
 
     /* rain and storm */
@@ -262,11 +258,11 @@ function startEngine(
     }
 
     /* night: stars, fireflies, a shooting star */
-    if (level.night > 0.01) {
+    if (level.night > 0.01 && clarity > 0.01) {
       const n = level.night
-      for (const s of calm ? [] : stars) {
+      for (const s of stars) {
         const tw = 0.45 + 0.55 * Math.sin(time * s.f + s.ph)
-        ctx.fillStyle = `rgba(247,242,232,${tw * 0.85 * n})`
+        ctx.fillStyle = `rgba(247,242,232,${tw * 0.85 * n * clarity * (calm ? 0.8 : 1)})`
         ctx.beginPath()
         ctx.arc(s.x * w, s.y * h, s.r, 0, 6.283)
         ctx.fill()
@@ -275,7 +271,7 @@ function startEngine(
         const x = (f.x + Math.sin(time * f.f + f.ph) * 0.05) * w
         const y = (f.y + Math.cos(time * f.f * 0.8 + f.ph) * 0.04) * h
         const blink = 0.35 + 0.65 * Math.max(0, Math.sin(time * 1.4 * f.s + f.ph))
-        ctx.globalAlpha = blink * n * (calm ? 0.5 : 0.9)
+        ctx.globalAlpha = blink * n * (calm ? 0.5 : 0.9) * Math.max(0, clarity - 0.2)
         const size = 18 + 12 * f.s
         ctx.drawImage(glow, x - size / 2, y - size / 2, size, size)
       }
@@ -319,7 +315,7 @@ function startEngine(
       }
     }
 
-    const busy = target.rain + target.storm + target.night + target.sun > 0 || level.rain + level.storm + level.night + level.sun > 0.01 || flash > 0.01
+    const busy = target.rain + target.storm + target.night + target.sun > 0 || level.rain + level.storm + level.night + level.sun > 0.01 || Math.abs(level.clarity - target.clarity) > 0.01 || flash > 0.01
     if (busy && !document.hidden) raf = requestAnimationFrame(frame)
     else running = false
   }
