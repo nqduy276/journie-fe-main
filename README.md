@@ -94,8 +94,8 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
 
 - **Di** (`components/mascot`) is a small monkey mascot on a flying carpet, drawn as one soft flat shape: a round
   head-and-body bean, a heart-shaped cream face, short limbs, no outlines and no glossy highlights, in a warm clay,
-  cream, and the app's own green, gold and terracotta, so it sits in the palette instead of looking like a toy built
-  from parts. Arms are two bones of fixed length solved with two-bone IK (`solveArm`), so a limb bends but never
+  cream, and the app's own terracotta, gold and jade (a terracotta carpet with a gold edge and a matching fez, a jade
+  nightcap), so it stands out from both the green scenery and the cream pages without leaving the palette. Arms are two bones of fixed length solved with two-bone IK (`solveArm`), so a limb bends but never
   stretches, whatever it reaches for. The face blinks, the head and eyes turn toward the pointer, the mitts cover the
   eyes for passwords, and moods are idle, watching, hiding, peeking, thinking, error, joy, sleepy, wave, hungry
   (pats its tummy) and hot (fans itself). It dresses for the sky (fez or nightcap, sunglasses, umbrella in rain and
