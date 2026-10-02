@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useScroll } from 'motion/react'
+import { Link } from 'react-router'
 import { ArrowRight } from 'lucide-react'
 import { Magnetic } from '../components/motion/Magnetic'
 import { RevealHeading } from '../components/motion/RevealHeading'
@@ -30,6 +31,15 @@ export function Cta() {
         <div className="lg:pt-6">
           <p className="max-w-md text-base leading-7 text-paper/85">{messages.cta.description}</p>
           <Magnetic className="mt-7 inline-block">
+            <Link
+              to="/register"
+              className="group inline-flex items-center gap-2 bg-paper px-6 py-3.5 text-sm font-bold text-forest transition-transform duration-300 hover:-translate-y-0.5"
+            >
+              {messages.cta.start}
+              <ArrowRight aria-hidden="true" size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+          </Magnetic>
+          <Magnetic className="mt-5 block">
             <a
               href="#top"
               className="group inline-flex items-center gap-2 border-b border-paper pb-1 text-sm font-semibold"

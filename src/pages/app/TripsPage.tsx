@@ -97,7 +97,7 @@ function TripCard({ trip }: { trip: Trip }) {
   return (
     <article className="panel group overflow-hidden transition-[transform,box-shadow] duration-500 hover:-translate-y-1 hover:shadow-[0_28px_44px_-26px_rgba(19,26,77,0.7)]">
       <Link to={`/app/trips/${trip.id}`} className="block" aria-label={trip.title}>
-        <CityCover city={trip.city} className="h-44" overlay="from-night/80 via-night/10 to-transparent">
+        <CityCover city={trip.city} className="h-44" overlay="from-night/95 via-night/45 to-night/5">
           <span className={`absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.7rem] font-bold ${status.cls}`}>
             {trip.status === 'live' && <span className="pulse-dot size-1.5 rounded-full bg-night" aria-hidden="true" />}
             {status.label}

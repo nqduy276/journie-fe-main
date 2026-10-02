@@ -160,6 +160,7 @@ const vi = {
     title: 'Ít thời gian lập kế hoạch. Nhiều thời gian để trải nghiệm.',
     description: `${siteConfig.name} đang được xây dựng để mỗi hành trình tại Việt Nam vừa thực tế, vừa mang đậm dấu ấn riêng của bạn.`,
     backToTop: 'Trở lại đầu hành trình',
+    start: 'Bắt đầu miễn phí',
   },
   footer: {
     description: 'Nền tảng lập kế hoạch du lịch Việt Nam cá nhân hóa và linh hoạt thích ứng cùng AI.',
@@ -311,6 +312,7 @@ const en: Messages = {
     title: 'Less time planning. More time experiencing.',
     description: `${siteConfig.name} is being built to make every journey through Vietnam practical and unmistakably yours.`,
     backToTop: 'Back to the start',
+    start: 'Start for free',
   },
   footer: {
     description: 'An AI-powered platform for personalized, adaptive travel planning across Vietnam.',

@@ -73,7 +73,7 @@ export function LivePage() {
   }, [trip])
   const stops = trip?.days[dayIndex]?.stops
 
-  const [now, setNow] = useState<number | null>(null)
+  const [clock, setClock] = useState<number | null>(null)
   const [playing, setPlaying] = useState(true)
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]['id']>('60x')
   const [auto, setAuto] = useState(false)
@@ -85,18 +85,17 @@ export function LivePage() {
   const lastCheck = useRef(0)
   const logId = useRef(0)
 
-  // Start the demo clock a few minutes before the first stop.
-  useEffect(() => {
-    if (trip && stops?.length && now === null) setNow(Math.max(trip.dayStart, stops[0].start - 8))
-  }, [trip, stops, now])
+  // The demo clock starts a few minutes before the first stop.
+  const startAt = trip && stops?.length ? Math.max(trip.dayStart, stops[0].start - 8) : null
+  const now = clock ?? startAt
 
   const rate = SPEEDS.find((item) => item.id === speed)!.rate
   const blocked = sheet || !!event
   useEffect(() => {
-    if (!playing || blocked || now === null) return
-    const timer = window.setInterval(() => setNow((value) => (value === null ? value : value + rate * 0.2)), 200)
+    if (!playing || blocked || startAt === null) return
+    const timer = window.setInterval(() => setClock((value) => (value ?? startAt ?? 0) + rate * 0.2), 200)
     return () => window.clearInterval(timer)
-  }, [playing, blocked, rate, now === null]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [playing, blocked, rate, now === null, startAt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const addLog = useCallback((text: string, tone: LogLine['tone'], at: number) => {
     setLog((lines) => [{ id: logId.current++, at, text, tone }, ...lines].slice(0, 6))
@@ -449,7 +448,7 @@ type ReplanProps = {
 function ReplanSheet({ open, onClose, event, result, chosen, lambda, setLambda, onApply, onDismiss }: ReplanProps) {
   const { tr, language } = useTr()
   const vi = language === 'vi'
-  if (!event || !result) return <Sheet open={false} onClose={onClose} title="" children={null} />
+  if (!event || !result) return <Sheet open={false} onClose={onClose} title="">{null}</Sheet>
 
   const base = result.baseline
   const presetName = (id: ReplanOption['id']) => ({ keep: tr('Giữ gần như nguyên', 'Keep it close'), balanced: tr('Cân bằng', 'Balanced'), fresh: tr('Trải nghiệm tốt nhất', 'Best experience'), custom: tr('Theo ý bạn', 'Your mix') })[id]
@@ -480,7 +479,7 @@ function ReplanSheet({ open, onClose, event, result, chosen, lambda, setLambda, 
         </p>
         <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm text-ink/75">
           {base.violations.map((violation) => (
-            <li key={violation.uid + violation.detail}>{violation.detail}</li>
+            <li key={violation.uid + violation.detail}>{vi ? violation.detail : violation.detailEn}</li>
           ))}
           <li className="tabular">
             {tr('Kết thúc lúc', 'Ends at')} {fmtTime(base.endTime)}

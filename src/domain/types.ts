@@ -116,6 +116,7 @@ export type Violation = {
   uid: string
   kind: 'closed' | 'overtime' | 'budget'
   detail: string
+  detailEn: string
 }
 
 export type Disruption =
