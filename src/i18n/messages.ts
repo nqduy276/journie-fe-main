@@ -34,6 +34,7 @@ const vi = {
     { label: 'Khám phá', href: '#kham-pha' },
   ],
   headerCta: 'Xem hành trình',
+  headerLogin: 'Đăng nhập',
   hero: {
     eyebrow: 'AI Travel Planner',
     title: 'Đi Việt Nam,',
@@ -42,10 +43,7 @@ const vi = {
     primaryCta: 'Xem hành trình mẫu',
     secondaryCta: `${siteConfig.name} hoạt động thế nào?`,
     benefits: ['Cá nhân hóa theo gu', 'Cân đối thời gian', 'Linh hoạt thay đổi'],
-    imageAlt: 'Du khách chèo thuyền giữa núi đá vôi và sông nước Tràng An, Ninh Bình',
-    imageCaption: 'Tràng An, Ninh Bình',
     weather: 'Sáng mai · 26°C',
-    weatherNote: 'Đẹp trời để đi thuyền',
     wishLabel: 'Chạm vào cây đèn để ước một chuyến đi',
     wishCaption: 'Chạm để ước',
     wishes: [
@@ -159,6 +157,7 @@ const vi = {
     title: 'Ít thời gian lập kế hoạch. Nhiều thời gian để trải nghiệm.',
     description: `${siteConfig.name} đang được xây dựng để mỗi hành trình tại Việt Nam vừa thực tế, vừa mang đậm dấu ấn riêng của bạn.`,
     backToTop: 'Trở lại đầu hành trình',
+    start: 'Bắt đầu miễn phí',
   },
   footer: {
     description: 'Nền tảng lập kế hoạch du lịch Việt Nam cá nhân hóa và linh hoạt thích ứng cùng AI.',
@@ -205,6 +204,7 @@ const en: Messages = {
     { label: 'Explore', href: '#kham-pha' },
   ],
   headerCta: 'View itinerary',
+  headerLogin: 'Sign in',
   hero: {
     eyebrow: 'AI Travel Planner',
     title: 'See Vietnam,',
@@ -213,10 +213,7 @@ const en: Messages = {
     primaryCta: 'View sample itinerary',
     secondaryCta: `How does ${siteConfig.name} work?`,
     benefits: ['Tailored to your style', 'Balanced timing', 'Flexible by design'],
-    imageAlt: 'Travelers rowing among limestone mountains and waterways in Trang An, Ninh Binh',
-    imageCaption: 'Trang An, Ninh Binh',
     weather: 'Tomorrow morning · 26°C',
-    weatherNote: 'Perfect weather for a boat ride',
     wishLabel: 'Rub the lamp to wish for a trip',
     wishCaption: 'Rub to wish',
     wishes: [
@@ -309,6 +306,7 @@ const en: Messages = {
     title: 'Less time planning. More time experiencing.',
     description: `${siteConfig.name} is being built to make every journey through Vietnam practical and unmistakably yours.`,
     backToTop: 'Back to the start',
+    start: 'Start for free',
   },
   footer: {
     description: 'An AI-powered platform for personalized, adaptive travel planning across Vietnam.',

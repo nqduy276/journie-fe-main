@@ -2,21 +2,31 @@ import { motion } from 'motion/react'
 import { journeyChapters } from '../content/site'
 import { useActiveSection } from '../hooks/useActiveSection'
 import { useLanguage } from '../hooks/useLanguage'
+import { HERO_PLACES, heroPlace } from '../content/heroPlaces'
+import { cityById } from '../domain/pois'
 import { Coordinates } from './motion/Coordinates'
 
 const chapterIds: readonly string[] = journeyChapters.map((chapter) => chapter.id)
 const lastIndex = journeyChapters.length - 1
+/** Chapter slots that name a destination, in order; the slot between Ha Long and Phu Quoc stays "across the country". */
+const PLACE_SLOTS = [0, 1, 2, 3, 4, null, 5] as const
 
 /**
  * Scrolling reads as travelling. In the page margins of wide screens, a vertical readout
  * names the place the current section belongs to and a rail tracks progress between places.
  */
 export function JourneyRail() {
-  const { messages } = useLanguage()
+  const { messages, language } = useLanguage()
   const activeId = useActiveSection(chapterIds, true)
   const index = Math.max(0, chapterIds.indexOf(activeId ?? chapterIds[0]))
   const chapter = journeyChapters[index]
-  const place = messages.journey.places[index]
+  // The journey starts where the hero photograph is and visits the other places after it.
+  const hero = heroPlace()
+  const order = [hero, ...HERO_PLACES.filter((item) => item.id !== hero.id)]
+  const slot = PLACE_SLOTS[index]
+  const stop = slot === null ? null : order[slot]
+  const place = stop ? (language === 'vi' ? cityById[stop.id].name : cityById[stop.id].nameEn) : messages.journey.places[index]
+  const coordinates: readonly [number, number] = stop ? [stop.lat, stop.lng] : chapter.coordinates
   const dark = chapter.tone === 'dark'
 
   return (
@@ -42,8 +52,8 @@ export function JourneyRail() {
             {place}
           </motion.span>
           <Coordinates
-            latitude={chapter.coordinates[0]}
-            longitude={chapter.coordinates[1]}
+            latitude={coordinates[0]}
+            longitude={coordinates[1]}
             className={dark ? 'text-paper/60' : 'text-ink/55'}
           />
         </p>

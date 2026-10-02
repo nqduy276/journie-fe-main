@@ -1,5 +1,30 @@
 @import 'tailwindcss';
 
+/* Journie Display: drawn for this project (tools/font), pen-built Vietnamese-ready letterforms. */
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-regular.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-bold.woff2') format('woff2');
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Journie Display';
+  src: url('./assets/fonts/journie-display-italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
   --color-paper: #f7f2e8;
   --color-cream: #eee7d8;
@@ -9,8 +34,19 @@
   --color-sun: #f0b94b;
   --color-jade: #4fb8a4;
   --color-dusk: #705cc4;
+  /* App tokens, all derived from the landing palette above */
+  --color-night: #0d2822;
+  --color-midnight: #173f35;
+  --color-lapis: #1f5a4b;
+  --color-firuze: #4fb8a4;
+  --color-pomegranate: #c4452b;
+  --color-gold: #f0b94b;
+  --color-smoke: #8d7fd6;
+  --color-sage: #aebfb3;
+  --color-jade-ink: #0a6a5c;
+  --color-sun-ink: #7a4f00;
   --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Lora', ui-serif, Georgia, serif;
+  --font-display: 'Journie Display', 'Lora', ui-serif, Georgia, serif;
 }
 
 @layer base {

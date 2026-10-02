@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
+import { Link } from 'react-router'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { siteConfig } from '../content/site'
 import { useActiveSection } from '../hooks/useActiveSection'
@@ -119,6 +120,9 @@ export function Header() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSwitcher />
+          <Link to="/login" className="text-sm font-semibold text-ink/75 transition-colors hover:text-terracotta">
+            {messages.headerLogin}
+          </Link>
           <Magnetic>
             <a href="#hanh-trinh" className="button-primary">
               {messages.headerCta}
@@ -175,6 +179,13 @@ export function Header() {
                   {item.label}
                 </motion.a>
               ))}
+              <Link
+                to="/login"
+                className="border-b border-forest/10 py-4 font-semibold text-terracotta"
+                onClick={() => setIsOpen(false)}
+              >
+                {messages.headerLogin}
+              </Link>
               <div className="flex items-center justify-between pt-5">
                 <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink/50">
                   {messages.accessibility.language}

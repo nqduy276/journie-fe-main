@@ -20,22 +20,140 @@ npm run preview  # Preview the production build locally
 
 ```text
 src/
-├── assets/images/       # Destination images and Journie brand assets
-├── components/          # Shared UI and providers
+├── api/                 # FastAPI-shaped mock endpoints (auth, trips, planner, places, profile, analytics) + TanStack Query hooks
+├── app/                 # Signed-in workspace: AppShell, routes, route guards
+├── assets/images/       # Destination images, Journie brand assets, and `places/` for per-place photos (see below)
+├── components/
+│   ├── art/             # Khatam star, dividers
+│   ├── auth/            # Auth shell (split card, day/night sky), lamp toggle, mascot-aware fields
+│   ├── icons/           # Journie's own duotone icon set: categories, weather, navigation (preview at /__icons in dev)
+│   ├── mascot/          # Di, the carpet-riding monkey, and DiCompanion, the pet that sits in the corner and looks or points
+│   ├── map/             # Leaflet route map (OSRM geometry with an offline-safe fallback)
 │   ├── motion/          # Reusable motion: RevealHeading, Magnetic, Tilt, CountUp, Coordinates
-│   └── scenes/          # Place-based animated backdrops (karst, terraces, lanterns, city, bay, sunset, footer sky)
+│   ├── place/           # POI detail sheet (info, reviews, add to trip) and art/: the place illustrations (/__art in dev)
+│   ├── scenes/          # Place-based animated backdrops for the landing page
+│   ├── trip/            # Timeline (drag and drop), day tabs, stats, plan explanation
+│   ├── ui/              # Sheet, toasts, field, segmented control, switch, stars, meters
+│   └── weather/         # WeatherLayer (rain, storm, clouds, stars), SkyBody (sun and moon) and WeatherChip
 ├── content/site.ts      # Brand content, destinations and journey chapters
-├── hooks/               # Shared React hooks (language, motion preferences, active section)
-├── i18n/messages.ts     # Vietnamese and English copy
-├── layouts/             # Global page chrome
-├── pages/               # Route-level page content (composes sections)
+├── domain/              # Pure planning logic: POIs, scoring, solver, replanner, intent extraction, edits
+├── hooks/               # Shared React hooks (language, motion preferences, inline translation)
+├── i18n/messages.ts     # Vietnamese and English copy for the landing page
+├── layouts/             # Landing page chrome
+├── pages/               # auth/, app/ (workspace pages) and the landing page
 ├── sections/            # One file per landing page section
-├── types/               # Shared TypeScript types
-├── utils/               # Formatting and CSS helpers
+├── lib/                 # Small helpers: cheer event
+├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, sky, Di preferences
+├── styles/app.css       # Workspace, night theme, auth torch, mascot and postcard styling (landing palette)
 ├── App.tsx
 ├── index.css
 └── main.tsx
 ```
+
+## The Journie App
+
+The landing page lives at `/`. Everything else follows the system description in the project report
+(React + TypeScript + Vite SPA, TanStack Query for server state, Zustand for transient UI state).
+
+| Route | Report module | What it does |
+| --- | --- | --- |
+| `/login`, `/register` | Login / Registration | Verify password (with error states), onboarding interests. A split card (Trang An arch photo with Di on one side, the form on the other) under a live sky. Di follows the pointer, watches the field you are typing in, covers its eyes for passwords, shakes its head on errors and celebrates success before a portal transition into the app. The torch button in the password field switches on a soft light that drifts after the pointer: it reads out the password only where it falls on the field, dims the scenery at night and wakes hidden things (a winking moon, lanterns, a treasure chest, lotus, a constellation, a kite, a flock, a leaping koi, fireflies, a message on the cliff). Day or night and the weather follow the real clock and forecast, or the sky chip. |
+| `/app` | Dashboard | Quick trip box, live and upcoming trips, destination picks based on the taste profile. |
+| `/app/plan` | Itinerary creation | Natural-language request → extracted constraints (hard vs soft) → editable parameters → pipeline (LLM, data gathering, scoring, CP-SAT-style solve, OSRM routing, time slots) → result with solver status and explanation. |
+| `/app/trips/:id` | Itinerary customization | Drag-and-drop (or Alt+Arrow / buttons) reorder, duration stepper, lock mandatory stops, add or remove places. Every edit is re-timed and validated against opening hours and the day window; invalid edits are rejected with the reason. "Ask Di to adjust" rebuilds the plan from new requests and shows a diff before applying. Undo is available. |
+| `/app/trips/:id/live` | Trip management and adaptive replanning | Simulated clock and GPS position, time-budget ring, condition monitor log, and a disruption simulator (traffic, heavy rain, closure, running late). Replanning solves `I' = argmax [Utility(I) − λ·ChangeCost(I, I_old)]` for the λ you pick on a slider. |
+| `/app/discover` | Search and discovery | Keyword and contextual search ("coffee near Chùa Cầu"), filters by area, type, price and rating, list and map views, venue details with reviews. |
+| `/app/profile` | Profile management | Deliberately short: a name, a few tappable tastes (or a sentence in your own words, which Jo turns into interests and avoid-tags and shows back live), pace, daily budget, foods to avoid, one alerts switch and saved places. |
+| `/app/analytics` | Data collection and analytics (Business Admin) | KPIs, trips and replans per day, interaction heatmap, funnel, replan reasons with acceptance and average λ for model tuning, CSV export. |
+
+Demo accounts (also available as one-tap chips on the login page): `lu.khach@journie.vn` (traveler) and
+`ba@journie.vn` (Business Admin), both with password `journie123`.
+
+### Planning logic (`src/domain`)
+
+- `scoring.ts` implements Eq. (3) of the report, `S = αC + βR + γP + δB + εG`.
+- `solver.ts` is an exact depth-first branch-and-bound for the orienteering problem with time windows. It enforces opening hours, travel time, the day window, budget and mandatory stops. A single-day plan whose search completes is reported `OPTIMAL`; multi-day plans are decomposed per day and reported `FEASIBLE`. It mirrors the OR-Tools CP-SAT model that the backend will use.
+- `replan.ts` implements the dynamic incremental replanning objective with a change cost for dropped, added, shifted and re-ordered stops.
+- `nlp.ts` stands in for Gemini intent extraction. It is deterministic and only used until the backend exists.
+- POI data, hours and prices are approximate demo data.
+
+### Connecting the real backend
+
+`src/api/*` runs against an in-browser mock with the same shapes as the planned FastAPI endpoints, persisted in
+`localStorage`. To switch, set `VITE_API_URL` and replace each function body with a `fetch` call; the pages and
+TanStack Query hooks do not change. The map requests tiles from `tile.openstreetmap.org` and road geometry from the
+public OSRM demo server; when either is unreachable the map still shows pins and straight route hops.
+
+### Design notes
+
+Everything follows the landing page: `paper` ground, `forest` green ink, `terracotta` for action and accents, `sun`
+yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midnight`, `lapis`, `firuze`, `pomegranate`,
+`gold`) are aliases of those colours, so nothing in the workspace drifts off palette. Corners are near-square with
+hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
+card. Charts use landing-palette hues that were checked with the dataviz validator.
+
+- **Di** (`components/mascot`) is a small monkey mascot on a flying carpet, drawn as one soft flat shape: a round
+  head-and-body bean, a heart-shaped cream face, short limbs, no outlines and no glossy highlights, in a warm clay,
+  cream, and the app's own terracotta, gold and jade (a terracotta carpet with a gold edge and a matching fez, a jade
+  nightcap), so it stands out from both the green scenery and the cream pages without leaving the palette. Arms are two bones of fixed length solved with two-bone IK (`solveArm`), so a limb bends but never
+  stretches, whatever it reaches for. The face blinks, the head and eyes turn toward the pointer, the mitts cover the
+  eyes for passwords, and moods are idle, watching, hiding, peeking, thinking, error, joy, sleepy, wave, hungry
+  (pats its tummy) and hot (fans itself). It dresses for the sky (fez or nightcap, sunglasses, umbrella in rain and
+  storm in every mood except the ones that cover the eyes). Inside the app `DiCompanion` sits small in the bottom
+  corner and never chases the cursor: it looks toward the pointer and, when you rest on a button or link for a moment,
+  raises the nearer arm and points at it (the sidebar switch "Di chỉ vào nơi bạn trỏ" turns pointing off). It dozes
+  off after a while, cheers when something is saved, and gives tips for the weather, the hour and the page, some with
+  a button that opens Discover pre-filtered. The bigger Di on the dashboard (`useDiMoment`) does not copy it: it acts
+  on the sky and the clock: umbrella and worried hands in a storm, umbrella in rain, a rumbling tummy and a "food
+  ideas" button at breakfast, lunch and dinner, a fan and sunglasses in the midday sun, asleep late at night.
+- **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
+  cloudy, rain, storm) are two independent settings, so a rainy night is possible. Both follow the clock and the
+  deterministic forecast on `auto`, or can be pinned from the sky chip. Changing the time of day plays `SkySwitch`:
+  a quiet landscape fills the screen, the old sun or moon sinks behind the ridges, the new one climbs slowly up
+  from them (dusk or dawn glow, stars fading in or out) and only then does the app switch theme underneath; people
+  who prefer reduced motion get the plain switch. The workspace has a real night theme
+  (`html[data-app-phase='night']` flips the foreground tokens and surfaces, inverts map tiles), `SkyBody` parks the
+  sun or the moon in the corner, `HeroScene` puts the weather behind the dashboard hero (dimmed sun or moon,
+  drifting clouds, a rain veil, lightning in storms), and `WeatherLayer` draws clouds in CSS and everything that
+  moves (rain with ground ripples, lightning, fireflies, stars, sun motes) on one canvas that stops itself when
+  idle and pauses when the tab is hidden. Inside the workspace the rain is deliberately light (few, faint,
+  slow drops; lightning is only a very faint slow glow, never a white-out), and the sky chip has a switch,
+  "Moving rain, lightning and fireflies", that stops all falling particles (clouds and tint stay). On the live-trip page, "heavy rain" turns the whole app rainy until the
+  traveler decides on a replan.
+- **Pictures of places** (`domain/placeMedia.ts`, `components/place/PlaceImage.tsx`): real photographs first,
+  drawings only when there is no photograph. A place uses, in order: `src/assets/images/places/<poi-id>.jpg` (drop a
+  file in and it is picked up, list it in `places/CREDITS.md`); otherwise the photograph of its city, framed
+  differently for every place; otherwise the flat illustration (`components/place/art`). Today photographs exist for
+  six cities, so Hà Nội and Đà Lạt are the only places still drawn until photos for them are added.
+- **One language at a time**: every visible string follows the language switch. Data keys never reach the screen:
+  the solver verdicts are `Tối ưu / Khả thi / Không khả thi` (`Optimal / Feasible / Infeasible`,
+  `domain/solverStatus.ts`), place tags are translated (`domain/tags.ts`), the sample trips are shown in the page
+  language (`domain/tripText.ts`), and the map's own buttons and the analytics log are localised. Place and street
+  names stay as the proper names they are.
+- **A different place each visit** (`content/heroPlaces.ts`): the photograph behind Di on the sign-in and register
+  pages and in the landing hero is picked at random from the six destinations we have photos of, once per page load
+  (never the one shown on the previous load, remembered in `journie-hero-last`). The caption, coordinates, weather card,
+  the side journey rail and which hidden torch effects appear (a leaping koi only over water) all follow that place.
+- **Logo** (`components/Logo.tsx`): the lamp mark is the picture (`journie-mark.png` for light backgrounds,
+  `journie-mark-light.png` for dark ones) and the name beneath it is live text in *Journie Display*, so the logo and
+  the headings share one typeface everywhere (sign-in, sidebar, footer, portal transition).
+- **Typeface**: headings use *Journie Display*, drawn for this project. Each letter is a centre-line swept with a
+  tilted elliptical nib (so strokes get thick and thin like a broad pen), the dot of the i and j is a small ring
+  (a map pin), and every Vietnamese letter is a base glyph plus a diacritic placed by rule. The skeletons and the
+  builder live in `tools/font` (`python build.py`, needs fonttools, shapely, brotli) and write the three woff2 files
+  (regular, bold, italic) into `src/assets/fonts`. Body text is Be Vietnam Pro.
+- **Icons** (`components/icons`) are drawn on a 48 grid with one ink line and two flat colours printed slightly off
+  register. Category, weather, sky and navigation icons share it; open `/__icons` in dev to see the sheet.
+- **Place illustrations** (`components/place/art`): every place has its own flat-vector scene (sky for the time of
+  day, ridge, ground, and the landmark or dish in front: the Turtle Tower, Chùa Cầu, a bowl of phở, a junk in the bay,
+  a cable car…). A table of motifs maps each place id to a drawing; the sun, clouds and stars are seeded by the id so
+  a card always looks the same. `/__art` in dev shows them all.
+- **Discover** is a postcard wall: city "passport stamps", sticker-style category buttons, price coins that flip when
+  picked, and cards with the place's illustration, a postmark, a dotted route that runs on hover, a ticket edge and a
+  burst of hearts when you save.
+- **Small motion**: a rug-pattern ribbon unrolls across the top on every page change, timelines draw their rail and
+  pop their stops in, primary buttons throw lamp-dust where pressed, city cards tilt with a glare, the page-header
+  route flows, and the planning pipeline has Di riding the progress line.
 
 ## Motion and Scenes
 
@@ -59,9 +177,9 @@ Notes for working on it:
 - Pointer effects (tilt, magnetic buttons, cursor parallax) only run on devices with a fine pointer and hover.
 - Custom CSS classes in `index.css` live in `@layer components`, so Tailwind utilities can override them.
 - Scene sizes that must stay visible next to content are set in `rem`, not as a percentage of the section height.
-- Genie details: `MagicCursor` (lamp-glow ring and a stardust trail, mouse only; other components can scatter dust with the `journie:sparkle` window event), `WishLamp` in the hero (rub the lamp for a trip wish), a shooting star in the Saigon sky and a night-sky footer.
+- Landing details: `MagicCursor` (glow ring and a dust trail, mouse only; other components can scatter dust with the `journie:sparkle` window event), `WishLamp` in the hero (rub the lamp for a trip wish), a shooting star in the Saigon sky and a night-sky footer.
 - Smoothness: Lenis is driven by motion's frame loop, scroll layers that move are promoted with `will-change`, only the active Explore photo is mounted (Ken Burns runs in CSS), and most animation is transform/opacity so it stays on the compositor. Avoid adding `backdrop-filter` or animated SVG attributes on large areas.
-- The footer uses `journie-lockup-light.png`, a recoloured copy of the lockup (forest green to paper) so the logo reads on the dark footer. Regenerate it if the logo changes.
+- The dark-background logo uses `journie-mark-light.png`, the lamp cropped from a recoloured copy of the lockup (forest green to paper). The wordmark is text, so only the lamp needs regenerating if the logo changes.
 - To add a destination, extend `destinations` in `src/content/site.ts` and add its copy to both languages in `src/i18n/messages.ts`.
 
 ## Images and Licenses
@@ -78,6 +196,10 @@ Images are downloaded from Wikimedia Commons and stored locally. Each image reta
 | Saigon River, Ho Chi Minh City | Diego Delso | CC BY-SA 3.0 | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:R%C3%ADo_Saig%C3%B3n,_Ciudad_Ho_Chi_Minh,_Vietnam,_2013-08-14,_DD_29.JPG) |
 
 When replacing an image, update the corresponding file in `src/assets/images`, the data in `src/content/site.ts`, the attribution in the footer, and this image source table
+
+## Agent Skills
+
+Frontend skills installed for this project live in `.claude/skills` (see `skills-lock.json`): `frontend-design`, `vercel-react-best-practices`, `vercel-composition-patterns`, `vercel-react-view-transitions`, `web-design-guidelines`, `webapp-testing`, `theme-factory`, `canvas-design`, `algorithmic-art`, `web-artifacts-builder` and `brand-guidelines`. Restore them with `npx skills experimental_install`.
 
 ## Before Deployment
 
