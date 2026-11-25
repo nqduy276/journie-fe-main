@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
@@ -6,10 +6,14 @@ import { CHEER_EVENT } from '../../lib/cheer'
 import { useMotionPrefs } from '../../hooks/useMotionPrefs'
 import { useTr } from '../../hooks/useTr'
 import { useMascotPrefs } from '../../store/mascotStore'
+import { useUiStore } from '../../store/uiStore'
 import { applyDiAction, type DiAction } from '../../lib/diActions'
 import { useSky, type Weather } from '../../store/weatherStore'
 import { DiAvatar } from './DiAvatar'
 import type { FocusPoint, MascotMood } from './mascot-context'
+
+// Loaded on the first open, so the chat and its place sheet stay out of the app's first download
+const AssistantPanel = lazy(() => import('../assistant/AssistantPanel').then((module) => ({ default: module.AssistantPanel })))
 
 const SLEEP_AFTER_MS = 50_000
 const POINT_AFTER_MS = 420
@@ -21,47 +25,47 @@ type Tip = { vi: string; en: string; cta?: { vi: string; en: string; action: Act
 const WEATHER_TIPS: Record<'day' | 'night', Record<Weather, Tip[]>> = {
   day: {
     clear: [
-      { vi: 'Nắng đẹp quá! Nhớ đội nón và mang nước nhé.', en: 'What a sunny day! Wear a hat and bring water.' },
-      { vi: 'Trời nắng, điểm ngoài trời nên đi vào sáng sớm.', en: 'It is sunny: outdoor stops are best early in the morning.' },
+      { vi: 'Nắng chang chang. Đội nón vô, mang nước theo.', en: 'Blazing out there. Hat on, water in the bag.' },
+      { vi: 'Chỗ ngoài trời thì đi sớm, trưa nắng muốn xỉu.', en: 'Do the outdoor spots early. Noon will cook you.' },
     ],
     cloudy: [
-      { vi: 'Trời mát, đi bộ phố cổ là tuyệt nhất.', en: 'Nice and cool, perfect for an old-town stroll.' },
-      { vi: 'Mây nhiều nên ảnh sẽ rất mềm, chụp ngay nhé.', en: 'Soft clouds make the best light for photos.' },
+      { vi: 'Trời râm, đi bộ thoải mái luôn.', en: 'Overcast, great for a long walk.' },
+      { vi: 'Mây nhiều, chụp ảnh lên màu đẹp lắm.', en: 'Cloudy light makes photos look great.' },
     ],
-    rain: [{ vi: 'Trời mưa rồi! Mình che ô cho bạn nhé.', en: 'It is raining! Let me hold the umbrella.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
-    storm: [{ vi: 'Có dông đó, đừng ở điểm ngoài trời. Mình tìm chỗ trú nhé.', en: 'Thunderstorm! Stay off outdoor stops, I will find shelter.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
+    rain: [{ vi: 'Mưa rồi. Vô chỗ có mái che đi, đừng làm anh hùng.', en: 'Raining. Get under a roof, no heroics.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
+    storm: [{ vi: 'Có dông kìa. Ở trong nhà đi, mai trời đẹp lại.', en: 'Thunderstorm. Stay in, it will clear up tomorrow.', cta: { vi: 'Xem nơi trong nhà', en: 'Indoor places', action: 'indoor' } }],
   },
   night: {
     clear: [
-      { vi: 'Đêm đẹp trời, nhìn sao rồi mai đi tiếp nhé.', en: 'A clear night. Stargaze, then carry on tomorrow.' },
-      { vi: 'Chợ đêm và phố ẩm thực lên đèn đẹp lắm.', en: 'Night markets and food streets glow after dark.' },
+      { vi: 'Đêm nay mát, ra ngoài đi dạo chút không?', en: 'Nice night. Fancy a little walk?' },
+      { vi: 'Giờ này chợ đêm với phố ăn vặt đang rôm rả.', en: 'Night markets and snack streets are buzzing now.' },
     ],
-    cloudy: [{ vi: 'Đêm nhiều mây, ngủ sớm để mai có sức nhé.', en: 'Cloudy night. Sleep early to be fresh tomorrow.' }],
-    rain: [{ vi: 'Mưa đêm rồi. Ở trong nhà ăn chè nóng nhé?', en: 'Rainy night. Shall we stay in with something warm?', cta: { vi: 'Xem quán cà phê', en: 'Cafés nearby', action: 'cafe' } }],
-    storm: [{ vi: 'Đêm có dông, mình ở yên trong nhà nhé.', en: 'Stormy night, let us stay put indoors.' }],
+    cloudy: [{ vi: 'Trời âm u. Ngủ sớm đi, mai còn sức đi tiếp.', en: 'Gloomy night. Sleep early, you will need the energy.' }],
+    rain: [{ vi: 'Mưa đêm thì ngồi quán cà phê là hết sảy.', en: 'Rainy night, a café is the move.', cta: { vi: 'Xem quán cà phê', en: 'Cafés nearby', action: 'cafe' } }],
+    storm: [{ vi: 'Dông to quá, ở nhà đi nha.', en: 'Big storm. Stay home tonight.' }],
   },
 }
 
 const ROUTE_TIPS: { match: RegExp; tip: Tip }[] = [
-  { match: /^\/app\/plan/, tip: { vi: 'Kể mình nghe chuyến đi mơ ước, cứ viết tự nhiên thôi.', en: 'Tell me about your dream trip, just write naturally.' } },
-  { match: /^\/app\/discover/, tip: { vi: 'Thả tim vào nơi bạn thích, mình sẽ ưu tiên khi lập lịch.', en: 'Heart what you like and I will favour it when planning.' } },
-  { match: /^\/app\/trips\/[^/]+\/live/, tip: { vi: 'Mình đang theo dõi thời tiết và đường đi cho bạn.', en: 'I am watching the weather and the road for you.' } },
-  { match: /^\/app\/profile/, tip: { vi: 'Chỉ cần vài ý chính là đủ rồi, còn lại mình đoán.', en: 'A few key ideas are enough, I will guess the rest.' } },
+  { match: /^\/app\/plan/, tip: { vi: 'Cứ gõ như nhắn tin cho bạn là được.', en: 'Just type like you are texting a friend.' } },
+  { match: /^\/app\/discover/, tip: { vi: 'Thấy chỗ nào ưng thì thả tim, mình giữ giùm.', en: 'See something you like? Heart it and I will keep it.' } },
+  { match: /^\/app\/trips\/[^/]+\/live/, tip: { vi: 'Mình đang canh thời tiết với kẹt xe giùm bạn.', en: 'I am watching the weather and traffic for you.' } },
+  { match: /^\/app\/profile/, tip: { vi: 'Điền sơ sơ thôi, thiếu mình hỏi lại sau.', en: 'A rough idea is enough, I will ask later.' } },
 ]
 
 /** A nudge that fits the hour of the day, shown at most once per slot per visit. */
 function hourTip(now: Date): { slot: string; tip: Tip } | null {
   const m = now.getHours() * 60 + now.getMinutes()
-  if (m >= 5 * 60 + 30 && m < 9 * 60) return { slot: 'breakfast', tip: { vi: 'Chào buổi sáng! Ăn sáng một tô phở cho ấm bụng nhé?', en: 'Good morning! A bowl of pho for breakfast?', cta: { vi: 'Gợi ý món ăn', en: 'Food ideas', action: 'food' } } }
-  if (m >= 11 * 60 + 30 && m < 13 * 60 + 15) return { slot: 'lunch', tip: { vi: 'Đến giờ ăn trưa rồi, bụng mình đang kêu đây này!', en: 'It is lunchtime and my tummy is rumbling!', cta: { vi: 'Gợi ý món ăn', en: 'Food ideas', action: 'food' } } }
-  if (m >= 17 * 60 + 30 && m < 19 * 60 + 30) return { slot: 'dinner', tip: { vi: 'Chiều tối rồi, đi ăn tối rồi dạo chợ đêm nhé?', en: 'Evening already: dinner, then the night market?', cta: { vi: 'Gợi ý món ăn', en: 'Food ideas', action: 'food' } } }
-  if (m >= 23 * 60 || m < 5 * 60) return { slot: 'late', tip: { vi: 'Khuya rồi, nghỉ ngơi để mai đi tiếp bạn nhé.', en: 'It is late. Rest up and carry on tomorrow.' } }
+  if (m >= 5 * 60 + 30 && m < 9 * 60) return { slot: 'breakfast', tip: { vi: 'Sáng rồi, làm tô phở cho tỉnh người nha?', en: 'Morning. Pho to wake you up?', cta: { vi: 'Xem quán ăn', en: 'Find food', action: 'food' } } }
+  if (m >= 11 * 60 + 30 && m < 13 * 60 + 15) return { slot: 'lunch', tip: { vi: 'Trưa rồi, đói chưa? Đi ăn thôi.', en: 'Lunchtime. Hungry yet?', cta: { vi: 'Xem quán ăn', en: 'Find food', action: 'food' } } }
+  if (m >= 17 * 60 + 30 && m < 19 * 60 + 30) return { slot: 'dinner', tip: { vi: 'Ăn tối xong ra chợ đêm dạo luôn nha?', en: 'Dinner first, then the night market?', cta: { vi: 'Xem quán ăn', en: 'Find food', action: 'food' } } }
+  if (m >= 23 * 60 || m < 5 * 60) return { slot: 'late', tip: { vi: 'Khuya rồi đó, đi ngủ đi, mai tính tiếp.', en: 'It is late. Sleep now, plan tomorrow.' } }
   return null
 }
 
 /**
- * Di living in the corner of the app. It stays put: its eyes and head turn to wherever the pointer is, and when
- * the pointer rests on a control Di points at it. It dozes off when nothing happens, cheers when something is
+ * Journie living in the corner of the app. It stays put: its eyes and head turn to wherever the pointer is, and when
+ * the pointer rests on a control Journie points at it. It dozes off when nothing happens, cheers when something is
  * saved and passes on tips that fit the weather, the hour and the page, some with a button.
  */
 export function DiCompanion() {
@@ -71,11 +75,17 @@ export function DiCompanion() {
   const navigate = useNavigate()
   const { canPointerFx } = useMotionPrefs()
   const point = useMascotPrefs((state) => state.point)
+  const busyScreen = useUiStore((state) => state.busyScreen)
+  // The waiting screen has its own Journie on its progress track; everywhere else this one stays, as the way into the chat
+  const hidden = busyScreen
 
   const [mood, setMood] = useState<MascotMood>('wave')
   const [tip, setTip] = useState<Tip | null>(null)
   const [pointAt, setPointAt] = useState<FocusPoint | null>(null)
+  const [chatOpen, setChatOpen] = useState(false)
+  const chatId = useId()
   const boxRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const asleep = useRef(false)
   const sleepTimer = useRef(0)
   const bubbleTimer = useRef(0)
@@ -137,7 +147,7 @@ export function DiCompanion() {
 
   // Greeting.
   useEffect(() => {
-    const hello = window.setTimeout(() => say({ vi: 'Chào bạn, mình là Di! Mình sẽ nhìn theo bạn và nhắc mọi thứ nhé.', en: 'Hi, I am Di! I will keep an eye on you and keep you posted.' }, 6000), 1400)
+    const hello = window.setTimeout(() => say({ vi: 'Chào, mình là Journie nè.', en: 'Hi, Journie here.' }, 6000), 1400)
     const settle = window.setTimeout(() => setMood('idle'), 2800)
     return () => {
       window.clearTimeout(hello)
@@ -204,10 +214,14 @@ export function DiCompanion() {
     [],
   )
 
-  const poke = () => {
-    const pool = [...WEATHER_TIPS[sky.phase][sky.weather], ...ROUTE_TIPS.filter((entry) => entry.match.test(location.pathname)).map((entry) => entry.tip)]
-    tipIndex.current += 1
-    say(pool[tipIndex.current % pool.length])
+  // Journie opens the chat; tips keep coming on their own, out of sight while the chat is open.
+  const closeChat = () => {
+    setChatOpen(false)
+    buttonRef.current?.focus()
+  }
+  const toggleChat = () => {
+    if (chatOpen) return closeChat()
+    setChatOpen(true)
     feel('joy', 1100)
   }
 
@@ -218,10 +232,15 @@ export function DiCompanion() {
     feel('joy', 1000)
   }
 
+  if (hidden) {
+    if (chatOpen) setChatOpen(false)
+    return <div ref={boxRef} className="hidden" aria-hidden="true" />
+  }
+
   return (
     <div ref={boxRef} className="pointer-events-none fixed bottom-[5.4rem] right-1 z-40 w-[4.4rem] sm:right-3 sm:w-[4.9rem] lg:bottom-2 lg:right-5 lg:w-[5.4rem]" aria-live="polite">
       <AnimatePresence>
-        {tip && (
+        {tip && !chatOpen && (
           <motion.div
             key={tip.vi}
             initial={{ opacity: 0, y: 8, scale: 0.92 }}
@@ -238,7 +257,7 @@ export function DiCompanion() {
             </button>
             {tr(tip.vi, tip.en)}
             {tip.cta && (
-              <button type="button" onClick={() => runAction(tip.cta!.action)} className="mt-2 block border border-terracotta/60 bg-terracotta/10 px-2.5 py-1 font-sans text-[0.74rem] font-semibold not-italic text-terracotta transition-colors hover:bg-terracotta hover:text-white">
+              <button type="button" onClick={() => runAction(tip.cta!.action)} className="mt-2 block border border-terracotta/60 bg-terracotta/10 px-2.5 py-1 font-sans text-[0.74rem] font-semibold not-italic text-[#a8472d] transition-colors hover:bg-terracotta hover:text-white">
                 {tr(tip.cta.vi, tip.cta.en)}
               </button>
             )}
@@ -246,11 +265,26 @@ export function DiCompanion() {
         )}
       </AnimatePresence>
 
-      <motion.div initial={{ y: 40, opacity: 0, scale: 0.8 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 15, delay: 0.4 }} className="relative">
-        <button type="button" onClick={poke} className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-105 active:scale-95" aria-label={tr('Hỏi Di một gợi ý', 'Ask Di for a tip')}>
+      <motion.div initial={{ y: 16, opacity: 0, scale: 0.95 }} animate={{ y: 0, opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 28, delay: 0.4 }} className="relative">
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={toggleChat}
+          className="pointer-events-auto block w-full cursor-pointer outline-offset-4 transition-transform duration-300 hover:scale-105 active:scale-95"
+          aria-label={tr('Trò chuyện với Journie', 'Chat with Journie')}
+          aria-haspopup="dialog"
+          aria-expanded={chatOpen}
+          aria-controls={chatOpen ? chatId : undefined}
+        >
           <DiAvatar mood={mood} pointAt={pointAt} className="aspect-square w-full" />
         </button>
       </motion.div>
+
+      {chatOpen && (
+        <Suspense fallback={null}>
+          <AssistantPanel id={chatId} onClose={closeChat} />
+        </Suspense>
+      )}
     </div>
   )
 }

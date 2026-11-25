@@ -12,7 +12,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
  * One warm clay for the whole body with a deeper shade of the same hue for limbs and shadow, cream for the face and
  * belly, and the app's own terracotta, gold and jade: a terracotta carpet with a gold edge and a matching fez, which
  * stand out against both the green scenery and the cream pages. Flat fills only: no highlights and no glossy
- * parts, so Di reads as one soft shape instead of a toy made of pieces.
+ * parts, so Journie reads as one soft shape instead of a toy made of pieces.
  */
 const FUR = '#c08c66'
 const FUR_SHADE = '#a8764f'
@@ -201,7 +201,7 @@ function Sparkle({ x, y, size, delay }: { x: number; y: number; size: number; de
 
 type Props = {
   className?: string
-  /** Override the sky Di dresses for (defaults to the current sky). */
+  /** Override the sky Journie dresses for (defaults to the current sky). */
   phase?: Phase
   weather?: Weather
   /** A few glints around the carpet. */
@@ -212,7 +212,7 @@ type Props = {
 }
 
 /**
- * Di: a small monkey mascot on a flying carpet, drawn as one soft flat shape (a round head-and-body bean, short
+ * Journie: a small monkey mascot on a flying carpet, drawn as one soft flat shape (a round head-and-body bean, short
  * limbs of fixed length, a heart-shaped cream face) in the app's own colours. Looks at the pointer, points at the
  * control under it, covers its eyes for passwords, shakes its head on errors, pats its tummy when it is hungry,
  * fans itself when it is hot and dresses for the sky (fez or nightcap, sunglasses, umbrella). The umbrella stays up
@@ -350,7 +350,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
     }
   }, [mood, lookX, lookY])
 
-  // When nobody is moving the pointer, Di glances around on its own.
+  // When nobody is moving the pointer, Journie glances around on its own.
   useEffect(() => {
     if (reduced || mood === 'hungry' || mood === 'thinking') return
     const timer = window.setInterval(() => {
@@ -387,7 +387,7 @@ export function Di({ className = '', phase, weather, trail = true, energy, roll 
           transition={{ duration: 0.9, ease: 'easeOut' }}
         >
           <div className="di-float size-full">
-            <svg ref={svgRef} viewBox="0 0 240 240" className="size-full overflow-visible" role="img" aria-label={tr('Di, linh vật của Journie', 'Di, the Journie mascot')}>
+            <svg ref={svgRef} viewBox="0 0 240 240" className="size-full overflow-visible" role="img" aria-label={tr('Journie, linh vật du lịch', 'Journie, the travel mascot')}>
               <defs>
                 <linearGradient id={`${uid}-fur`} gradientUnits="userSpaceOnUse" x1="0" y1="36" x2="0" y2="212">
                   <stop offset="0" stopColor={FUR} />

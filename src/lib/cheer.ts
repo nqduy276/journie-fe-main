@@ -1,4 +1,4 @@
-/** Window event that makes Di cheer: dispatched when something nice happens (a trip is saved, a place is hearted). */
+/** Window event that makes Journie cheer: dispatched when something nice happens (a trip is saved, a place is hearted). */
 export const CHEER_EVENT = 'journie:cheer'
 
 export function cheer() {

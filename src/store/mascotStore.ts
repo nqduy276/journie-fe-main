@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-/** Di's preference: whether it points at the control under the pointer (it always looks toward the pointer). */
+/** Journie's preference: whether it points at the control under the pointer (it always looks toward the pointer). */
 type MascotPrefs = {
   point: boolean
   setPoint: (point: boolean) => void

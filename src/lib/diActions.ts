@@ -1,6 +1,6 @@
 import { useUiStore } from '../store/uiStore'
 
-/** What a button in one of Di's tips does: open Discover already filtered for the moment. */
+/** What a button in one of Journie's tips does: open Discover already filtered for the moment. */
 export type DiAction = 'indoor' | 'food' | 'cafe'
 
 export function applyDiAction(action: DiAction) {

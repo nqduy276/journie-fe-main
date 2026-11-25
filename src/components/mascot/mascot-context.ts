@@ -7,14 +7,14 @@ export type FocusPoint = { x: number; y: number }
 export type MascotControl = {
   mood: MascotMood
   setMood: (mood: MascotMood) => void
-  /** Screen position Di should look at while a field has focus (null = follow the pointer). */
+  /** Screen position Journie should look at while a field has focus (null = follow the pointer). */
   focusPoint: FocusPoint | null
   setFocusPoint: (point: FocusPoint | null) => void
-  /** Screen position of something Di should point at (the control under the pointer); null = arms at rest. */
+  /** Screen position of something Journie should point at (the control under the pointer); null = arms at rest. */
   pointAt?: FocusPoint | null
-  /** Bumps whenever something goes wrong, so Di can shake its head again. */
+  /** Bumps whenever something goes wrong, so Journie can shake its head again. */
   errorTick: number
-  /** Where Di stands on screen; the portal transition grows from here. */
+  /** Where Journie stands on screen; the portal transition grows from here. */
   originRef: { current: HTMLDivElement | null }
 }
 

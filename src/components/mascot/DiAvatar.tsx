@@ -4,7 +4,7 @@ import type { Phase, Weather } from '../../store/weatherStore'
 import { Di } from './Di'
 import { MascotContext, type FocusPoint, type MascotControl, type MascotMood } from './mascot-context'
 
-/** Di outside the auth form: a fixed mood, still tracking the pointer, blinking and dressing for the sky. */
+/** Journie outside the auth form: a fixed mood, still tracking the pointer, blinking and dressing for the sky. */
 export function DiAvatar({ mood = 'idle', className = '', phase, weather, trail = true, energy, roll, pointAt = null }: { mood?: MascotMood; className?: string; phase?: Phase; weather?: Weather; trail?: boolean; energy?: MotionValue<number>; roll?: MotionValue<number>; pointAt?: FocusPoint | null }) {
   const originRef = useRef<HTMLDivElement | null>(null)
   const value = useMemo<MascotControl>(
