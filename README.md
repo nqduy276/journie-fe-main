@@ -27,7 +27,7 @@ src/
 │   ├── art/             # Khatam star, dividers
 │   ├── auth/            # Auth shell (split card, day/night sky), lamp toggle, mascot-aware fields
 │   ├── icons/           # Journie's own duotone icon set: categories, weather, navigation (preview at /__icons in dev)
-│   ├── mascot/          # Di, the carpet-riding monkey, and DiCompanion, the pet that sits in the corner and looks or points
+│   ├── mascot/          # Journie, the carpet-riding monkey, and DiCompanion, the pet that sits in the corner and looks or points
 │   ├── map/             # Leaflet route map (OSRM geometry with an offline-safe fallback)
 │   ├── motion/          # Reusable motion: RevealHeading, Magnetic, Tilt, CountUp, Coordinates
 │   ├── place/           # POI detail sheet (info, reviews, add to trip) and art/: the place illustrations (/__art in dev)
@@ -43,7 +43,7 @@ src/
 ├── pages/               # auth/, app/ (workspace pages) and the landing page
 ├── sections/            # One file per landing page section
 ├── lib/                 # Small helpers: cheer event
-├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, sky, Di preferences
+├── store/               # Zustand stores: session, UI state, toasts, notifications, portal transition, sky, Journie preferences
 ├── styles/app.css       # Workspace, night theme, auth torch, mascot and postcard styling (landing palette)
 ├── App.tsx
 ├── index.css
@@ -57,14 +57,15 @@ The landing page lives at `/`. Everything else follows the system description in
 
 | Route | Report module | What it does |
 | --- | --- | --- |
-| `/login`, `/register` | Login / Registration | Verify password (with error states), onboarding interests. A split card (Trang An arch photo with Di on one side, the form on the other) under a live sky. Di follows the pointer, watches the field you are typing in, covers its eyes for passwords, shakes its head on errors and celebrates success before a portal transition into the app. The torch button in the password field switches on a soft light that drifts after the pointer: it reads out the password only where it falls on the field, dims the scenery at night and wakes hidden things (a winking moon, lanterns, a treasure chest, lotus, a constellation, a kite, a flock, a leaping koi, fireflies, a message on the cliff). Day or night and the weather follow the real clock and forecast, or the sky chip. |
+| `/login`, `/register` | Login / Registration | Verify password (with error states), onboarding interests. A split card (Trang An arch photo with Journie on one side, the form on the other) under a live sky. Journie follows the pointer, watches the field you are typing in, covers its eyes for passwords, shakes its head on errors and celebrates success before a portal transition into the app. The torch button in the password field switches on a soft light that drifts after the pointer: it reads out the password only where it falls on the field, dims the scenery at night and wakes hidden things (a winking moon, lanterns, a treasure chest, lotus, a constellation, a kite, a flock, a leaping koi, fireflies, a message on the cliff). Day or night and the weather follow the real clock and forecast, or the sky chip. |
 | `/app` | Dashboard | Quick trip box, live and upcoming trips, destination picks based on the taste profile. |
-| `/app/plan` | Itinerary creation | Natural-language request → extracted constraints (hard vs soft) → editable parameters → pipeline (LLM, data gathering, scoring, CP-SAT-style solve, OSRM routing, time slots) → result with solver status and explanation. |
-| `/app/trips/:id` | Itinerary customization | Drag-and-drop (or Alt+Arrow / buttons) reorder, duration stepper, lock mandatory stops, add or remove places. Every edit is re-timed and validated against opening hours and the day window; invalid edits are rejected with the reason. "Ask Di to adjust" rebuilds the plan from new requests and shows a diff before applying. Undo is available. |
+| `/app/plan` | Itinerary creation | Natural-language request → extracted constraints (hard vs soft) → editable parameters → pipeline (LLM, data gathering, scoring, CP-SAT-style solve, OSRM routing, time slots) → the trip is saved and opened for editing right away (places only, until "Create schedule"). |
+| `/app/trips/:id` | Itinerary customization | A new plan lists places only (no times); "Create schedule" then shows times and routes. An edit written in words keeps every stop it does not touch on its day (only what it removes or adds changes); the stops-per-day stepper sets how many places a day holds. Drag-and-drop (or Alt+Arrow / buttons) reorder, duration stepper, lock mandatory stops, add or remove places. Every edit is re-timed and validated against opening hours and the day window; invalid edits are rejected with the reason. "Ask Journie to adjust" rebuilds the plan from new requests and shows a diff before applying. Undo is available. |
 | `/app/trips/:id/live` | Trip management and adaptive replanning | Simulated clock and GPS position, time-budget ring, condition monitor log, and a disruption simulator (traffic, heavy rain, closure, running late). Replanning solves `I' = argmax [Utility(I) − λ·ChangeCost(I, I_old)]` for the λ you pick on a slider. |
 | `/app/discover` | Search and discovery | Keyword and contextual search ("coffee near Chùa Cầu"), filters by area, type, price and rating, list and map views, venue details with reviews. |
-| `/app/profile` | Profile management | Deliberately short: a name, a few tappable tastes (or a sentence in your own words, which Jo turns into interests and avoid-tags and shows back live), pace, daily budget, foods to avoid, one alerts switch and saved places. |
-| `/app/analytics` | Data collection and analytics (Business Admin) | KPIs, trips and replans per day, interaction heatmap, funnel, replan reasons with acceptance and average λ for model tuning, CSV export. |
+| `/app/profile` | Profile management | Deliberately short: a few tappable tastes (or a sentence in your own words, which Journie turns into interests and avoid-tags and shows back live), pace, foods you cannot eat (typed in by hand), one alerts switch and saved places. |
+| `/app/account` | Account management | Name, email and phone, change password (current password required) and a reset link. Accounts live in this browser until the backend has a sign-in API. |
+| `/app/analytics` | Data collection and analytics (Business Admin) | Shows no numbers until the backend has an analytics API; interactions are logged in this browser by `track()`. |
 
 Demo accounts (also available as one-tap chips on the login page): `lu.khach@journie.vn` (traveler) and
 `ba@journie.vn` (Business Admin), both with password `journie123`.
@@ -72,15 +73,48 @@ Demo accounts (also available as one-tap chips on the login page): `lu.khach@jou
 ### Planning logic (`src/domain`)
 
 - `scoring.ts` implements Eq. (3) of the report, `S = αC + βR + γP + δB + εG`.
-- `solver.ts` is an exact depth-first branch-and-bound for the orienteering problem with time windows. It enforces opening hours, travel time, the day window, budget and mandatory stops. A single-day plan whose search completes is reported `OPTIMAL`; multi-day plans are decomposed per day and reported `FEASIBLE`. It mirrors the OR-Tools CP-SAT model that the backend will use.
+- `solver.ts` is an exact depth-first branch-and-bound for the orienteering problem with time windows. It enforces opening hours, travel time, the day window, budget and mandatory stops, and keeps meals sensible: at most three restaurants a day, at least 150 minutes apart (a must-visit restaurant is never dropped for it). A single-day plan whose search completes is reported `OPTIMAL`; multi-day plans are decomposed per day and reported `FEASIBLE`. It mirrors the OR-Tools CP-SAT model that the backend will use. It plans from the places `/retrieval` returned, and a place closed on a trip weekday is left out unless it is a must-visit.
 - `replan.ts` implements the dynamic incremental replanning objective with a change cost for dropped, added, shifted and re-ordered stops.
-- `nlp.ts` stands in for Gemini intent extraction. It is deterministic and only used until the backend exists.
-- POI data, hours and prices are approximate demo data.
+- `nlp.ts` is the on-device keyword reader. The planner no longer uses it to read requests (the backend's Gemini does); only the profile page keeps it, to preview your own sentence as you type. It reads "không cà phê" as something to avoid, not an interest.
+- The app covers Ho Chi Minh City only, the one city the backend has places for. Places, hours and prices come from the backend (see below); the landing page and sign-in photos of other destinations are decoration.
 
 ### Connecting the real backend
 
-`src/api/*` runs against an in-browser mock with the same shapes as the planned FastAPI endpoints, persisted in
-`localStorage`. To switch, set `VITE_API_URL` and replace each function body with a `fetch` call; the pages and
+Most of `src/api/*` still runs against an in-browser mock with the same shapes as the planned FastAPI endpoints,
+persisted in `localStorage`. **Reading the traveler's request is already wired to the real backend** (journie-be,
+`POST /chat`, Gemini with deterministic repairs):
+
+```bash
+# in journie-be (needs GEMINI_API_KEY and a reachable DATABASE_URL with the places loaded, both in its .env):  uv run fastapi dev app/main.py
+npm run dev                    # .env.development already sets VITE_API_URL=/api; BACKEND_URL defaults to http://127.0.0.1:8000
+```
+
+- `api/extraction.ts` sends the text; `domain/intentFromExtraction.ts` turns the returned `Extraction` into the
+  `Intent` the review screen and planner already use (dates, budget, hours, interests, must-visit and avoid, with the
+  model's own hard/soft labels). Nothing is guessed from keywords in the original text, so the chips show exactly what the
+  model understood. Anything the traveler excludes (`avoid` or an `exclude` constraint) is dropped from the interests,
+  because the model sometimes lists the same word in both. Pace and transport are not part of the extraction, so they come
+  from the profile and the review form.
+- There is no on-device substitute: if the backend is down, out of quota (`llm-rate-limited`), too slow or `VITE_API_URL`
+  is unset, the planner shows the reason (`api/errorText.ts`) and the traveler retries.
+- A destination other than Ho Chi Minh City is shown with a warning and waits for the traveler to pick Ho Chi Minh City.
+- The review screen also shows what the model could not find (`missing_fields`), anything it flagged as too vague
+  (`needs_clarification`) and contradictions it noticed (`possible_conflicts`).
+- **The places are the backend's too** (`POST /retrieval`, `api/catalog.ts`). Planning sends the same extraction and plans from
+  the places it returns, with must-visit names resolved by the backend. `useCatalog` loads all of them (a page of 20 per interest
+  section) when the workspace opens; `domain/pois.ts` keeps them in memory and localStorage so saved trips, Discover, the dashboard picks
+  and the place sheet all read one list. `domain/poiFromCard.ts` turns a backend card into the planner's `Poi`: opening hours are parsed
+  from OSM syntax (`domain/openingHours.ts`; one window valid on every open day, the longest interval when a lunch break splits the day,
+  closed weekdays left out of the trip), visit time and typical spend per category are priors from journie-data (`duration.v1.yaml`,
+  `cost.v1.yaml`), and `quality` is the backend's own score. Nothing is invented per place: there are no ratings or reviews, and a price
+  shows as an estimate (`~`) or "price unknown" unless the data states it.
+- `/retrieval` is the backend's own, unmodified: it reads the places from its Postgres database (`DATABASE_URL`). Without a reachable database it answers 503
+  (`retrieval-db-unavailable`) and the planner shows "could not reach the places database", so start the database first.
+- `tests/llm/` holds 60 Ho Chi Minh City cases from simple to complex (form-first input, extra wishes, avoids, must-visit places, times, trip edits) run against the real backend (see its README).
+- A deployed backend called directly from the browser needs CORS for this site's origin; with the `/api` proxy or a
+  same-origin rewrite it does not.
+
+Replacing another mock function body with `postJson` (see `api/http.ts`) is the only change needed; the pages and
 TanStack Query hooks do not change. The map requests tiles from `tile.openstreetmap.org` and road geometry from the
 public OSRM demo server; when either is unreachable the map still shows pins and straight route hops.
 
@@ -92,7 +126,7 @@ yellow, `jade` and the occasional `dusk` purple. The app tokens (`night`, `midni
 hairline borders (the `.app-root` scope remaps Tailwind's radius scale), and photos sit in arches like the Trang An
 card. Charts use landing-palette hues that were checked with the dataviz validator.
 
-- **Di** (`components/mascot`) is a small monkey mascot on a flying carpet, drawn as one soft flat shape: a round
+- **Journie** (`components/mascot`) is a small monkey mascot on a flying carpet, drawn as one soft flat shape: a round
   head-and-body bean, a heart-shaped cream face, short limbs, no outlines and no glossy highlights, in a warm clay,
   cream, and the app's own terracotta, gold and jade (a terracotta carpet with a gold edge and a matching fez, a jade
   nightcap), so it stands out from both the green scenery and the cream pages without leaving the palette. Arms are two bones of fixed length solved with two-bone IK (`solveArm`), so a limb bends but never
@@ -101,9 +135,9 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   (pats its tummy) and hot (fans itself). It dresses for the sky (fez or nightcap, sunglasses, umbrella in rain and
   storm in every mood except the ones that cover the eyes). Inside the app `DiCompanion` sits small in the bottom
   corner and never chases the cursor: it looks toward the pointer and, when you rest on a button or link for a moment,
-  raises the nearer arm and points at it (the sidebar switch "Di chỉ vào nơi bạn trỏ" turns pointing off). It dozes
+  raises the nearer arm and points at it (the sidebar switch "Journie chỉ vào nơi bạn trỏ" turns pointing off). It dozes
   off after a while, cheers when something is saved, and gives tips for the weather, the hour and the page, some with
-  a button that opens Discover pre-filtered. The bigger Di on the dashboard (`useDiMoment`) does not copy it: it acts
+  a button that opens Discover pre-filtered. The bigger Journie on the dashboard (`useDiMoment`) does not copy it: it acts
   on the sky and the clock: umbrella and worried hands in a storm, umbrella in rain, a rumbling tummy and a "food
   ideas" button at breakfast, lunch and dinner, a fan and sunglasses in the midday sun, asleep late at night.
 - **Sky** (`components/weather`, `store/weatherStore.ts`): the time of day (day or night) and the weather (clear,
@@ -126,11 +160,10 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   differently for every place; otherwise the flat illustration (`components/place/art`). Today photographs exist for
   six cities, so Hà Nội and Đà Lạt are the only places still drawn until photos for them are added.
 - **One language at a time**: every visible string follows the language switch. Data keys never reach the screen:
-  the solver verdicts are `Tối ưu / Khả thi / Không khả thi` (`Optimal / Feasible / Infeasible`,
-  `domain/solverStatus.ts`), place tags are translated (`domain/tags.ts`), the sample trips are shown in the page
-  language (`domain/tripText.ts`), and the map's own buttons and the analytics log are localised. Place and street
-  names stay as the proper names they are.
-- **A different place each visit** (`content/heroPlaces.ts`): the photograph behind Di on the sign-in and register
+  place tags are translated (`domain/tags.ts`), a place's name, ward, address and opening hours read in the page
+  language (`domain/placeText.ts`: "Phường Bến Thành" is "Ben Thanh Ward", "Mo-Su" is "Mon-Sun"), trip titles are
+  written in the page language (`domain/tripText.ts`), and the map's own buttons are localised.
+- **A different place each visit** (`content/heroPlaces.ts`): the photograph behind Journie on the sign-in and register
   pages and in the landing hero is picked at random from the six destinations we have photos of, once per page load
   (never the one shown on the previous load, remembered in `journie-hero-last`). The caption, coordinates, weather card,
   the side journey rail and which hidden torch effects appear (a leaping koi only over water) all follow that place.
@@ -153,7 +186,7 @@ card. Charts use landing-palette hues that were checked with the dataviz validat
   burst of hearts when you save.
 - **Small motion**: a rug-pattern ribbon unrolls across the top on every page change, timelines draw their rail and
   pop their stops in, primary buttons throw lamp-dust where pressed, city cards tilt with a glare, the page-header
-  route flows, and the planning pipeline has Di riding the progress line.
+  route flows, and the planning pipeline has Journie riding the progress line.
 
 ## Motion and Scenes
 
