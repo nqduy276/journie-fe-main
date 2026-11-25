@@ -1,4 +1,3 @@
-import { cityById } from './pois'
 import type { CityId, Weather } from './types'
 
 /** Deterministic hash so the same city and day always report the same weather. */
@@ -11,26 +10,64 @@ export function hashString(value: string): number {
   return h >>> 0
 }
 
-const BASE_TEMP: Record<CityId, number> = {
-  'ha-noi': 29,
-  'ninh-binh': 29,
-  'ha-long': 28,
-  'ha-giang': 24,
-  'hoi-an': 31,
-  'sai-gon': 33,
-  'phu-quoc': 31,
-  'da-lat': 22,
+const RUSH_CITIES = new Set<CityId>(['sai-gon', 'ha-noi'])
+
+/** One city's forecast as the weather API (`api/weather.ts`) gave it. */
+export type CityForecast = {
+  fetchedAt: number
+  now: { code: number; tempC: number; rainMm: number }
+  days: Record<string, { code: number; maxC: number; rainMm: number; rainChance: number | null }>
 }
 
-/** Stand-in for the weather API in the "gather real-time data" step. */
+/** Where a forecast is for: one of the four cities, or `here`, the traveler's own position when they share it. */
+export type ForecastPlace = CityId | 'here'
+
+let forecasts: Partial<Record<ForecastPlace, CityForecast>> = {}
+const listeners = new Set<() => void>()
+
+export const forecastsSnapshot = () => forecasts
+export const subscribeForecasts = (listener: () => void) => {
+  listeners.add(listener)
+  return () => void listeners.delete(listener)
+}
+export const setForecasts = (next: Partial<Record<ForecastPlace, CityForecast>>) => {
+  forecasts = { ...forecasts, ...next }
+  listeners.forEach((listener) => listener())
+}
+
+/** No data (offline, or a date past the 16-day forecast): nothing is claimed, and the plan is not bent towards indoor places. */
+const UNKNOWN: Weather = { known: false, condition: 'cloudy', tempC: null }
+/** A reading older than this no longer says what the sky is doing now. */
+const STALE_MS = 3 * 60 * 60_000
+
+// WMO weather codes: 0-1 clear, 2-3 cloudy, 45-48 fog, 51-86 drizzle, rain or snow, 95-99 thunderstorm
+const isStorm = (code: number) => code >= 95
+const isWet = (code: number) => code >= 51 && code <= 86
+const dryCondition = (code: number): Weather['condition'] => (code <= 1 ? 'sunny' : 'cloudy')
+
+/**
+ * Rain (mm) in the forecast's current 15 minutes from which the sky counts as raining, about 0.8 mm an hour. The model's
+ * trace drizzle (0.1 mm, often under a half-clear sky) is not rain anyone notices, so it reads as cloudy.
+ */
+export const RAIN_NOW_MM = 0.2
+
+/** The sky right now: rain or a storm only when enough rain is actually falling, not when a code alone suggests it. */
+export function weatherNow(place: ForecastPlace, at = Date.now()): Weather {
+  const forecast = forecasts[place]
+  if (!forecast || at - forecast.fetchedAt > STALE_MS) return UNKNOWN
+  const { code, tempC, rainMm } = forecast.now
+  const falling = rainMm >= RAIN_NOW_MM
+  const condition = falling && isStorm(code) ? 'storm' : falling && isWet(code) ? 'rain' : isStorm(code) || isWet(code) ? 'cloudy' : dryCondition(code)
+  return { known: true, condition, tempC: Math.round(tempC) }
+}
+
+/** A whole day: rainy only with at least 1 mm expected and a 50% chance, so one passing shower does not mark the day wet. */
 export function weatherFor(city: CityId, date: string): Weather {
-  const h = hashString(`${city}${date}`)
-  const roll = h % 100
-  const tempC = BASE_TEMP[city] + ((h >> 8) % 5) - 2
-  if (roll < 14) return { condition: 'rain', tempC: tempC - 3, rainChance: 70 + (h % 25), note: ['Mưa rải rác, ưu tiên điểm trong nhà', 'Showers likely, indoor stops favoured'] }
-  if (roll < 24) return { condition: 'storm', tempC: tempC - 4, rainChance: 85, note: ['Dông chiều, tránh điểm ngoài trời', 'Afternoon storms, avoid outdoor stops'] }
-  if (roll < 54) return { condition: 'cloudy', tempC, rainChance: 20 + (h % 20), note: ['Nhiều mây, dễ chịu để đi bộ', 'Cloudy and comfortable for walking'] }
-  return { condition: 'sunny', tempC: tempC + 1, rainChance: 5 + (h % 12), note: ['Nắng đẹp, nhớ mang nón và nước', 'Clear and sunny, bring a hat and water'] }
+  const day = forecasts[city]?.days[date]
+  if (!day) return UNKNOWN
+  const likely = day.rainMm >= 1 && (day.rainChance ?? 100) >= 50
+  const condition = likely && isStorm(day.code) ? 'storm' : likely && isWet(day.code) ? 'rain' : dryCondition(day.code)
+  return { known: true, condition, tempC: Math.round(day.maxC) }
 }
 
 export const isRainy = (weather: Weather) => weather.condition === 'rain' || weather.condition === 'storm'
@@ -39,8 +76,6 @@ export const isRainy = (weather: Weather) => weather.condition === 'rain' || wea
 export function congestionAt(city: CityId, minutes: number): number {
   const hour = minutes / 60
   const rush = (hour >= 7 && hour <= 9) || (hour >= 16.5 && hour <= 19)
-  const big = city === 'ha-noi' || city === 'sai-gon'
-  return rush ? (big ? 1.5 : 1.2) : 1
+  return rush && RUSH_CITIES.has(city) ? 1.5 : 1
 }
 
-export const cityName = (id: CityId) => cityById[id].name
