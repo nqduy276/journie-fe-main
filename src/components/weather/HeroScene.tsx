@@ -61,7 +61,7 @@ function Cloud({ w, o, dark }: { w: number; o: number; dark: boolean }) {
 /**
  * Everything behind the dashboard hero that follows the sky: the sun or moon (dimmed by the weather),
  * drifting clouds, a rain veil and the odd lightning flash. Mounted first inside the hero panel so the
- * greeting and Di stay above it.
+ * greeting and Journie stay above it.
  */
 export function HeroScene() {
   const sky = useSky()
@@ -78,14 +78,14 @@ export function HeroScene() {
       <div className="absolute right-[5.5%] top-5 hidden size-[5.2rem] transition-[opacity,filter] duration-[1400ms] lg:block" style={{ opacity: BODY_SHOW[sky.weather], filter: wet ? 'blur(2px)' : 'none' }}>
         <AnimatePresence mode="wait" initial={false}>
           {sky.night ? (
-            <motion.svg key="moon" viewBox="0 0 100 100" className="size-full overflow-visible" initial={{ y: 46, opacity: 0, rotate: -30 }} animate={{ y: 0, opacity: 1, rotate: 0 }} exit={{ y: 46, opacity: 0, rotate: 30 }} transition={{ type: 'spring', stiffness: 110, damping: 16 }}>
+            <motion.svg key="moon" viewBox="0 0 100 100" className="size-full overflow-visible" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 24, opacity: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
               <circle cx="50" cy="50" r="46" fill="rgba(255,244,205,0.14)" />
               <path d="M58 10A40 40 0 1 0 58 90A32 32 0 1 1 58 10Z" fill="#fff1c4" />
               <circle cx="36" cy="44" r="4" fill="#d9c98f" opacity="0.6" />
               <circle cx="44" cy="68" r="6" fill="#d9c98f" opacity="0.5" />
             </motion.svg>
           ) : (
-            <motion.div key="sun" className="relative size-full" initial={{ y: 46, opacity: 0, rotate: 30 }} animate={{ y: 0, opacity: 1, rotate: 0 }} exit={{ y: 46, opacity: 0, rotate: -30 }} transition={{ type: 'spring', stiffness: 110, damping: 16 }}>
+            <motion.div key="sun" className="relative size-full" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 24, opacity: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
               <div className="sky-sun-rays" style={{ inset: '-25%' }} />
               <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_36%_34%,#fff3c4,#f6c75a_55%,#eda63b)] shadow-[0_0_40px_10px_rgba(240,185,75,0.4)]" />
             </motion.div>

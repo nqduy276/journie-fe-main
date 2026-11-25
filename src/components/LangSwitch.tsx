@@ -21,7 +21,7 @@ export function LangSwitch({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
           aria-pressed={language === option}
           onClick={() => setLanguage(option)}
           className={`relative min-w-9 px-2 py-1 text-[0.68rem] font-bold tracking-[0.12em] transition-colors ${
-            language === option ? (dark ? 'text-night' : 'text-paper') : dark ? 'text-paper/60 hover:text-paper' : 'text-ink/55 hover:text-ink'
+            language === option ? (dark ? 'text-night' : 'text-paper') : dark ? 'text-paper/60 hover:text-paper' : 'text-ink/70 hover:text-ink'
           }`}
         >
           {language === option && (

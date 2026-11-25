@@ -10,7 +10,7 @@ type Props = {
 }
 
 /** Counts up to `value` the first time it scrolls into view. */
-export function CountUp({ value, format, duration = 1.6, className }: Props) {
+export function CountUp({ value, format, duration = 1.1, className }: Props) {
   const { reduced } = useMotionPrefs()
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, margin: '0px 0px -10% 0px' })
@@ -19,7 +19,7 @@ export function CountUp({ value, format, duration = 1.6, className }: Props) {
 
   useEffect(() => {
     if (!inView || reduced) return
-    const controls = animate(progress, 1, { duration, ease: [0.16, 1, 0.3, 1] })
+    const controls = animate(progress, 1, { duration, delay: 0.2, ease: [0.16, 1, 0.3, 1] })
     return () => controls.stop()
   }, [inView, reduced, progress, duration])
 

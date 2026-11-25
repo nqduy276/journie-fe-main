@@ -194,8 +194,8 @@
 
 .app-bg {
   background:
-    radial-gradient(ellipse 55% 38% at 100% 0, rgba(240, 185, 75, 0.14), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 0 100%, rgba(79, 184, 164, 0.1), transparent 70%),
+    radial-gradient(ellipse 55% 38% at 100% 0, var(--day-glow-a), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0 100%, var(--day-glow-b), transparent 70%),
     var(--color-paper);
 }
 
@@ -217,9 +217,9 @@
   overflow: hidden;
   border-radius: 4px;
   background:
-    radial-gradient(ellipse 70% 90% at 100% 0, rgba(79, 184, 164, 0.22), transparent 60%),
+    radial-gradient(ellipse 70% 90% at 100% 0, var(--n-glow-a), transparent 60%),
     radial-gradient(ellipse 60% 80% at 0 100%, rgba(217, 103, 69, 0.18), transparent 62%),
-    linear-gradient(155deg, #0f2f27, #173f35 55%, #15403f);
+    linear-gradient(155deg, var(--n-bg-top), var(--n-surface-2) 55%, var(--n-surface));
   color: var(--color-paper);
 }
 
@@ -242,38 +242,89 @@
 .h-display {
   font-family: var(--font-display);
   font-weight: 500;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.015em;
   line-height: 1.08;
   text-wrap: balance;
 }
 
-.sidebar {
-  background:
-    radial-gradient(ellipse 120% 50% at 0 0, rgba(79, 184, 164, 0.16), transparent 60%),
-    linear-gradient(180deg, #0e2b24, #143a31 60%, #17433a);
+/* Desktop top bar of the traveller app (TopBar in AppShell): clear at the top of the page, frosted once it scrolls. */
+.topbar {
+  border-bottom: 1px solid transparent;
+  transition: background-color 300ms ease, border-color 300ms ease, backdrop-filter 300ms ease;
 }
 
-.nav-link {
+.topbar[data-scrolled='true'] {
+  border-bottom-color: color-mix(in srgb, var(--color-forest) 12%, transparent);
+  background: color-mix(in srgb, var(--color-paper) 90%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+html[data-app-phase='night'] .topbar[data-scrolled='true'] {
+  border-bottom-color: rgba(247, 242, 232, 0.1);
+  background: color-mix(in srgb, var(--n-body) 86%, transparent);
+}
+
+.topbar-link {
   position: relative;
   display: flex;
-  min-height: 2.75rem;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0 0.9rem;
-  border-radius: 3px;
-  font-size: 0.88rem;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  font-size: 0.86rem;
   font-weight: 600;
+  color: color-mix(in srgb, var(--color-ink) 66%, transparent);
+  transition: color 220ms ease;
+}
+
+.topbar-link:hover,
+.topbar-link[aria-current='page'] {
+  color: var(--color-ink);
+}
+
+/* Below xl the tabs drop their icons (AppShell) and close up, so every label still fits from 1024px */
+@media (width < 80rem) {
+  .topbar-link {
+    padding: 0 0.625rem;
+  }
+}
+
+html[data-app-phase='night'] .topbar-link {
   color: rgba(247, 242, 232, 0.68);
-  transition: color 260ms ease, background-color 260ms ease;
 }
 
-.nav-link:hover {
+html[data-app-phase='night'] .topbar-link:hover,
+html[data-app-phase='night'] .topbar-link[aria-current='page'] {
   color: var(--color-paper);
-  background: rgba(247, 242, 232, 0.06);
 }
 
-.nav-link[aria-current='page'] {
-  color: var(--color-sun);
+/* The hover pill that follows the pointer, and the gold pill: a copy of the tabs in dark-on-gold, clipped to the active one */
+.topbar-hover {
+  position: absolute;
+  inset: 0.75rem 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 8%, transparent);
+}
+
+.topbar-active {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: stretch;
+  pointer-events: none;
+  background: var(--color-sun);
+  transition: clip-path 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topbar-active .topbar-link,
+html[data-app-phase='night'] .topbar-active .topbar-link {
+  color: var(--color-night);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar-active {
+    transition: none;
+  }
 }
 
 .skeleton {
@@ -432,13 +483,24 @@ input[type='range'].range:active::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--color-terracotta);
   border: 3px solid #fff;
-  box-shadow: 0 0 0 0 rgba(217, 103, 69, 0.7), 0 4px 10px rgba(13, 40, 34, 0.5);
-  animation: me-pulse 1.8s ease-out infinite;
+  box-shadow: 0 4px 10px rgba(13, 40, 34, 0.5);
+  position: relative;
 }
 
-@keyframes me-pulse {
-  70% { box-shadow: 0 0 0 16px rgba(217, 103, 69, 0), 0 4px 10px rgba(13, 40, 34, 0.5); }
-  100% { box-shadow: 0 0 0 0 rgba(217, 103, 69, 0), 0 4px 10px rgba(13, 40, 34, 0.5); }
+/* The expanding ring is a transformed layer, not an animated box-shadow, so the live map does not repaint every frame. */
+.me-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(217, 103, 69, 0.7);
+  animation: me-ring 1.8s ease-out infinite;
+}
+
+@keyframes me-ring {
+  0% { transform: scale(1); opacity: 1; }
+  70%, 100% { transform: scale(2.8); opacity: 0; }
 }
 
 /* ───────── Weather ───────── */
@@ -507,7 +569,7 @@ input[type='range'].range:active::-webkit-slider-thumb {
   88% { opacity: 0; }
 }
 
-/* ───────── Di the mascot ───────── */
+/* ───────── Journie the mascot ───────── */
 
 .di-float {
   animation: di-float 4.4s ease-in-out infinite alternate;
@@ -789,15 +851,11 @@ input[type='range'].range:active::-webkit-slider-thumb {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: 28rem;
-  border-radius: 999px 999px 4px 4px;
+  /* The whole 3:4 poster shows, so its own text is never cropped. */
+  aspect-ratio: 3 / 4;
+  border-radius: 4px;
   color: #f7f2e8;
-}
-
-@media (min-width: 768px) {
-  .auth-visual {
-    min-height: 36rem;
-  }
+  box-shadow: 0 30px 60px -36px rgba(13, 40, 34, 0.55);
 }
 
 .auth-visual img {
@@ -807,26 +865,16 @@ input[type='range'].range:active::-webkit-slider-thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform-origin: 50% 60%;
-  animation: ken-burns 26s ease-in-out infinite alternate;
 }
 
+/* A soft shade only behind the tagline at the top of the photograph. */
 .auth-visual::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto;
+  height: 20%;
   z-index: -1;
-  background:
-    linear-gradient(180deg, rgba(13, 40, 34, 0.1) 0%, rgba(13, 40, 34, 0.15) 40%, rgba(13, 40, 34, 0.78) 100%);
-}
-
-.auth-root[data-phase='night'] .auth-visual::after {
-  background: linear-gradient(180deg, rgba(5, 22, 18, 0.62) 0%, rgba(8, 30, 25, 0.55) 45%, rgba(5, 20, 17, 0.9) 100%);
-}
-
-.auth-root[data-phase='day'][data-weather='rain'] .auth-visual::after,
-.auth-root[data-phase='day'][data-weather='storm'] .auth-visual::after {
-  background: linear-gradient(180deg, rgba(40, 62, 58, 0.5) 0%, rgba(30, 50, 46, 0.55) 45%, rgba(13, 40, 34, 0.85) 100%);
+  background: linear-gradient(180deg, rgba(13, 40, 34, 0.6), rgba(13, 40, 34, 0));
 }
 
 .field-shell {
@@ -1316,11 +1364,17 @@ input[type='range'].range:active::-webkit-slider-thumb {
   100% { transform: translate(calc(var(--i) * 6px - 20px), calc(var(--i) * -5px + 14px)) scale(0.8); }
 }
 
+/* The passage between sign-in and the app (PortalWipe): a dark stage that spreads from the press, then the title on it */
 .portal-wipe {
-  background:
-    radial-gradient(circle at 50% 50%, rgba(240, 185, 75, 0.35), transparent 55%),
-    linear-gradient(160deg, #0f2f27, #173f35 55%, #1c5546);
+  background: #0b0f0d;
   will-change: clip-path;
+}
+
+/* The title on the way into the app (JournieIntro): a dark stage with a faint gold glow behind the word */
+.journie-intro {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 52%, rgba(240, 185, 75, 0.14), transparent 70%),
+    #0b0f0d;
 }
 
 /* ───────── Reduced motion and polish ───────── */
@@ -1344,12 +1398,55 @@ input[type='range'].range:active::-webkit-slider-thumb {
   .hero-cloud,
   .hero-drop,
   .hero-flash,
-  .auth-visual img,
   .route-line,
-  .me-dot,
+  .me-dot::after,
   .pulse-dot::after {
     animation: none !important;
   }
+}
+
+/* A destination's drawing at the foot of the page (DrawnBackdrop), in the colours of its poster, fading out at the top and sides. */
+.drawn-backdrop {
+  pointer-events: none;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, 120vh);
+  aspect-ratio: 2 / 1;
+  transform: translateX(-50%);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(to top, #000 40%, transparent), linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to top, #000 40%, transparent), linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  mask-composite: intersect;
+}
+
+.drawn-backdrop[data-night='true'] {
+  mix-blend-mode: normal;
+}
+
+.drawn-backdrop img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.drawn-backdrop[data-wide='true'] {
+  width: 100%;
+  height: 58%;
+  aspect-ratio: auto;
+  -webkit-mask-image: linear-gradient(to top, #000 45%, transparent);
+  mask-image: linear-gradient(to top, #000 45%, transparent);
+}
+
+.drawn-backdrop[data-wide='true'] img {
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+/* While the planning screen waits (PlanPage), its photo slideshow is the only thing moving: the sky and header loops hold still. */
+.busy-screen :is(.sky-sun-rays, .sky-cloud, .header-route, .header-pin, .spin-slow, .route-flow) {
+  animation-play-state: paused !important;
 }
 
 /* Grid items may shrink below their content width; stops tabs, maps and tables forcing sideways scroll on phones. */
@@ -1371,10 +1468,153 @@ summary {
 
 .auth-root {
   --a-error: #b8381f;
+  --a-ok: #1d7356;
 }
 
 .auth-root[data-phase='night'] {
   --a-error: #ff9d85;
+  --a-ok: #6fd3b8;
+}
+
+/* The human check, laid out like the widgets big sites use: a box to tick on the left, who runs the check on the right */
+.antibot {
+  display: flex;
+  min-height: 4.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid var(--a-line);
+  border-radius: 2px;
+  background: var(--a-field);
+  padding: 0 0.9rem 0 0.75rem;
+  transition: border-color 300ms ease;
+}
+
+.antibot:hover {
+  border-color: color-mix(in srgb, var(--a-ink) 45%, transparent);
+}
+
+.antibot[data-state='done'] {
+  border-color: color-mix(in srgb, var(--a-ok) 55%, transparent);
+}
+
+.antibot-check {
+  display: flex;
+  min-height: 2.75rem;
+  min-width: 0;
+  align-items: center;
+  gap: 0.8rem;
+  border-radius: 2px;
+  padding: 0 0.25rem;
+  cursor: pointer;
+}
+
+.antibot-check:disabled {
+  cursor: default;
+}
+
+.antibot-check:focus-visible {
+  outline: 2px solid var(--a-accent);
+  outline-offset: 2px;
+}
+
+.antibot-box {
+  position: relative;
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--a-ink) 42%, transparent);
+  border-radius: 3px;
+  background: var(--a-card);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.antibot-check:not(:disabled):hover .antibot-box {
+  border-color: var(--a-accent);
+}
+
+.antibot[data-state='checking'] .antibot-box,
+.antibot[data-state='done'] .antibot-box {
+  border-color: transparent;
+  background: transparent;
+}
+
+.antibot-spinner {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2.5px solid color-mix(in srgb, var(--a-ok) 22%, transparent);
+  border-top-color: var(--a-ok);
+  border-radius: 999px;
+  animation: antibot-spin 700ms linear infinite;
+}
+
+.antibot-tick {
+  width: 1.6rem;
+  height: 1.6rem;
+  animation: antibot-pop 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.antibot-tick circle {
+  fill: var(--a-ok);
+}
+
+.antibot-tick path {
+  fill: none;
+  stroke: var(--a-card);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  animation: antibot-draw 360ms 120ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.antibot-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--a-ink);
+}
+
+.antibot[data-state='done'] .antibot-label {
+  color: var(--a-ok);
+}
+
+.antibot-brand {
+  flex-shrink: 0;
+  color: var(--a-accent);
+}
+
+@keyframes antibot-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes antibot-pop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+
+@keyframes antibot-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .antibot-spinner {
+    animation-duration: 2s;
+  }
+
+  .antibot-tick,
+  .antibot-tick path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
 }
 
 .auth-btn {
@@ -1636,30 +1876,204 @@ summary {
    The whole workspace flips to a deep forest night. Foreground tokens (ink, forest) turn light, surfaces
    turn dark, `paper` stays the light cream so text on dark panels is untouched. */
 
+/* Each background drawing brings its own palette (data-app-scene, set by the app shell): the ground and surfaces by night, the
+   dark panels in both phases, and a tint on the paper by day. Without a scene: Tràng An's green, the app's first look. */
+:root {
+  --n-body: #09201b;
+  --n-bg-top: #0b241f;
+  --n-bg-bottom: #08191a;
+  --n-glow-a: rgba(79, 184, 164, 0.16);
+  --n-glow-b: rgba(112, 92, 196, 0.14);
+  --n-cream: #133129;
+  --n-surface: #153830;
+  --n-surface-2: #1c4a3e;
+  --n-raised: #163b33;
+  --n-accent: #2f7a66;
+  --n-pop: #0f2b25;
+  --n-card: #112f29;
+  --n-map: #1a2a27;
+  --day-glow-a: rgba(240, 185, 75, 0.14);
+  --day-glow-b: rgba(79, 184, 164, 0.1);
+}
+
+/* Hạ Long: jade water and karst green */
+html[data-app-scene='ha-long'] {
+  --n-body: #0e1b18;
+  --n-bg-top: #132420;
+  --n-bg-bottom: #0a1412;
+  --n-glow-a: rgba(145, 162, 145, 0.2);
+  --n-glow-b: rgba(138, 75, 51, 0.1);
+  --n-cream: #15241f;
+  --n-surface: #182a24;
+  --n-surface-2: #213830;
+  --n-raised: #1c2f29;
+  --n-accent: #4e6a3c;
+  --n-pop: #132420;
+  --n-card: #172822;
+  --n-map: #15211d;
+  --day-glow-a: rgba(145, 162, 145, 0.2);
+  --day-glow-b: rgba(138, 75, 51, 0.08);
+}
+
+/* Hà Giang: young rice and a cyan sky */
+html[data-app-scene='ha-giang'] {
+  --n-body: #0f1a0c;
+  --n-bg-top: #142310;
+  --n-bg-bottom: #0b1409;
+  --n-glow-a: rgba(120, 206, 227, 0.14);
+  --n-glow-b: rgba(67, 116, 21, 0.2);
+  --n-cream: #16240f;
+  --n-surface: #1a2a14;
+  --n-surface-2: #24381b;
+  --n-raised: #1e2f17;
+  --n-accent: #3f6f22;
+  --n-pop: #142310;
+  --n-card: #18270f;
+  --n-map: #16200f;
+  --day-glow-a: rgba(120, 206, 227, 0.16);
+  --day-glow-b: rgba(67, 116, 21, 0.1);
+}
+
+/* Hội An: ochre walls and red lanterns */
+html[data-app-scene='hoi-an'] {
+  --n-body: #1a140c;
+  --n-bg-top: #211a0f;
+  --n-bg-bottom: #130f09;
+  --n-glow-a: rgba(215, 172, 55, 0.18);
+  --n-glow-b: rgba(194, 59, 42, 0.12);
+  --n-cream: #231b10;
+  --n-surface: #281f13;
+  --n-surface-2: #352a1a;
+  --n-raised: #2d2316;
+  --n-accent: #7d5f1a;
+  --n-pop: #211a0f;
+  --n-card: #261d12;
+  --n-map: #1f180f;
+  --day-glow-a: rgba(215, 172, 55, 0.18);
+  --day-glow-b: rgba(194, 59, 42, 0.08);
+}
+
+/* Phú Quốc: sea blues and sand */
+html[data-app-scene='phu-quoc'] {
+  --n-body: #0b1824;
+  --n-bg-top: #0f2030;
+  --n-bg-bottom: #08121b;
+  --n-glow-a: rgba(74, 159, 224, 0.2);
+  --n-glow-b: rgba(217, 199, 168, 0.1);
+  --n-cream: #10202e;
+  --n-surface: #132535;
+  --n-surface-2: #1b3247;
+  --n-raised: #162a3c;
+  --n-accent: #2f6fb0;
+  --n-pop: #0f2030;
+  --n-card: #122333;
+  --n-map: #111d28;
+  --day-glow-a: rgba(74, 159, 224, 0.16);
+  --day-glow-b: rgba(217, 199, 168, 0.2);
+}
+
+/* Sài Gòn: the navy of its towers at blue hour, warmed by their lights */
+html[data-app-scene='sai-gon'] {
+  --n-body: #0d1626;
+  --n-bg-top: #111c30;
+  --n-bg-bottom: #0a111e;
+  --n-glow-a: rgba(51, 80, 124, 0.26);
+  --n-glow-b: rgba(227, 168, 87, 0.1);
+  --n-cream: #142036;
+  --n-surface: #16233a;
+  --n-surface-2: #1f3050;
+  --n-raised: #1a2842;
+  --n-accent: #34507e;
+  --n-pop: #111c30;
+  --n-card: #15213a;
+  --n-map: #141c2a;
+  --day-glow-a: rgba(51, 80, 124, 0.13);
+  --day-glow-b: rgba(227, 168, 87, 0.12);
+}
+
+/* Hà Nội: the grey moss of Hồ Gươm */
+html[data-app-scene='ha-noi'] {
+  --n-body: #121815;
+  --n-bg-top: #172019;
+  --n-bg-bottom: #0e1310;
+  --n-glow-a: rgba(110, 122, 78, 0.22);
+  --n-glow-b: rgba(165, 173, 185, 0.12);
+  --n-cream: #1a221d;
+  --n-surface: #1d2621;
+  --n-surface-2: #27332c;
+  --n-raised: #222c26;
+  --n-accent: #56664a;
+  --n-pop: #172019;
+  --n-card: #1b241f;
+  --n-map: #18201c;
+  --day-glow-a: rgba(110, 122, 78, 0.14);
+  --day-glow-b: rgba(165, 173, 185, 0.18);
+}
+
+/* Đà Nẵng: violet night over the Han River, with the dragon gold */
+html[data-app-scene='da-nang'] {
+  --n-body: #140f1a;
+  --n-bg-top: #1a1322;
+  --n-bg-bottom: #100b15;
+  --n-glow-a: rgba(68, 59, 184, 0.22);
+  --n-glow-b: rgba(214, 158, 42, 0.12);
+  --n-cream: #1d1626;
+  --n-surface: #211a2b;
+  --n-surface-2: #2c2339;
+  --n-raised: #261e31;
+  --n-accent: #4b3f8a;
+  --n-pop: #1a1322;
+  --n-card: #1f1829;
+  --n-map: #1a1521;
+  --day-glow-a: rgba(214, 158, 42, 0.16);
+  --day-glow-b: rgba(68, 59, 184, 0.08);
+}
+
+/* Huế: the dark wood of Ngọ Môn and its lacquered red */
+html[data-app-scene='hue'] {
+  --n-body: #18110d;
+  --n-bg-top: #1f1611;
+  --n-bg-bottom: #120d0a;
+  --n-glow-a: rgba(163, 59, 43, 0.2);
+  --n-glow-b: rgba(171, 150, 131, 0.12);
+  --n-cream: #221914;
+  --n-surface: #271d17;
+  --n-surface-2: #33271f;
+  --n-raised: #2c211b;
+  --n-accent: #7a3a2c;
+  --n-pop: #1f1611;
+  --n-card: #251b16;
+  --n-map: #1d1612;
+  --day-glow-a: rgba(163, 59, 43, 0.1);
+  --day-glow-b: rgba(167, 197, 224, 0.16);
+}
+
 html[data-app-phase='night'] {
   color-scheme: dark;
-  --color-ink: #e6eee7;
-  --color-forest: #d3e8dd;
-  --color-cream: #133129;
+  --color-ink: #f1f7f2;
+  --color-forest: #e1f1e8;
+  --color-cream: var(--n-cream);
+  --color-night: var(--n-body);
   --color-jade-ink: #86e0c9;
   --color-sun-ink: #f3c969;
-  --app-surface: #10302a;
-  --app-surface-2: #163b33;
-  --app-line: rgba(211, 232, 221, 0.15);
-  --chart-grid: rgba(211, 232, 221, 0.14);
-  --chart-label: rgba(230, 238, 231, 0.7);
+  --color-terracotta-ink: #f29a80;
+  --app-surface: var(--n-surface);
+  --app-surface-2: var(--n-surface-2);
+  --app-line: rgba(211, 232, 221, 0.26);
+  --chart-grid: rgba(211, 232, 221, 0.16);
+  --chart-label: rgba(241, 247, 242, 0.82);
   --chart-cursor: rgba(211, 232, 221, 0.4);
-  --chart-dot-edge: #10302a;
+  --chart-dot-edge: var(--n-body);
 }
 
 html[data-app-phase='night'],
 html[data-app-phase='night'] body {
-  background: #09201b;
+  background: var(--n-body);
 }
 
 html[data-app-phase='night'] ::selection {
   background: var(--color-sun);
-  color: #0d2822;
+  color: var(--n-body);
 }
 
 .app-bg {
@@ -1668,9 +2082,9 @@ html[data-app-phase='night'] ::selection {
 
 html[data-app-phase='night'] .app-bg {
   background:
-    radial-gradient(ellipse 55% 42% at 100% 0, rgba(79, 184, 164, 0.16), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 0 100%, rgba(112, 92, 196, 0.14), transparent 70%),
-    linear-gradient(180deg, #0b241f, #08191a);
+    radial-gradient(ellipse 55% 42% at 100% 0, var(--n-glow-a), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 0 100%, var(--n-glow-b), transparent 70%),
+    linear-gradient(180deg, var(--n-bg-top), var(--n-bg-bottom));
 }
 
 /* weather tints the ground a little */
@@ -1681,10 +2095,25 @@ html[data-app-phase='day'] .app-bg[data-weather='storm'] { background-color: #d3
 html[data-app-phase='night'] .text-lapis { color: #7fd1bd; }
 html[data-app-phase='night'] .text-pomegranate { color: #ff9a82; }
 
+/* Gold stays the one bright thing: its text must stay dark although the forest token turns light at night. */
+html[data-app-phase='night'] :is(.btn-gold, .bg-sun, .bg-gold) { color: var(--n-body); }
+html[data-app-phase='night'] .btn-gold { box-shadow: 0 0 0 1px rgba(246, 203, 90, 0.55), 0 10px 28px -8px rgba(240, 185, 75, 0.55); }
+html[data-app-phase='night'] .btn-night { background: var(--n-accent); color: #f7f2e8; }
+
+/* Captions step up so small text stays readable on every surface. */
+:is(.text-ink\/25, .text-ink\/30, .text-ink\/35, .text-ink\/40, .text-ink\/45) { color: color-mix(in srgb, var(--color-ink) 62%, transparent); }
+:is(.text-ink\/50, .text-ink\/55, .text-ink\/58, .text-ink\/60) { color: color-mix(in srgb, var(--color-ink) 76%, transparent); }
+html[data-app-phase='night'] :is(.text-ink\/65, .text-ink\/67, .text-ink\/70, .text-ink\/75, .text-ink\/80) { color: color-mix(in srgb, var(--color-ink) 92%, transparent); }
+
+/* The same on the always-dark panels, in the day too. */
+:is(.text-paper\/30, .text-paper\/40, .text-paper\/45, .text-paper\/50) { color: color-mix(in srgb, var(--color-paper) 66%, transparent); }
+:is(.text-paper\/55, .text-paper\/60, .text-paper\/62, .text-paper\/65) { color: color-mix(in srgb, var(--color-paper) 80%, transparent); }
+:is(.text-paper\/70, .text-paper\/75, .text-paper\/80) { color: color-mix(in srgb, var(--color-paper) 92%, transparent); }
+
 html[data-app-phase='night'] .panel {
   background: var(--app-surface);
   border-color: var(--app-line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 38px -26px rgba(0, 0, 0, 0.75);
 }
 
 html[data-app-phase='night'] .panel-night {
@@ -1694,7 +2123,7 @@ html[data-app-phase='night'] .panel-night {
 
 html[data-app-phase='night'] .bg-white,
 html[data-app-phase='night'] [class*='bg-white/'] {
-  background-color: color-mix(in srgb, #163b33 82%, transparent);
+  background-color: color-mix(in srgb, var(--n-raised) 82%, transparent);
 }
 
 html[data-app-phase='night'] .bg-paper {
@@ -1703,13 +2132,13 @@ html[data-app-phase='night'] .bg-paper {
 
 html[data-app-phase='night'] [class*='bg-paper/9'],
 html[data-app-phase='night'] [class*='bg-paper/8'] {
-  background-color: rgba(9, 32, 27, 0.9);
+  background-color: color-mix(in srgb, var(--n-body) 90%, transparent);
 }
 
 html[data-app-phase='night'] .bg-forest,
 html[data-app-phase='night'] .chip-on {
-  background-color: #2f7a66;
-  border-color: #2f7a66;
+  background-color: var(--n-accent);
+  border-color: var(--n-accent);
   color: #f7f2e8;
 }
 
@@ -1733,30 +2162,22 @@ html[data-app-phase='night'] .leaflet-tile-pane {
 }
 
 html[data-app-phase='night'] .leaflet-container {
-  background: #1a2a27;
-}
-
-/* Sidebar, mobile tabs and other forest surfaces keep their light-on-dark look in both phases. */
-html[data-app-phase='night'] .sidebar {
-  background:
-    radial-gradient(ellipse 120% 50% at 0 0, rgba(112, 92, 196, 0.2), transparent 60%),
-    linear-gradient(180deg, #08201b, #0b2a23 60%, #0d3029);
-  border-right: 1px solid var(--app-line);
+  background: var(--n-map);
 }
 
 html[data-app-phase='night'] .sky-pop {
-  background: #0f2b25;
+  background: var(--n-pop);
   border-color: var(--app-line);
 }
 
 html[data-app-phase='night'] .postcard {
-  background: #112f29;
+  background: var(--n-card);
   border-color: var(--app-line);
 }
 
 html[data-app-phase='night'] .postcard::before,
 html[data-app-phase='night'] .postcard::after {
-  background: #09201b;
+  background: var(--n-body);
   border-color: var(--app-line);
 }
 
@@ -1764,7 +2185,7 @@ html[data-app-phase='night'] .postcard-art {
   background:
     radial-gradient(circle at 18% 120%, color-mix(in srgb, var(--pc) 34%, transparent), transparent 55%),
     radial-gradient(1.2px 1.2px at 12px 12px, color-mix(in srgb, var(--pc) 40%, transparent) 99%, transparent 100%) 0 0 / 14px 14px,
-    color-mix(in srgb, var(--pc) 16%, #0f2b25);
+    color-mix(in srgb, var(--pc) 16%, var(--n-pop));
   color: color-mix(in srgb, var(--pc) 55%, #e6eee7);
 }
 
@@ -1780,20 +2201,6 @@ html[data-app-phase='night'] .postcard-art {
   filter: drop-shadow(0 0 3px rgba(240, 185, 75, 0.8));
 }
 
-/* a rug-pattern ribbon that unrolls across the top whenever the page changes */
-.route-ribbon {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: 0;
-  z-index: 70;
-  height: 5px;
-  transform-origin: left center;
-  pointer-events: none;
-  background: repeating-linear-gradient(90deg, #d96745 0 14px, #f0b94b 14px 20px, #1f5a4b 20px 36px, #f0b94b 36px 42px);
-  box-shadow: 0 2px 10px rgba(240, 185, 75, 0.45);
-}
-
 .header-route {
   animation: route-flow 1.6s linear infinite;
 }
@@ -1807,4 +2214,374 @@ html[data-app-phase='night'] .postcard-art {
 @keyframes pin-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.35); }
+}
+
+/* ───────── Admin workspace: a plain decision-support console, no motion and no decoration ───────── */
+
+html[data-console] {
+  --color-paper: #ffffff;
+  --color-cream: #eef1f4;
+  --color-ink: #17212b;
+  --color-forest: #17212b;
+  --color-night: #1c2a35;
+  --color-midnight: #1c2a35;
+  --color-lapis: #0a6a5c;
+  --color-firuze: #12806f;
+  --color-jade: #12806f;
+  --color-jade-ink: #0a6a5c;
+  --color-terracotta: #b4432a;
+  --color-terracotta-ink: #a23a23;
+  --color-pomegranate: #b42318;
+  --color-sun: #d9920a;
+  --color-gold: #d9920a;
+  --color-sun-ink: #7a4f00;
+  --font-display: var(--font-sans);
+  --console-bg: #f2f4f7;
+  --console-side: #fafbfc;
+  --console-head: #f6f8fa;
+  --console-line: #d5dbe2;
+  --console-hover: #eaf0f3;
+  --console-muted: #4f5b67;
+  background: var(--console-bg);
+  color-scheme: light;
+  scroll-behavior: auto;
+}
+
+html[data-console] body {
+  background: var(--console-bg);
+  color: var(--color-ink);
+  cursor: auto;
+}
+
+html[data-console] *:not(.animate-spin),
+html[data-console] *::before,
+html[data-console] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-console] ::selection {
+  background: #bfe3dc;
+  color: var(--color-ink);
+}
+
+html[data-console] :focus-visible {
+  outline: 2px solid var(--color-lapis);
+  outline-offset: 1px;
+}
+
+/* Secondary text stays readable on white */
+html[data-console] :is(.text-ink\/40, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/65) {
+  color: var(--console-muted);
+}
+
+.console-root {
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+  --radius-3xl: 6px;
+  background: var(--console-bg);
+  font-size: 0.875rem;
+}
+
+.console-side {
+  border-right: 1px solid var(--console-line);
+  background: var(--console-side);
+}
+
+.console-group {
+  padding: 0.85rem 0.75rem 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--console-muted);
+}
+
+.console-link {
+  display: flex;
+  min-height: 2.1rem;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 4px;
+  padding-inline: 0.75rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.console-link:hover {
+  background: var(--console-hover);
+}
+
+.console-link[aria-current='page'] {
+  background: #dcefeb;
+  color: var(--color-jade-ink);
+  font-weight: 600;
+}
+
+.console-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.console-head h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-ink);
+}
+
+.console-head p {
+  margin-top: 0.1rem;
+  font-size: 0.82rem;
+  color: var(--console-muted);
+}
+
+.console-title {
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid var(--console-line);
+  background: var(--console-head);
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.console-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--console-line);
+  border-radius: 6px;
+  background: var(--console-line);
+}
+
+@media (min-width: 48rem) {
+  .console-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 80rem) {
+  .console-kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+.console-kpis > div {
+  background: #fff;
+  padding: 0.6rem 0.9rem;
+}
+
+.console-kpis dt {
+  font-size: 0.75rem;
+  color: var(--console-muted);
+}
+
+.console-kpis dd {
+  margin-top: 0.1rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+.console-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 3px;
+  padding: 0.12rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.console-level[data-level='ok'] { background: #dcefeb; color: #0a5c50; }
+.console-level[data-level='act'] { background: #fde8e4; color: #912018; }
+.console-level[data-level='review'] { background: #fdf1d7; color: #7a4f00; }
+.console-level[data-level='info'] { background: #e7edf2; color: #38454f; }
+
+html[data-console] .panel {
+  border: 1px solid var(--console-line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: none;
+}
+
+/* The dark panel becomes a plain one: its text classes read the paper colour, so that colour turns to ink inside it */
+html[data-console] .panel-night {
+  --color-paper: #17212b;
+  border: 1px solid var(--console-line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-ink);
+}
+
+html[data-console] .panel-night::before { display: none; }
+
+html[data-console] :is(.btn-gold, .btn-night, .btn-ghost) {
+  min-height: 2.25rem;
+  border-radius: 4px;
+  padding-inline: 0.85rem;
+  font-size: 0.8rem;
+  box-shadow: none;
+  transform: none !important;
+}
+
+html[data-console] :is(.btn-gold, .btn-night, .btn-ghost)::after { display: none; }
+html[data-console] :is(.btn-gold, .btn-night, .btn-ghost).btn-sm { min-height: 2rem; padding-inline: 0.7rem; font-size: 0.78rem; }
+html[data-console] .btn-gold { background: var(--color-lapis); color: #fff; }
+html[data-console] .btn-gold:not(:disabled):hover { background: #085548; box-shadow: none; }
+html[data-console] .btn-night { background: #2b3a46; color: #fff; }
+html[data-console] .btn-night:not(:disabled):hover { background: #17212b; box-shadow: none; }
+html[data-console] .btn-ghost { border-color: var(--console-line); background: #fff; color: var(--color-ink); }
+html[data-console] .btn-ghost:not(:disabled):hover { border-color: #aeb8c2; background: var(--console-hover); }
+
+html[data-console] .chip {
+  min-height: 1.85rem;
+  border-color: var(--console-line);
+  border-radius: 4px;
+  background: #fff;
+  padding-inline: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--color-ink);
+  transform: none !important;
+}
+
+html[data-console] .chip:hover { border-color: #aeb8c2; background: var(--console-hover); color: var(--color-ink); }
+html[data-console] .chip-on,
+html[data-console] .chip-on:hover { border-color: var(--color-lapis); background: var(--color-lapis); color: #fff; }
+
+html[data-console] .h-display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+html[data-console] :is(input:not([type='checkbox'], [type='radio'], [type='range']), select, textarea) {
+  border-color: var(--console-line);
+  border-radius: 4px;
+  background-color: #fff;
+  color: var(--color-ink);
+}
+
+html[data-console] table { font-variant-numeric: tabular-nums; }
+html[data-console] table thead:not(.sr-only) { background: var(--console-head); color: var(--console-muted); }
+html[data-console] table thead th { border-bottom: 1px solid var(--console-line); background: var(--console-head); font-size: 0.75rem; font-weight: 600; }
+html[data-console] table tbody tr { border-top: 1px solid #e6eaee; }
+html[data-console] table tbody tr:first-child { border-top: 0; }
+html[data-console] table tbody tr:hover { background: var(--console-hover); }
+
+html[data-console] .dash-card { padding: 0.8rem 1rem; }
+html[data-console] .dash-card > h2 { margin: -0.8rem -1rem 0.7rem; border-bottom: 1px solid var(--console-line); border-radius: 6px 6px 0 0; background: var(--console-head); padding: 0.55rem 1rem; font-size: 0.82rem; font-weight: 600; }
+html[data-console] .dash-filters { margin-bottom: 0.75rem; gap: 0.6rem; padding: 0.6rem 0.8rem; }
+html[data-console] .dash-filters :is(input, select) { height: 2rem; }
+
+/* On a phone the filters take two columns, and the shared dashboard table drops its kind column so the numbers stay in view */
+@media (max-width: 40rem) {
+  html[data-console] .dash-filters:not([role='search']) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+  html[data-console] .dash-filters:not([role='search']) > svg { display: none; }
+  html[data-console] .dash-filters :is(input, select) { width: 100%; }
+  html[data-console] .dash-filters .btn-gold { margin-left: 0; }
+  html[data-console] .dash-card table :is(th, td):nth-child(2) { display: none; }
+  html[data-console] main table :is(th, td) { padding-inline: 0.45rem; }
+  html[data-console] main table :is(th, td):first-child { padding-left: 0.75rem; }
+}
+
+/* In the app, a jump to a part of the page (scrollIntoView, #anchor) stops below the sticky top bar instead of under it */
+html[data-app-phase] {
+  scroll-padding-top: 5.5rem;
+}
+
+/* ───────── Page moves (app/pageTransition.ts), after the vercel-react-view-transitions recipes ─────────
+   Only the page (`app-page`) and a trip's title move; the root stays live, so the bars, sky and backdrop keep running. */
+.app-page {
+  view-transition-name: app-page;
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(root) {
+  display: none;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(app-page) {
+  animation: none;
+}
+
+/* Between tabs: a quick cross-fade, no slide (no depth to show) */
+::view-transition-old(app-page) {
+  animation: 150ms ease-in both vt-fade reverse;
+}
+
+::view-transition-new(app-page) {
+  animation: 210ms ease-out 60ms both vt-fade;
+}
+
+/* Into a trip or a set, and back out: a short slide that says which way */
+html[data-move='forward']::view-transition-old(app-page) {
+  --vt-slide: -60px;
+  animation: 150ms ease-in both vt-fade reverse, 400ms cubic-bezier(0.4, 0, 0.2, 1) both vt-slide reverse;
+}
+
+html[data-move='forward']::view-transition-new(app-page) {
+  --vt-slide: 60px;
+  animation: 210ms ease-out 150ms both vt-fade, 400ms cubic-bezier(0.4, 0, 0.2, 1) both vt-slide;
+}
+
+html[data-move='back']::view-transition-old(app-page) {
+  --vt-slide: 60px;
+  animation: 150ms ease-in both vt-fade reverse, 400ms cubic-bezier(0.4, 0, 0.2, 1) both vt-slide reverse;
+}
+
+html[data-move='back']::view-transition-new(app-page) {
+  --vt-slide: -60px;
+  animation: 210ms ease-out 150ms both vt-fade, 400ms cubic-bezier(0.4, 0, 0.2, 1) both vt-slide;
+}
+
+/* A trip's title glides from its card into the trip page (text morph: the new text drawn sharp, not a scaled picture) */
+html:is([data-move='forward'], [data-move='back'])::view-transition-group(trip-title) {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html:is([data-move='forward'], [data-move='back'])::view-transition-old(trip-title) {
+  display: none;
+}
+
+html:is([data-move='forward'], [data-move='back'])::view-transition-new(trip-title) {
+  animation: none;
+  object-fit: none;
+  object-position: left top;
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-slide {
+  from {
+    translate: var(--vt-slide);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }

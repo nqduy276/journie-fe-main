@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CategoryId, CityId } from '../domain/types'
+import type { CategoryId } from '../domain/types'
 import type { PriceTier } from '../api/places'
 
 /**
@@ -12,17 +12,27 @@ type UiState = {
   setActiveDay: (day: number) => void
   setActiveUid: (uid: string | null) => void
 
+  /** True while a full-screen waiting view has its own Journie, so the corner companion hides. */
+  busyScreen: boolean
+  setBusyScreen: (value: boolean) => void
+
   poiSheet: string | null
   openPoi: (id: string | null) => void
+  /** How many pages' place sheets are mounted right now, so the assistant brings its own only where none is. */
+  pageSheets: number
+  /** Counts a page's place sheet while it is mounted; returns the call that stops counting it. */
+  mountPageSheet: () => () => void
+
+  /** Places waiting to be put in a set (UC 1.16); the chooser is open while this holds any. */
+  setChooser: string[] | null
+  openSetChooser: (poiIds: string[] | null) => void
 
   discover: {
     query: string
-    cities: CityId[]
     categories: CategoryId[]
     prices: PriceTier[]
-    minRating: number
     indoorOnly: boolean
-    sort: 'relevance' | 'rating' | 'price' | 'distance'
+    sort: 'relevance' | 'quality' | 'price' | 'distance'
     view: 'list' | 'map'
   }
   setDiscover: (patch: Partial<UiState['discover']>) => void
@@ -31,10 +41,8 @@ type UiState = {
 
 const discoverDefaults: UiState['discover'] = {
   query: '',
-  cities: [],
   categories: [],
   prices: [],
-  minRating: 0,
   indoorOnly: false,
   sort: 'relevance',
   view: 'list',
@@ -46,8 +54,19 @@ export const useUiStore = create<UiState>((set) => ({
   setActiveDay: (activeDay) => set({ activeDay, activeUid: null }),
   setActiveUid: (activeUid) => set({ activeUid }),
 
+  busyScreen: false,
+  setBusyScreen: (busyScreen) => set({ busyScreen }),
+
   poiSheet: null,
   openPoi: (poiSheet) => set({ poiSheet }),
+  pageSheets: 0,
+  mountPageSheet: () => {
+    set((state) => ({ pageSheets: state.pageSheets + 1 }))
+    return () => set((state) => ({ pageSheets: Math.max(0, state.pageSheets - 1) }))
+  },
+
+  setChooser: null,
+  openSetChooser: (setChooser) => set({ setChooser: setChooser?.length ? setChooser : null }),
 
   discover: discoverDefaults,
   setDiscover: (patch) => set((state) => ({ discover: { ...state.discover, ...patch } })),

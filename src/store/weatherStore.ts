@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { isRainy, weatherFor } from '../domain/conditions'
-import { addDays, todayIso } from '../domain/time'
+import { loadForecasts } from '../api/weather'
+import { forecastsSnapshot, isRainy, subscribeForecasts, weatherNow, type ForecastPlace } from '../domain/conditions'
 import type { CityId } from '../domain/types'
 
 /**
@@ -56,6 +56,7 @@ export const useWeatherStore = create<SkyState>()(
       setEffects: (effects) => set({ effects }),
       setPhaseMode: (phaseMode) => set({ phaseMode }),
       requestPhase: (mode) => {
+        if (get().shift) return
         const from = resolvePhase(get().phaseMode)
         const to = resolvePhase(mode)
         if (from === to) set({ phaseMode: mode, shift: null })
@@ -87,32 +88,48 @@ export const PHASE_LABEL: Record<Phase, [string, string]> = {
 }
 
 
-const BASE_TEMP: Record<Weather, number> = { clear: 33, cloudy: 29, rain: 26, storm: 25 }
+/** Re-renders the caller when a new forecast arrives. */
+export const useForecasts = () => useSyncExternalStore(subscribeForecasts, forecastsSnapshot)
 
 export type SkyInfo = {
   phase: Phase
   weather: Weather
-  tempC: number
+  /** The real temperature now; null when there is no data. */
+  tempC: number | null
+  /** False when the weather follows the forecast and there is none. */
+  known: boolean
   autoPhase: boolean
   autoWeather: boolean
   /** Handy for CSS: "night-rain", "day-clear"… */
   key: `${Phase}-${Weather}`
   night: boolean
   label: [vi: string, en: string]
+  /** Where the weather is for: the traveler's own position, or the city a page asks about (`useSky(city)`). */
+  place: ForecastPlace
 }
 
-/** Current sky for a city. Re-evaluates every minute and when an override expires. */
-export function useSky(city: CityId = 'sai-gon'): SkyInfo {
+/**
+ * The current sky where the traveler really is (their shared or last known position), never the city they picked or clicked:
+ * without a position the weather is "unknown" rather than another place's. A page about one city can ask for that city's
+ * sky with `useSky(city)`. Re-evaluates every minute and when an override expires.
+ */
+export function useSky(city?: CityId): SkyInfo {
   const phaseMode = useWeatherStore((state) => state.phaseMode)
   const weatherMode = useWeatherStore((state) => state.weatherMode)
   const override = useWeatherStore((state) => state.override)
   const clearOverride = useWeatherStore((state) => state.clearOverride)
   const [now, setNow] = useState(() => new Date())
+  useForecasts()
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 60_000)
     return () => window.clearInterval(timer)
   }, [])
+
+  // Does nothing until the last answer is half an hour old
+  useEffect(() => {
+    void loadForecasts()
+  }, [now])
 
   useEffect(() => {
     if (!override) return
@@ -121,22 +138,24 @@ export function useSky(city: CityId = 'sai-gon'): SkyInfo {
     return () => window.clearTimeout(timer)
   }, [override, clearOverride])
 
-  const forecast = weatherFor(city, addDays(todayIso(), 0))
+  const place: ForecastPlace = city ?? 'here'
+  const forecast = weatherNow(place, now.getTime())
   const forecastWeather: Weather = forecast.condition === 'storm' ? 'storm' : isRainy(forecast) ? 'rain' : forecast.condition === 'cloudy' ? 'cloudy' : 'clear'
 
   const phase: Phase = resolvePhase(phaseMode, now)
   const overridden = !!override && override.until > now.getTime()
   const weather: Weather = overridden ? override.weather : weatherMode === 'auto' ? forecastWeather : weatherMode
-  const tempC = Math.round(weatherMode === 'auto' && !overridden ? forecast.tempC - (phase === 'night' ? 3 : 0) : BASE_TEMP[weather] - (phase === 'night' ? 4 : 0))
 
   return {
     phase,
     weather,
-    tempC,
+    tempC: forecast.tempC,
+    known: forecast.known || overridden || weatherMode !== 'auto',
     autoPhase: phaseMode === 'auto',
     autoWeather: weatherMode === 'auto' && !overridden,
     key: `${phase}-${weather}`,
     night: phase === 'night',
     label: WEATHER_LABEL[weather],
+    place,
   }
 }

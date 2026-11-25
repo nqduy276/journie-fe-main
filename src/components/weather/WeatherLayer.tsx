@@ -85,12 +85,13 @@ export function WeatherLayer({ phase, weather, className = '', calm = false, sti
 
 /* ───────── particle engine ───────── */
 
-type Drop = { x: number; y: number; len: number; speed: number; groundY: number; a: number }
+type Drop = { x: number; y: number; len: number; speed: number; groundY: number; b: number }
 type Ripple = { x: number; y: number; r: number; max: number }
 type Fly = { x: number; y: number; ph: number; f: number; s: number }
 type Star = { x: number; y: number; r: number; ph: number; f: number }
 type Mote = { x: number; y: number; ph: number; s: number; r: number }
 
+const RAIN_ALPHA = [0.25, 0.4, 0.55, 0.7]
 const rand = (a: number, b: number) => a + Math.random() * (b - a)
 
 type SkyRef = { current: { phase: Phase; weather: Weather; calm: boolean } }
@@ -118,6 +119,7 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
   const drops: Drop[] = []
   const ripples: Ripple[] = []
   const flies: Fly[] = Array.from({ length: 26 }, () => ({ x: Math.random(), y: rand(0.45, 0.95), ph: rand(0, 6.28), f: rand(0.2, 0.55), s: rand(0.6, 1) }))
+  const calmFlies = flies.slice(0, 9)
   const stars: Star[] = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random() * 0.62, r: rand(0.5, 1.5), ph: rand(0, 6.28), f: rand(0.6, 2) }))
   const motes: Mote[] = Array.from({ length: 34 }, () => ({ x: Math.random(), y: Math.random(), ph: rand(0, 6.28), s: rand(0.015, 0.05), r: rand(1, 2.6) }))
 
@@ -134,12 +136,21 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
   const resize = () => {
     w = window.innerWidth
     h = window.innerHeight
-    canvas.width = Math.round(w * dpr)
-    canvas.height = Math.round(h * dpr)
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    const pw = Math.round(w * dpr)
+    const ph = Math.round(h * dpr)
+    if (canvas.width !== pw || canvas.height !== ph) {
+      canvas.width = pw
+      canvas.height = ph
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
   }
   resize()
-  window.addEventListener('resize', resize)
+  let pendingResize = 0
+  const onResize = () => {
+    cancelAnimationFrame(pendingResize)
+    pendingResize = requestAnimationFrame(resize)
+  }
+  window.addEventListener('resize', onResize)
 
   const spawnDrop = (storm: boolean): Drop => ({
     x: rand(-60, w + 60),
@@ -147,7 +158,7 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
     len: rand(10, storm ? 30 : 22),
     speed: rand(storm ? 950 : 620, storm ? 1500 : 940),
     groundY: rand(h * 0.82, h * 0.99),
-    a: rand(0.25, 0.7),
+    b: Math.floor(Math.random() * RAIN_ALPHA.length),
   })
 
   const makeBolt = (): [number, number][] => {
@@ -198,6 +209,7 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
       ctx.lineCap = 'round'
       ctx.lineWidth = stormy ? 1.3 : 1
       const rgb = dark ? '196,228,224' : '36,82,72'
+      const alphaScale = wet * (dark ? 0.8 : 0.55) * (calm ? 0.42 : 0.7)
       for (const d of drops) {
         d.y += d.speed * dt
         d.x -= d.speed * dt * gust
@@ -205,10 +217,16 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
           if (ripples.length < (calm ? 14 : 30) && Math.random() < 0.4) ripples.push({ x: d.x, y: d.groundY, r: 1, max: rand(10, 24) })
           Object.assign(d, spawnDrop(stormy), { y: -rand(10, 80) })
         }
-        ctx.strokeStyle = `rgba(${rgb},${d.a * wet * (dark ? 0.8 : 0.55) * (calm ? 0.42 : 0.7)})`
+      }
+      // One path per alpha bucket instead of one stroke (and one colour string) per drop.
+      for (let b = 0; b < RAIN_ALPHA.length; b += 1) {
+        ctx.strokeStyle = `rgba(${rgb},${RAIN_ALPHA[b] * alphaScale})`
         ctx.beginPath()
-        ctx.moveTo(d.x, d.y)
-        ctx.lineTo(d.x + d.len * gust, d.y - d.len)
+        for (const d of drops) {
+          if (d.b !== b) continue
+          ctx.moveTo(d.x, d.y)
+          ctx.lineTo(d.x + d.len * gust, d.y - d.len)
+        }
         ctx.stroke()
       }
       ctx.lineWidth = 1
@@ -272,7 +290,7 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
         ctx.arc(s.x * w, s.y * h, s.r, 0, 6.283)
         ctx.fill()
       }
-      for (const f of calm ? flies.slice(0, 9) : flies) {
+      for (const f of calm ? calmFlies : flies) {
         const x = (f.x + Math.sin(time * f.f + f.ph) * 0.05) * w
         const y = (f.y + Math.cos(time * f.f * 0.8 + f.ph) * 0.04) * h
         const blink = 0.35 + 0.65 * Math.max(0, Math.sin(time * 1.4 * f.s + f.ph))
@@ -339,7 +357,8 @@ function startEngine(canvas: HTMLCanvasElement, skyRef: SkyRef, register: (wake:
   return () => {
     cancelAnimationFrame(raf)
     running = false
-    window.removeEventListener('resize', resize)
+    cancelAnimationFrame(pendingResize)
+    window.removeEventListener('resize', onResize)
     document.removeEventListener('visibilitychange', onVisibility)
   }
 }

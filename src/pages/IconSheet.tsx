@@ -3,7 +3,7 @@ import { CategoryIcon, NavIcon, SkyIcon, WeatherIcon, type NavIconName, type Wea
 import { DiAvatar } from '../components/mascot/DiAvatar'
 import type { MascotMood } from '../components/mascot/mascot-context'
 
-const NAV: NavIconName[] = ['home', 'plan', 'trips', 'discover', 'profile', 'analytics']
+const NAV: NavIconName[] = ['home', 'plan', 'trips', 'discover', 'profile', 'account', 'analytics']
 const MOODS: MascotMood[] = ['idle', 'hiding', 'peeking', 'thinking', 'error', 'joy', 'sleepy', 'wave', 'hungry', 'hot']
 const WEATHER: WeatherKind[] = ['sunny', 'cloudy', 'rain', 'storm', 'night', 'night-cloudy', 'night-rain']
 const SKIES = [
@@ -19,7 +19,7 @@ export function IconSheet() {
     <div className="min-h-dvh bg-paper p-8 text-forest">
       <h1 className="h-display text-3xl">Journie icons</h1>
       <section className="mt-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-forest/60">Di: moods (day, clear) and outfits (idle)</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-forest/60">Journie: moods (day, clear) and outfits (idle)</h2>
         <ul className="flex flex-wrap gap-4">
           {MOODS.map((mood) => (
             <li key={mood} className="w-36 text-center text-xs">

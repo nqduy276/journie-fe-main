@@ -294,7 +294,7 @@ export function WeatherIcon({ kind, ...props }: IconProps & { kind: WeatherKind 
 
 /* ───────── navigation ───────── */
 
-export type NavIconName = 'home' | 'plan' | 'trips' | 'discover' | 'profile' | 'analytics'
+export type NavIconName = 'home' | 'plan' | 'trips' | 'discover' | 'profile' | 'account' | 'analytics'
 
 const NAV: Record<NavIconName, () => ReactNode> = {
   home: () => (
@@ -346,6 +346,17 @@ const NAV: Record<NavIconName, () => ReactNode> = {
       <path d="M13 18C13 18 14 14 24 14C34 14 35 18 35 18" style={{ stroke: 'none' }} />
       <circle cx="24" cy="25" r="6.5" />
       <path d="M9 43C9 35 15 32 24 32C33 32 39 35 39 43" />
+    </>
+  ),
+  account: () => (
+    <>
+      <Off>
+        <rect x="9" y="21" width="30" height="21" rx="3" style={A} />
+      </Off>
+      <rect x="9" y="21" width="30" height="21" rx="3" />
+      <path d="M16 21V15C16 10 20 7 24 7C28 7 32 10 32 15V21" />
+      <circle cx="24" cy="30" r="2.6" style={B} />
+      <path d="M24 32.6V37" />
     </>
   ),
   analytics: () => (

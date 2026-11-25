@@ -27,7 +27,7 @@ const wordVariants: Variants = {
     rotate: 0,
     transition: {
       delay: custom.delay + custom.index * custom.stagger,
-      duration: 0.85,
+      duration: 0.7,
       ease: [0.22, 1, 0.36, 1],
     },
   }),
@@ -51,6 +51,9 @@ export function RevealHeading({
   const { reduced } = useMotionPrefs()
   const Tag = MotionTags[as]
   const label = parts.map((part) => part.text.trim()).join(' ')
+  const total = parts.reduce((n, part) => n + part.text.trim().split(/\s+/).length, 0)
+  // Cap the whole cascade so long headings do not make later words wait.
+  const step = Math.min(stagger, 0.45 / Math.max(1, total))
   let wordIndex = 0
 
   if (reduced) {
@@ -87,7 +90,7 @@ export function RevealHeading({
           >
             {partIndex > 0 && !part.block ? ' ' : ''}
             {words.map((word, index) => {
-              const custom = { index: wordIndex++, delay, stagger }
+              const custom = { index: wordIndex++, delay, stagger: step }
               return (
                 <span key={`${word}-${index}`}>
                   <span className="reveal-mask">

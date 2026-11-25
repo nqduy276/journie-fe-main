@@ -1,8 +1,10 @@
 import { useId, useRef } from 'react'
-import { motion, useInView, useScroll } from 'motion/react'
+import { motion, useInView, useScroll, type Variants } from 'motion/react'
 import { BellRing, Clock3, Map, TrainFront, Umbrella, WalletCards, type LucideIcon } from 'lucide-react'
 import { RevealHeading } from '../components/motion/RevealHeading'
 import { trackSpotlight } from '../components/motion/Spotlight'
+import { Stagger } from '../components/motion/Stagger'
+import { EASE_OUT, riseItem, slideItem } from '../components/motion/variants'
 import { BayScene } from '../components/scenes/BayScene'
 import { useLanguage } from '../hooks/useLanguage'
 import { useMotionPrefs } from '../hooks/useMotionPrefs'
@@ -20,7 +22,27 @@ const NODES = [
   [566, 42],
 ] as const
 
-const ease = [0.22, 1, 0.36, 1] as const
+const ease = EASE_OUT
+const STEP = 0.08
+
+const featureIn: Variants = {
+  hidden: { opacity: 0, x: 44 },
+  show: (index: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.65, delay: index * STEP, ease },
+  }),
+}
+
+const featureIcon: Variants = {
+  hidden: { opacity: 0, scale: 0.4, rotate: 25 },
+  show: (index: number) => ({
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { type: 'spring', stiffness: 320, damping: 18, delay: 0.2 + index * STEP },
+  }),
+}
 
 /** The route draws itself, a traffic jam flares between two stops, then a bypass is found. */
 function RouteMap() {
@@ -85,7 +107,7 @@ function RouteMap() {
           style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
           initial={{ scale: reduced ? 1 : 0 }}
           animate={{ scale: show ? 1 : 0 }}
-          transition={{ delay: reduced ? 0 : 0.35 + index * 0.42, type: 'spring', stiffness: 320, damping: 14 }}
+          transition={{ delay: reduced ? 0 : 0.35 + index * 0.42, type: 'spring', stiffness: 320, damping: 24 }}
         />
       ))}
 
@@ -115,23 +137,27 @@ export function Adaptive() {
       <BayScene progress={scrollYProgress} />
 
       <div className="container-shell relative">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+        <Stagger inView gap={0.18} className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
           <div>
-            <p className="section-kicker">{messages.adaptive.kicker}</p>
+            <motion.p variants={slideItem} className="section-kicker">
+              {messages.adaptive.kicker}
+            </motion.p>
             <RevealHeading
               className="section-title mt-5"
               parts={[{ text: messages.adaptive.title }]}
             />
           </div>
-          <p className="max-w-lg text-base leading-7 text-ink/65 lg:ml-auto">{messages.adaptive.description}</p>
-        </div>
+          <motion.p variants={riseItem} className="max-w-lg text-base leading-7 text-ink/65 lg:ml-auto">
+            {messages.adaptive.description}
+          </motion.p>
+        </Stagger>
 
         <div className="mt-14 grid gap-5 lg:mt-20 lg:grid-cols-[1.05fr_0.95fr]">
           <motion.div
-            initial={{ opacity: 0, y: 48 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 56, scale: 0.96 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-            transition={{ duration: 0.95, ease }}
+            transition={{ duration: 0.8, ease }}
             className="route-canvas relative min-h-[31rem] overflow-hidden bg-forest p-7 text-paper shadow-[0_30px_70px_-30px_rgba(23,63,53,0.55)] sm:p-10"
           >
             <div className="relative z-10 flex items-start justify-between">
@@ -157,10 +183,10 @@ export function Adaptive() {
               return (
                 <motion.span
                   key={place}
-                  initial={{ opacity: reduced ? 1 : 0 }}
-                  whileInView={{ opacity: 1 }}
+                  initial={{ opacity: reduced ? 1 : 0, y: reduced ? 0 : 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.4 }}
-                  transition={{ delay: reduced ? 0 : 0.5 + index * 0.42, duration: 0.6 }}
+                  transition={{ delay: reduced ? 0 : 0.5 + index * 0.42, duration: 0.6, ease }}
                   className={`absolute text-xs font-medium ${positions[index]}`}
                 >
                   {place}
@@ -189,16 +215,21 @@ export function Adaptive() {
               return (
                 <motion.article
                   key={index}
-                  initial={{ opacity: 0, x: 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  custom={index}
+                  variants={featureIn}
+                  initial="hidden"
+                  whileInView="show"
                   viewport={{ once: true, margin: '0px 0px -8% 0px' }}
-                  transition={{ duration: 0.8, delay: index * 0.11, ease }}
                   onPointerMove={trackSpotlight}
                   className="spotlight hover-line group grid grid-cols-[auto_1fr] gap-5 border-b border-forest/15 p-6 last:border-b-0 sm:p-8"
                 >
-                  <span className="grid size-11 place-items-center border border-forest/15 text-forest transition-all duration-500 group-hover:-rotate-6 group-hover:bg-terracotta group-hover:text-paper">
+                  <motion.span
+                    custom={index}
+                    variants={featureIcon}
+                    className="grid size-11 place-items-center border border-forest/15 text-forest transition-[rotate,background-color,color] duration-300 group-hover:-rotate-6 group-hover:bg-terracotta group-hover:text-paper"
+                  >
                     <Icon aria-hidden="true" size={19} strokeWidth={1.7} />
-                  </span>
+                  </motion.span>
                   <div>
                     <div className="flex items-center justify-between gap-4">
                       <h3 className="font-display text-xl font-medium">{title}</h3>
@@ -215,3 +246,4 @@ export function Adaptive() {
     </section>
   )
 }
+

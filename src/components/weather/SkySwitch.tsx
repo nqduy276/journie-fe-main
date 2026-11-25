@@ -5,8 +5,10 @@ import { useTr } from '../../hooks/useTr'
 import { useWeatherStore, type Phase } from '../../store/weatherStore'
 
 /** Whole change, and the moment (while the screen is covered) the app switches to the new sky. */
-const TOTAL = 3.6
-const COMMIT_AT = 2.5
+const TOTAL = 2.4
+const COMMIT_AT = 1.65
+/** The sun and moon keep their own timings, scaled from the original 3.6s scene. */
+const S = TOTAL / 3.6
 
 const SKY: Record<Phase, string> = {
   day: 'linear-gradient(180deg, #a5dbd0 0%, #e7f0da 46%, #fbebc9 78%, #f6d7a0 100%)',
@@ -74,11 +76,25 @@ export function SkySwitch() {
       endShift()
       return
     }
-    const commit = window.setTimeout(() => setPhaseMode(shift.mode), COMMIT_AT * 1000)
+    let committed = false
+    const commit = window.setTimeout(() => {
+      committed = true
+      setPhaseMode(shift.mode)
+    }, COMMIT_AT * 1000)
     const done = window.setTimeout(endShift, TOTAL * 1000)
+    // A click or Escape skips the scene; the new sky still has to land.
+    const skip = (event: Event) => {
+      if (event.type === 'keydown' && (event as KeyboardEvent).key !== 'Escape') return
+      if (!committed) setPhaseMode(shift.mode)
+      endShift()
+    }
+    window.addEventListener('keydown', skip)
+    window.addEventListener('pointerdown', skip)
     return () => {
       window.clearTimeout(commit)
       window.clearTimeout(done)
+      window.removeEventListener('keydown', skip)
+      window.removeEventListener('pointerdown', skip)
     }
   }, [shift, setPhaseMode, endShift])
 
@@ -107,10 +123,10 @@ function Scene({ from, to, caption }: { from: Phase; to: Phase; caption: string 
       <motion.div className="absolute inset-0" style={{ background: toNight ? 'radial-gradient(ellipse 70% 40% at 64% 70%, rgba(217,103,69,0.5), transparent 70%)' : 'radial-gradient(ellipse 70% 42% at 64% 70%, rgba(246,203,90,0.55), transparent 70%)' }} initial={{ opacity: 0 }} animate={{ opacity: [0, 0.2, 1, 1, 0.2] }} transition={mk([0, 0.1, 0.42, 0.66, 1])} />
 
       {/* Old body sinks, new body climbs; both start and end behind the ridges. */}
-      <motion.div className="absolute size-[clamp(6.5rem,17vmin,11rem)] -translate-x-1/2" style={{ left: '64%', top: '22vh' }} initial={{ y: '0vh' }} animate={{ y: '64vh' }} transition={{ duration: 0.95, delay: 0.1, ease: [0.45, 0, 0.85, 0.6] }}>
+      <motion.div className="absolute size-[clamp(6.5rem,17vmin,11rem)] -translate-x-1/2" style={{ left: '64%', top: '22vh' }} initial={{ y: '0vh' }} animate={{ y: '64vh' }} transition={{ duration: 0.95 * S, delay: 0.1 * S, ease: [0.45, 0, 0.85, 0.6] }}>
         {toNight ? <Sun /> : <Moon />}
       </motion.div>
-      <motion.div className="absolute size-[clamp(6.5rem,17vmin,11rem)] -translate-x-1/2" style={{ left: '64%', top: '22vh' }} initial={{ y: '64vh' }} animate={{ y: '0vh' }} transition={{ duration: 2.1, delay: 0.8, ease: [0.3, 0.55, 0.3, 1] }}>
+      <motion.div className="absolute size-[clamp(6.5rem,17vmin,11rem)] -translate-x-1/2" style={{ left: '64%', top: '22vh' }} initial={{ y: '64vh' }} animate={{ y: '0vh' }} transition={{ duration: 2.1 * S, delay: 0.8 * S, ease: [0.3, 0.55, 0.3, 1] }}>
         {toNight ? <Moon /> : <Sun />}
       </motion.div>
 

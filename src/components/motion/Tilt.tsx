@@ -12,8 +12,8 @@ type Props = {
 /** 3D card tilt with a light glare that tracks the cursor. */
 export function Tilt({ children, className = '', max = 6 }: Props) {
   const { canPointerFx } = useMotionPrefs()
-  const rotateX = useSpring(0, { stiffness: 160, damping: 18, mass: 0.5 })
-  const rotateY = useSpring(0, { stiffness: 160, damping: 18, mass: 0.5 })
+  const rotateX = useSpring(0, { stiffness: 200, damping: 30, mass: 0.5 })
+  const rotateY = useSpring(0, { stiffness: 200, damping: 30, mass: 0.5 })
 
   if (!canPointerFx) return <div className={className}>{children}</div>
 

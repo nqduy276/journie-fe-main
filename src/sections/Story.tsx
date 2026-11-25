@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
+import { motion, useScroll, useTransform, type MotionValue, type Variants } from 'motion/react'
 import {
   BedDouble,
   CalendarDays,
@@ -13,12 +13,46 @@ import {
 } from 'lucide-react'
 import { RevealHeading } from '../components/motion/RevealHeading'
 import { trackSpotlight } from '../components/motion/Spotlight'
+import { Stagger } from '../components/motion/Stagger'
+import { EASE_OUT, riseItem, slideItem } from '../components/motion/variants'
 import { TerracesScene } from '../components/scenes/TerracesScene'
 import { siteConfig } from '../content/site'
 import { useLanguage } from '../hooks/useLanguage'
 import { useMotionPrefs } from '../hooks/useMotionPrefs'
 
 const pillarIcons = [Heart, CalendarDays, CloudRain] as const
+
+const STEP = 0.09
+
+// Each pillar plays on its own so stacked mobile cards still animate when reached.
+const pillarIn: Variants = {
+  hidden: { opacity: 0, y: 40, scale: 0.97 },
+  show: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.7, delay: index * STEP, ease: EASE_OUT },
+  }),
+}
+
+const iconPop: Variants = {
+  hidden: { opacity: 0, scale: 0.4, rotate: -30 },
+  show: (index: number) => ({
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { type: 'spring', stiffness: 320, damping: 18, delay: 0.2 + index * STEP },
+  }),
+}
+
+const numberIn: Variants = {
+  hidden: { opacity: 0, x: 14 },
+  show: (index: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, delay: 0.25 + index * STEP, ease: EASE_OUT },
+  }),
+}
 
 const scatteredChips: { Icon: LucideIcon; dx: number; dy: number; rotate: number }[] = [
   { Icon: BedDouble, dx: -70, dy: -54, rotate: -16 },
@@ -50,7 +84,7 @@ function ScatteredPieces() {
   const ref = useRef<HTMLDivElement>(null)
   const { reduced } = useMotionPrefs()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 92%', 'start 42%'] })
-  const progress = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.4 })
+  const progress = scrollYProgress
   const lineScale = useTransform(progress, [0.55, 1], reduced ? [1, 1] : [0, 1])
   const markScale = useTransform(progress, [0.6, 1], reduced ? [1, 1] : [0.55, 1])
   const markOpacity = useTransform(progress, [0.6, 1], reduced ? [1, 1] : [0, 1])
@@ -87,8 +121,14 @@ export function Story() {
       <TerracesScene progress={scrollYProgress} />
 
       <div className="container-shell relative">
-        <div className="grid gap-8 border-b border-forest/15 pb-14 lg:grid-cols-[0.34fr_1fr] lg:gap-16 lg:pb-20">
-          <p className="section-kicker">{messages.story.kicker}</p>
+        <Stagger
+          inView
+          gap={0.18}
+          className="grid gap-8 border-b border-forest/15 pb-14 lg:grid-cols-[0.34fr_1fr] lg:gap-16 lg:pb-20"
+        >
+          <motion.p variants={slideItem} className="section-kicker">
+            {messages.story.kicker}
+          </motion.p>
           <div>
             <RevealHeading
               className="max-w-4xl font-display text-[clamp(2.5rem,5vw,5rem)] font-medium leading-[1.03] tracking-[-0.045em]"
@@ -97,12 +137,12 @@ export function Story() {
                 { text: messages.story.titleAccent, className: 'italic text-terracotta' },
               ]}
             />
-            <p className="mt-7 max-w-2xl text-base leading-7 text-ink/65 sm:text-lg sm:leading-8">
+            <motion.p variants={riseItem} className="mt-7 max-w-2xl text-base leading-7 text-ink/65 sm:text-lg sm:leading-8">
               {messages.story.description}
-            </p>
+            </motion.p>
             <ScatteredPieces />
           </div>
-        </div>
+        </Stagger>
 
         <div className="grid border-b border-forest/15 md:grid-cols-3">
           {messages.story.pillars.map(({ label, title, description }, index) => {
@@ -110,18 +150,25 @@ export function Story() {
             return (
               <motion.article
                 key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                custom={index}
+                variants={pillarIn}
+                initial="hidden"
+                whileInView="show"
                 viewport={{ once: true, margin: '0px 0px -12% 0px' }}
-                transition={{ duration: 0.9, delay: index * 0.14, ease: [0.22, 1, 0.36, 1] }}
                 onPointerMove={trackSpotlight}
                 className="spotlight hover-line group border-forest/15 py-9 md:border-r md:px-8 md:py-12 md:first:pl-0 md:last:border-r-0 md:last:pr-0"
               >
                 <div className="flex items-center justify-between">
-                  <span className="grid size-12 place-items-center border border-forest/20 text-forest transition-all duration-500 group-hover:-rotate-6 group-hover:bg-forest group-hover:text-paper">
+                  <motion.span
+                    custom={index}
+                    variants={iconPop}
+                    className="grid size-12 place-items-center border border-forest/20 text-forest transition-[rotate,background-color,color] duration-300 group-hover:-rotate-6 group-hover:bg-forest group-hover:text-paper"
+                  >
                     <Icon aria-hidden="true" size={21} strokeWidth={1.7} />
-                  </span>
-                  <span className="font-display text-lg italic text-ink/35">0{index + 1}</span>
+                  </motion.span>
+                  <motion.span custom={index} variants={numberIn} className="font-display text-lg italic text-ink/35">
+                    0{index + 1}
+                  </motion.span>
                 </div>
                 <p className="mt-9 text-xs font-semibold uppercase tracking-[0.18em] text-terracotta">{label}</p>
                 <h3 className="mt-3 max-w-xs font-display text-2xl font-medium leading-tight">{title}</h3>
@@ -134,3 +181,4 @@ export function Story() {
     </section>
   )
 }
+

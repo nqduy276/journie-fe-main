@@ -1,15 +1,35 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useInView, useScroll } from 'motion/react'
+import { AnimatePresence, motion, useInView, useScroll, type Variants } from 'motion/react'
 import { Pause, Play } from 'lucide-react'
 import { Coordinates } from '../components/motion/Coordinates'
 import { RevealHeading } from '../components/motion/RevealHeading'
+import { Stagger } from '../components/motion/Stagger'
+import { EASE_OUT, riseItem, slideItem } from '../components/motion/variants'
 import { DestinationAtmosphere } from '../components/scenes/DestinationAtmosphere'
 import { destinations } from '../content/site'
 import { useLanguage } from '../hooks/useLanguage'
 import { useMotionPrefs, useParallax } from '../hooks/useMotionPrefs'
 
 const AUTOPLAY_SECONDS = 8
-const ease = [0.22, 1, 0.36, 1] as const
+const ease = EASE_OUT
+
+// The cards carry no visual values of their own (their opacity and lift are CSS), only the stagger.
+const pickerCard: Variants = { hidden: {}, show: {} }
+
+const pickerCurtain: Variants = {
+  hidden: { scaleY: 1 },
+  show: { scaleY: 0, transition: { duration: 0.75, ease: [0.7, 0, 0.2, 1] } },
+}
+
+const pickerImage: Variants = {
+  hidden: { scale: 1.35 },
+  show: { scale: 1, transition: { duration: 1.1, ease } },
+}
+
+const pickerName: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, delay: 0.3, ease } },
+}
 
 export function Explore() {
   const { messages } = useLanguage()
@@ -61,7 +81,7 @@ export function Explore() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.1, ease: 'easeInOut' }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
           />
         </AnimatePresence>
         <motion.div
@@ -82,18 +102,23 @@ export function Explore() {
         onPointerEnter={(event) => event.pointerType === 'mouse' && setHovering(true)}
         onPointerLeave={() => setHovering(false)}
       >
-        <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+        <Stagger inView gap={0.2} className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="section-kicker text-paper/70">{messages.explore.kicker}</p>
+            <motion.p variants={slideItem} className="section-kicker text-paper/70">
+              {messages.explore.kicker}
+            </motion.p>
             <RevealHeading
               className="section-title mt-5 max-w-3xl"
               parts={[{ text: messages.explore.title }]}
             />
           </div>
-          <p className="max-w-md text-sm leading-6 text-paper/85 [text-shadow:0_1px_14px_rgba(0,0,0,0.55)]">
+          <motion.p
+            variants={riseItem}
+            className="max-w-md text-sm leading-6 text-paper/85 [text-shadow:0_1px_14px_rgba(0,0,0,0.55)]"
+          >
             {messages.explore.description}
-          </p>
-        </div>
+          </motion.p>
+        </Stagger>
 
         <div aria-live={autoplay ? 'off' : 'polite'} className="min-h-[15rem]">
           <AnimatePresence mode="wait" initial={false}>
@@ -101,7 +126,7 @@ export function Explore() {
               key={destination.id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.25 } }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
             >
               <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold uppercase tracking-[0.2em] text-paper/75">
                 <span className="h-px w-9 bg-sun" />
@@ -121,9 +146,9 @@ export function Explore() {
                     key={`${character}-${index}`}
                     aria-hidden="true"
                     className="inline-block whitespace-pre"
-                    initial={{ y: reduced ? 0 : '45%', opacity: 0, filter: reduced ? 'none' : 'blur(10px)' }}
-                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
-                    transition={{ duration: 0.8, delay: 0.28 + index * 0.035, ease }}
+                    initial={{ y: reduced ? 0 : '45%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.65, delay: 0.2 + Math.min(index * 0.035, 0.35), ease }}
                   >
                     {character}
                   </motion.span>
@@ -136,11 +161,11 @@ export function Explore() {
           </AnimatePresence>
         </div>
 
-        <div>
+        <Stagger inView gap={0.07}>
           <div className="mb-4 flex items-center justify-between gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-paper/60">
+            <motion.p variants={slideItem} className="text-xs font-semibold uppercase tracking-[0.2em] text-paper/60">
               {messages.accessibility.destinationPicker}
-            </p>
+            </motion.p>
             {!reduced && (
               <button
                 type="button"
@@ -161,29 +186,33 @@ export function Explore() {
             {destinations.map((item, index) => {
               const isActive = index === active
               return (
-                <button
+                <motion.button
                   key={item.id}
                   type="button"
+                  variants={pickerCard}
+                  whileTap={{ scale: 0.97 }}
                   aria-pressed={isActive}
                   onClick={() => setActive(index)}
                   onPointerEnter={(event) => event.pointerType === 'mouse' && setActive(index)}
-                  className={`group relative h-36 w-32 shrink-0 snap-start overflow-hidden text-left outline-offset-4 transition-all duration-500 sm:h-40 sm:w-auto ${
+                  className={`group relative h-36 w-32 shrink-0 snap-start overflow-hidden text-left outline-offset-4 transition-[translate,opacity,box-shadow] duration-300 sm:h-40 sm:w-auto ${
                     isActive
                       ? '-translate-y-2 ring-1 ring-paper/80'
                       : 'opacity-70 ring-1 ring-paper/15 hover:-translate-y-1 hover:opacity-100'
                   }`}
                 >
-                  <img
-                    src={item.image}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  <motion.span variants={pickerImage} className="absolute inset-0 block">
+                    <img
+                      src={item.image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </motion.span>
                   <span className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
-                  <span className="absolute inset-x-3 bottom-3 font-display text-lg leading-tight">
+                  <motion.span variants={pickerName} className="absolute inset-x-3 bottom-3 font-display text-lg leading-tight">
                     {messages.explore.destinations[index].name}
-                  </span>
+                  </motion.span>
                   {isActive && !reduced && (
                     <span className="absolute inset-x-0 bottom-0 h-[3px] bg-paper/20">
                       <span
@@ -197,12 +226,20 @@ export function Explore() {
                       />
                     </span>
                   )}
-                </button>
+                  {!reduced && (
+                    <motion.span
+                      aria-hidden="true"
+                      variants={pickerCurtain}
+                      className="pointer-events-none absolute inset-0 origin-top bg-ink"
+                    />
+                  )}
+                </motion.button>
               )
             })}
           </div>
-        </div>
+        </Stagger>
       </div>
     </section>
   )
 }
+

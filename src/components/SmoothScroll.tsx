@@ -18,10 +18,35 @@ export function SmoothScroll() {
       anchors: true,
     })
 
-    const update = ({ timestamp }: { timestamp: number }) => lenis.raf(timestamp)
-    frame.update(update, true)
+    // The frame loop sleeps once scrolling settles and wakes on any input that can scroll.
+    let active = false
+    let idle = 0
+    const update = ({ timestamp }: { timestamp: number }) => {
+      lenis.raf(timestamp)
+      if (lenis.isScrolling) {
+        idle = 0
+      } else if (++idle > 30) {
+        cancelFrame(update)
+        active = false
+      }
+    }
+    const wake = () => {
+      idle = 0
+      if (active) return
+      active = true
+      // Reset Lenis' clock so the first frame after a sleep does not see a huge delta.
+      lenis.raf(performance.now())
+      frame.update(update, true)
+    }
+
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown', 'click', 'hashchange'] as const
+    for (const name of events) window.addEventListener(name, wake, { passive: true, capture: true })
+    window.addEventListener('scroll', wake, { passive: true })
+    wake()
 
     return () => {
+      for (const name of events) window.removeEventListener(name, wake, { capture: true })
+      window.removeEventListener('scroll', wake)
       cancelFrame(update)
       lenis.destroy()
     }

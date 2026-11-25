@@ -105,7 +105,7 @@ export function WishLamp() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-              className="relative rounded-2xl rounded-l-sm border border-sun/50 bg-paper px-4 py-3 font-display text-sm italic leading-snug text-ink shadow-[0_16px_40px_-18px_rgba(23,63,53,0.55)]"
+              className="relative rounded-2xl rounded-l-sm border border-sun/50 bg-paper px-4 py-3 text-sm leading-snug text-ink shadow-[0_16px_40px_-18px_rgba(23,63,53,0.55)]"
             >
               {wishes[wishIndex]}
             </motion.p>

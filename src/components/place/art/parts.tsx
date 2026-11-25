@@ -11,8 +11,6 @@ export function Ink({ children, w = 2.2, className }: { children: ReactNode; w?:
   )
 }
 
-export const NoInk = ({ children }: { children: ReactNode }) => <g stroke="none">{children}</g>
-
 /** Curved tiled roof with upturned eaves. `y` is the eave line, `h` the height above it. */
 export function Roof({ x, y, w, h = 14, fill = C.terra, tiles = true }: { x: number; y: number; w: number; h?: number; fill?: string; tiles?: boolean }) {
   const l = x - w / 2
@@ -61,37 +59,6 @@ export function Palm({ x, y, h = 56, lean = 8, s = 1 }: { x: number; y: number; 
       })}
       <circle cx={tx - 2} cy={ty + 3} r={3.2 * s} fill={C.cocoa} strokeWidth="1.4" />
       <circle cx={tx + 4} cy={ty + 4} r={3 * s} fill={C.cocoa} strokeWidth="1.4" />
-    </g>
-  )
-}
-
-export function Pine({ x, y, h = 52, w = 26 }: { x: number; y: number; h?: number; w?: number }) {
-  const tiers = 3
-  return (
-    <g>
-      <rect x={x - 2.5} y={y - 8} width="5" height="8" fill={C.wood} strokeWidth="1.6" />
-      {Array.from({ length: tiers }).map((_, i) => {
-        const top = y - h + (i * h) / (tiers + 0.6)
-        const bottom = top + h / 2.1
-        const half = (w / 2) * (0.55 + i * 0.3)
-        return <path key={i} d={`M${x} ${top}L${x + half} ${bottom}H${x - half}Z`} fill={i % 2 ? C.leafD : C.leaf} strokeWidth="1.8" />
-      })}
-    </g>
-  )
-}
-
-export function Boat({ x, y, w = 56, hat = true, color = C.terra }: { x: number; y: number; w?: number; hat?: boolean; color?: string }) {
-  return (
-    <g>
-      <path d={`M${x - w / 2} ${y - 6}Q${x} ${y + 9} ${x + w / 2} ${y - 6}Z`} fill={color} />
-      <path d={`M${x - w / 2 + 6} ${y - 4}H${x + w / 2 - 6}`} stroke={C.sun} strokeWidth="2" />
-      {hat && (
-        <g>
-          <path d={`M${x - 4} ${y - 7}v-12`} strokeWidth="3.2" />
-          <path d={`M${x - 11} ${y - 25}L${x - 4} ${y - 33}L${x + 3} ${y - 25}Z`} fill={C.cream} strokeWidth="1.8" />
-          <path d={`M${x + 14} ${y - 8}L${x + 30} ${y - 22}`} strokeWidth="1.8" />
-        </g>
-      )}
     </g>
   )
 }

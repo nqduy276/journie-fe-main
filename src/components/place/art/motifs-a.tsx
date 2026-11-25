@@ -3,40 +3,6 @@ import { Cloud, Ink, Lantern, Roof, Window } from './parts'
 
 /* Buildings, bridges and landmarks. Local origin: ground centre. Roughly 200 wide, up to 100 tall. */
 
-export function TowerLake() {
-  return (
-    <Ink>
-      {/* red bridge */}
-      <path d="M-100 -6Q-62 -34 -22 -10" stroke={INK} strokeWidth="9" fill="none" />
-      <path d="M-100 -6Q-62 -34 -22 -10" stroke={C.terra} strokeWidth="5" fill="none" />
-      {[-86, -70, -54, -38].map((x) => (
-        <path key={x} d={`M${x} ${-8 - Math.sin(((x + 100) / 80) * Math.PI) * 24}v6`} strokeWidth="1.8" />
-      ))}
-      {/* islet and tower */}
-      <ellipse cx="34" cy="-4" rx="52" ry="9" fill={C.stoneD} />
-      <ellipse cx="34" cy="-8" rx="46" ry="8" fill={C.leaf} />
-      <rect x="12" y="-38" width="44" height="30" fill={C.cream} />
-      <Roof x={34} y={-38} w={44} h={10} fill={C.jadeD} />
-      <rect x="18" y="-62" width="32" height="24" fill={C.cream} />
-      <Roof x={34} y={-62} w={32} h={9} fill={C.jadeD} />
-      <rect x="24" y="-82" width="20" height="20" fill={C.cream} />
-      <Roof x={34} y={-82} w={20} h={8} fill={C.jadeD} />
-      <path d="M34 -98V-90" strokeWidth="2.6" />
-      <circle cx="34" cy="-100" r="2.6" fill={C.sun} />
-      {[19, 31, 43].map((x) => (
-        <Window key={x} x={x} y={-30} w={7} h={14} fill={C.terra} arch />
-      ))}
-      <Window x={30} y={-56} w={8} h={12} fill={C.terra} arch />
-      {/* willow */}
-      <path d="M-62 -4V-28" strokeWidth="4" />
-      <ellipse cx="-62" cy="-36" rx="22" ry="12" fill={C.leaf} />
-      {[-76, -68, -60, -52, -46].map((x) => (
-        <path key={x} d={`M${x} -32Q${x - 3} -18 ${x - 1} -8`} stroke={C.leafD} strokeWidth="2" fill="none" />
-      ))}
-    </Ink>
-  )
-}
-
 /** Three-arch gate of a temple, citadel or old city. */
 export function GateTemple({ roof = C.terra, wall = C.stone, flag = false }: { roof?: string; wall?: string; flag?: boolean }) {
   return (
@@ -81,26 +47,6 @@ export function Palace({ colonnade = false }: { colonnade?: boolean }) {
       <path d="M0 -90V-118" strokeWidth="2.6" />
       <path d="M0 -118H34V-100H0Z" fill={C.terra} />
       <path d="M17 -115l2.2 5.4h5.4l-4.4 3.4 1.7 5.4-4.9-3.3-4.9 3.3 1.7-5.4-4.4-3.4h5.4z" fill={C.sun} stroke="none" />
-    </Ink>
-  )
-}
-
-export function Prison() {
-  return (
-    <Ink>
-      <rect x="-88" y="-34" width="176" height="34" fill={C.stone} />
-      {Array.from({ length: 9 }).map((_, i) => (
-        <path key={i} d={`M${-88 + i * 20} -34V0`} strokeOpacity="0.25" strokeWidth="1.4" />
-      ))}
-      <path d="M-88 -17H88" strokeOpacity="0.25" strokeWidth="1.4" />
-      <rect x="-22" y="-76" width="44" height="42" fill={C.stoneD} />
-      <path d="M-26 -76H26L22 -86H-22Z" fill={C.terraD} />
-      <rect x="-12" y="-66" width="24" height="18" fill={INK} fillOpacity="0.85" />
-      {[-6, 0, 6].map((x) => (
-        <path key={x} d={`M${x} -66V-48`} stroke={C.stone} strokeWidth="1.8" />
-      ))}
-      <path d="M-88 -42Q-60 -52 -34 -42M34 -42Q60 -52 88 -42" strokeWidth="1.6" strokeDasharray="3 3" />
-      <rect x="-14" y="-22" width="28" height="22" fill={INK} fillOpacity="0.8" />
     </Ink>
   )
 }
@@ -208,74 +154,6 @@ export function Skyline({ landmark = false }: { landmark?: boolean }) {
   )
 }
 
-export function PagodaTall() {
-  return (
-    <Ink>
-      <rect x="-70" y="-10" width="140" height="10" fill={C.stoneD} />
-      {[0, 1, 2, 3].map((i) => {
-        const w = 74 - i * 14
-        const y = -10 - i * 24
-        return (
-          <g key={i}>
-            <rect x={-w / 2 + 6} y={y - 18} width={w - 12} height="18" fill={C.cream} />
-            <Window x={-4} y={y - 14} w={8} h={11} fill={C.terra} arch />
-            <Roof x={0} y={y - 18} w={w + 10} h={8} fill={i % 2 ? C.terra : C.gold} />
-          </g>
-        )
-      })}
-      <path d="M0 -106V-124" strokeWidth="2.6" />
-      <circle cx="0" cy="-126" r="4" fill={C.sun} />
-      {[-86, 86].map((x) => (
-        <g key={x}>
-          <rect x={x - 9} y="-34" width="18" height="34" fill={C.cream} />
-          <Roof x={x} y={-34} w={18} h={9} fill={C.gold} />
-        </g>
-      ))}
-    </Ink>
-  )
-}
-
-export function CoveredBridge() {
-  return (
-    <Ink>
-      <path d="M-100 0V-10Q0 -44 100 -10V0Z" fill={C.stoneD} />
-      <path d="M-86 -10Q0 -34 86 -10" fill="none" strokeWidth="2" />
-      <path d="M-34 -20V-50H34V-20Z" fill={C.cream} />
-      {[-24, -8, 8, 24].map((x) => (
-        <rect key={x} x={x - 3} y="-50" width="6" height="30" fill={C.terra} strokeWidth="1.6" />
-      ))}
-      <Roof x={0} y={-50} w={68} h={16} fill={C.jadeD} />
-      <rect x="-14" y="-82" width="28" height="18" fill={C.cream} />
-      <Roof x={0} y={-82} w={28} h={10} fill={C.jadeD} />
-      <Lantern x={-40} y={-38} r={4.5} string={10} />
-      <Lantern x={40} y={-38} r={4.5} string={10} />
-      <path d="M-70 -4Q-60 6 -50 -4Q-40 6 -30 -4M30 -4Q40 6 50 -4Q60 6 70 -4" stroke={C.jade} strokeWidth="2" fill="none" />
-    </Ink>
-  )
-}
-
-export function OldHouse({ wall = C.wall, mansion = false }: { wall?: string; mansion?: boolean }) {
-  return (
-    <Ink>
-      <rect x="-70" y="-38" width="140" height="38" fill={wall} />
-      <Roof x={0} y={-38} w={150} h={22} fill={C.terra} />
-      {mansion && (
-        <>
-          <rect x="-40" y="-72" width="80" height="14" fill={wall} />
-          <Roof x={0} y={-72} w={96} h={14} fill={C.terra} />
-        </>
-      )}
-      {[-50, -18, 18, 50].map((x, i) => (
-        <rect key={x} x={x - 6} y="-34" width="12" height="34" fill={i % 2 ? C.wood : C.cocoa} strokeWidth="1.8" />
-      ))}
-      <path d="M-70 -34H70" strokeWidth="2.4" />
-      <Lantern x={-34} y={-24} r={5} string={9} />
-      <Lantern x={34} y={-24} r={5} string={9} />
-      <path d="M-10 0V-22H10V0" fill={INK} fillOpacity="0.8" />
-    </Ink>
-  )
-}
-
 export function StreetNight({ stalls = false }: { stalls?: boolean }) {
   const houses = [
     { x: -76, w: 44, h: 50, c: C.wall },
@@ -307,89 +185,6 @@ export function StreetNight({ stalls = false }: { stalls?: boolean }) {
         ))}
     </Ink>
   )
-}
-
-export function TrainStation() {
-  return (
-    <Ink>
-      <rect x="-78" y="-34" width="156" height="34" fill={C.cream} />
-      {[-52, 0, 52].map((x, i) => (
-        <g key={x}>
-          <path d={`M${x - 24} -34L${x} ${i === 1 ? -74 : -62}L${x + 24} -34Z`} fill={C.terra} />
-          <path d={`M${x - 14} 0V-16A14 14 0 0 1 ${x + 14} -16V0Z`} fill={INK} fillOpacity="0.8" />
-          <Window x={x - 5} y={i === 1 ? -54 : -48} w={10} h={12} fill={C.sun} arch />
-        </g>
-      ))}
-      <rect x="-96" y="-12" width="192" height="4" fill={C.stoneD} />
-      <rect x="-96" y="-6" width="64" height="18" fill={C.jadeD} />
-      <rect x="-30" y="-6" width="64" height="18" fill={C.terra} />
-      <rect x="38" y="-6" width="58" height="18" fill={C.jadeD} />
-      {[-82, -64, -46, -16, 2, 20, 52, 70, 86].map((x) => (
-        <rect key={x} x={x - 4} y="-2" width="8" height="7" fill={C.cream} strokeWidth="1.3" />
-      ))}
-      {[-84, -56, 8, 38].map((x) => (
-        <circle key={x} cx={x} cy="14" r="3.6" fill={INK} stroke="none" />
-      ))}
-    </Ink>
-  )
-}
-
-export function SeaTemple() {
-  return (
-    <Ink>
-      <path d="M-70 4Q-50 -26 -20 -24Q10 -34 40 -22Q66 -18 80 4Z" fill={C.stoneD} />
-      <path d="M-50 -24Q-30 -40 -10 -32" fill={C.leaf} stroke="none" />
-      <rect x="-44" y="-52" width="46" height="28" fill={C.wall} />
-      <Roof x={-21} y={-52} w={50} h={14} fill={C.terra} />
-      <rect x="-30" y="-44" width="9" height="20" fill={C.terra} strokeWidth="1.6" />
-      <rect x="-14" y="-44" width="9" height="20" fill={C.terra} strokeWidth="1.6" />
-      <path d="M44 -22V-84L56 -92L68 -84V-22Z" fill={C.cream} />
-      <rect x="44" y="-98" width="24" height="8" fill={C.terra} />
-      <path d="M44 -52H68M44 -70H68" strokeOpacity="0.5" strokeWidth="1.4" />
-      <circle cx="56" cy="-108" r="6" fill={C.sun} />
-      <path d="M-100 8Q-80 -2 -60 8T-20 8T20 8T60 8T100 8" fill="none" stroke={C.water} strokeWidth="3" />
-    </Ink>
-  )
-}
-
-export function SunsetTown() {
-  return (
-    <Ink>
-      <rect x="-70" y="-30" width="140" height="30" fill={C.cream} />
-      <Window x={-56} y={-22} w={10} h={14} fill={C.terra} arch />
-      <Window x={-34} y={-22} w={10} h={14} fill={C.terra} arch />
-      <Window x={26} y={-22} w={10} h={14} fill={C.terra} arch />
-      <Window x={48} y={-22} w={10} h={14} fill={C.terra} arch />
-      <rect x="-18" y="-96" width="36" height="66" fill={C.wall} />
-      <path d="M-22 -96L0 -122L22 -96Z" fill={C.terra} />
-      <circle cx="0" cy="-76" r="11" fill={C.white} />
-      <path d="M0 -76V-84M0 -76L6 -72" strokeWidth="1.8" />
-      <Window x={-5} y={-54} w={10} h={14} fill={C.dusk} arch />
-      {[-60, 60].map((x) => (
-        <g key={x}>
-          <path d={`M${x} -30V-52`} strokeWidth="2.2" />
-          <path d={`M${x} -52L${x + (x < 0 ? 16 : -16)} -48L${x} -44Z`} fill={C.sun} strokeWidth="1.6" />
-        </g>
-      ))}
-    </Ink>
-  )
-}
-
-export function Flagpole() {
-  return (
-    <Ink>
-      <path d="M-70 0L-30 -26L-8 -16L14 -44L50 -20L80 0Z" fill={C.stoneD} />
-      <path d="M-30 -26L-8 -16L14 -44L24 -30L6 -12Z" fill={C.stone} stroke="none" />
-      <path d="M14 -44V-124" strokeWidth="3" />
-      <path d="M14 -122Q40 -128 62 -120V-92Q40 -100 14 -94Z" fill={C.terra} />
-      <path d="M38 -113l3 7.4h7.4l-6 4.6 2.3 7.4-6.7-4.5-6.7 4.5 2.3-7.4-6-4.6h7.4z" fill={C.sun} stroke="none" />
-      <path d="M-4 -18Q4 -26 12 -18" stroke={C.leaf} strokeWidth="5" fill="none" />
-    </Ink>
-  )
-}
-
-export function Mansion() {
-  return <OldHouse wall={C.stone} mansion />
 }
 
 export function Cloudy({ x = 0, y = -110 }: { x?: number; y?: number }) {

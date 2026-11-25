@@ -64,10 +64,19 @@ function CursorLayer() {
     let dpr = 1
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = window.innerWidth * dpr
-      canvas.height = window.innerHeight * dpr
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+      const pw = Math.round(window.innerWidth * dpr)
+      const ph = Math.round(window.innerHeight * dpr)
+      if (canvas.width !== pw || canvas.height !== ph) {
+        canvas.width = pw
+        canvas.height = ph
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      }
+    }
+    let pendingResize = 0
+    const onResize = () => {
+      cancelAnimationFrame(pendingResize)
+      pendingResize = requestAnimationFrame(resize)
     }
 
     const spawn = (x: number, y: number, count: number, burst = false) => {
@@ -205,7 +214,7 @@ function CursorLayer() {
     }
 
     resize()
-    window.addEventListener('resize', resize)
+    window.addEventListener('resize', onResize)
     window.addEventListener('pointermove', handleMove, { passive: true })
     window.addEventListener('pointerover', handleOver, { passive: true })
     window.addEventListener('pointerdown', handleDown, { passive: true })
@@ -217,7 +226,8 @@ function CursorLayer() {
 
     return () => {
       cancelAnimationFrame(frameId)
-      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(pendingResize)
+      window.removeEventListener('resize', onResize)
       window.removeEventListener('pointermove', handleMove)
       window.removeEventListener('pointerover', handleOver)
       window.removeEventListener('pointerdown', handleDown)

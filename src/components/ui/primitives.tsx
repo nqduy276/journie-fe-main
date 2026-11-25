@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
-import { motion } from 'motion/react'
+import { Compass } from 'lucide-react'
+import { motion, stagger, type Variants } from 'motion/react'
 import { categories } from '../../domain/categories'
-import { SOLVER_STATUS_LABEL } from '../../domain/solverStatus'
-import type { CategoryId, SolverStatus } from '../../domain/types'
+import type { CategoryId } from '../../domain/types'
 import { useTr } from '../../hooks/useTr'
 import { CategoryIcon } from '../icons'
-import { DiAvatar } from '../mascot/DiAvatar'
+import { popItem, riseItem } from '../motion/variants'
+
+const emptyGroup: Variants = { hidden: {}, show: { transition: { delayChildren: stagger(0.08, { startDelay: 0.05 }) } } }
+const pressLabel: Variants = { press: { scale: 0.94 } }
 
 /** A category "sticker": the hand-drawn icon on a tinted paper chip with a hairline edge. */
 export function CategoryGlyph({ cat, size = 36 }: { cat: CategoryId; size?: number }) {
@@ -26,43 +29,55 @@ export function CategoryName({ cat }: { cat: CategoryId }) {
   return <>{tr(categories[cat].vi, categories[cat].en)}</>
 }
 
-const STATUS_STYLE: Record<SolverStatus, string> = {
-  OPTIMAL: 'bg-firuze/15 text-jade-ink ring-firuze/40',
-  FEASIBLE: 'bg-sun/20 text-sun-ink ring-sun/50',
-  INFEASIBLE: 'bg-pomegranate/12 text-pomegranate ring-pomegranate/40',
-}
-
-/** Solver state, stated plainly (report §5.7): feasible is not the same claim as optimal. */
-export function SolverBadge({ status }: { status: SolverStatus }) {
-  const { tr } = useTr()
-  const meaning: Record<SolverStatus, string> = {
-    OPTIMAL: tr('Tối ưu: không có lịch nào tốt hơn theo mô hình', 'Optimal: no better schedule exists under the model'),
-    FEASIBLE: tr('Khả thi: thỏa mọi ràng buộc cứng, chưa chắc tối ưu', 'Feasible: meets every hard constraint, not proven optimal'),
-    INFEASIBLE: tr('Không khả thi: ràng buộc xung đột', 'Infeasible: constraints conflict'),
-  }
-  return (
-    <span
-      title={meaning[status]}
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.68rem] font-bold tracking-wide ring-1 ${STATUS_STYLE[status]}`}
-    >
-      <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
-      {tr(...SOLVER_STATUS_LABEL[status])}
-    </span>
-  )
-}
-
+/** Fades in after a beat, so a quick load never flashes grey blocks. */
 export function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`skeleton ${className}`} aria-hidden="true" />
+  return (
+    <motion.div
+      className={`skeleton ${className}`}
+      aria-hidden="true"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.45, delay: 0.12, ease: 'easeOut' }}
+    />
+  )
 }
 
 export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
-    <div className="panel flex flex-col items-center px-6 py-12 text-center">
-      <DiAvatar mood="thinking" trail={false} className="aspect-square w-20" />
-      <h3 className="h-display mt-3 text-xl text-forest">{title}</h3>
-      <p className="mt-1.5 max-w-sm text-sm text-ink/60">{body}</p>
-      {action && <div className="mt-5">{action}</div>}
-    </div>
+    <motion.div className="panel flex flex-col items-center px-6 py-12 text-center" variants={emptyGroup} initial="hidden" animate="show">
+      <motion.div variants={popItem}>
+        <span className="grid size-14 place-items-center rounded-full border border-forest/15 bg-forest/5 text-forest/45" aria-hidden="true">
+          <Compass size={26} />
+        </span>
+      </motion.div>
+      <motion.h3 variants={riseItem} className="h-display mt-3 text-xl text-forest">
+        {title}
+      </motion.h3>
+      <motion.p variants={riseItem} className="mt-1.5 max-w-sm text-sm text-ink/60">
+        {body}
+      </motion.p>
+      {action && (
+        <motion.div variants={riseItem} className="mt-5">
+          {action}
+        </motion.div>
+      )}
+    </motion.div>
+  )
+}
+
+/** A list or page that could not be loaded (server error, offline): told apart from one that is simply empty, with a retry. */
+export function LoadError({ onRetry }: { onRetry: () => void }) {
+  const { tr } = useTr()
+  return (
+    <EmptyState
+      title={tr('Chưa tải được', 'Could not load it')}
+      body={tr('Máy chủ hoặc mạng đang trục trặc. Dữ liệu của bạn vẫn còn, thử lại nhé.', 'The server or the network had a problem. Your data is still there; try again.')}
+      action={
+        <button type="button" className="btn-ghost" onClick={onRetry}>
+          {tr('Thử lại', 'Try again')}
+        </button>
+      }
+    />
   )
 }
 
@@ -82,20 +97,27 @@ export function Segmented<T extends string>({
       {options.map((option) => {
         const active = option.value === value
         return (
-          <button
+          <motion.button
             key={option.value}
             type="button"
             role="radio"
             aria-checked={active}
             onClick={() => onChange(option.value)}
+            whileTap="press"
             className={`relative rounded-[0.3rem] px-3 py-2 text-[0.8rem] font-semibold transition-colors ${active ? 'text-paper' : 'text-ink/65 hover:text-ink'}`}
           >
             {active && (
               <motion.span layoutId={`seg-${label}`} className="absolute inset-0 rounded-[0.3rem] bg-forest" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
             )}
-            <span className="relative block">{option.label}</span>
-            {option.hint && <span className="relative block text-[0.65rem] font-normal opacity-70">{option.hint}</span>}
-          </button>
+            <motion.span variants={pressLabel} className="relative block">
+              {option.label}
+            </motion.span>
+            {option.hint && (
+              <motion.span variants={pressLabel} className="relative block text-[0.65rem] font-normal opacity-70">
+                {option.hint}
+              </motion.span>
+            )}
+          </motion.button>
         )
       })}
     </div>
@@ -104,12 +126,13 @@ export function Segmented<T extends string>({
 
 export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
   return (
-    <button
+    <motion.button
       type="button"
       role="switch"
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
+      whileTap={{ scale: 0.92 }}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-300 ${checked ? 'bg-firuze' : 'bg-forest/25'}`}
     >
       <motion.span
@@ -117,7 +140,7 @@ export function Switch({ checked, onChange, label }: { checked: boolean; onChang
         animate={{ x: checked ? 20 : 0 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       />
-    </button>
+    </motion.button>
   )
 }
 
@@ -126,7 +149,7 @@ export function Meter({ value, max, tone = 'lapis', label }: { value: number; ma
   const color = tone === 'danger' || ratio > 1 ? 'bg-pomegranate' : tone === 'warn' || ratio > 0.9 ? 'bg-sun' : 'bg-firuze'
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-forest/10" role="progressbar" aria-valuemin={0} aria-valuemax={max} aria-valuenow={Math.round(value)} aria-label={label}>
-      <motion.div className={`h-full rounded-full ${color}`} initial={{ width: 0 }} animate={{ width: `${Math.min(100, ratio * 100)}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
+      <motion.div className={`h-full w-full rounded-full ${color}`} initial={{ x: '-100%' }} animate={{ x: `${Math.min(100, ratio * 100) - 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
     </div>
   )
 }

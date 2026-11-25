@@ -2,9 +2,9 @@ import { useId, type ComponentType } from 'react'
 import { hashString } from '../../../domain/conditions'
 import type { CategoryId, CityId, Poi } from '../../../domain/types'
 import { karstPath, type Peak } from '../../scenes/shapes'
-import { GateTemple, Palace, Prison, Cathedral, Museum, MarketHall, Skyline, PagodaTall, CoveredBridge, OldHouse, StreetNight, TrainStation, SeaTemple, SunsetTown, Flagpole, Mansion, TowerLake } from './motifs-a'
-import { BoatKarst, MountainStairs, JunkBay, Cave, IslandBeach, Ferris, BeachParasol, PassRoad, Canyon, TwinHills, VeggieGarden, CableCar, Barrels, Waterfall, FishingVillage, LakePines, TeaHills, ClayTunnel, ValleyFlowers } from './motifs-b'
-import { Cup, Bowl, BanhMi, Seafood, Cauldron, GrilledSnack } from './motifs-c'
+import { GateTemple, Palace, Cathedral, Museum, MarketHall, Skyline, StreetNight } from './motifs-a'
+import { MountainStairs, BeachParasol, TwinHills } from './motifs-b'
+import { Cup, Bowl } from './motifs-c'
 import { C, INK } from './palette'
 
 type Sky = 'day' | 'dawn' | 'golden' | 'dusk' | 'night' | 'mist'
@@ -38,44 +38,6 @@ const GROUND: Record<Exclude<Ground, 'table'>, [string, string]> = {
 }
 
 const SPECS: Record<string, Spec> = {
-  'hn-hoan-kiem': { m: TowerLake, ground: 'water', sky: 'dawn', scale: 0.82 },
-  'hn-van-mieu': { m: GateTemple, ground: 'land', sky: 'day' },
-  'hn-lang-bac': { m: Palace, props: { colonnade: true }, ground: 'land', sky: 'day', scale: 0.82 },
-  'hn-hoang-thanh': { m: GateTemple, props: { wall: C.wall, roof: C.terraD, flag: true }, ground: 'land', sky: 'golden', scale: 0.84 },
-  'hn-hoa-lo': { m: Prison, ground: 'street', sky: 'mist' },
-  'hn-ca-phe-trung': { m: Cup, props: { kind: 'egg' }, ground: 'table', sky: 'day' },
-  'hn-bun-cha': { m: Bowl, props: { kind: 'bunCha' }, ground: 'table', sky: 'day' },
-  'hn-pho-co-dem': { m: StreetNight, props: { stalls: true }, ground: 'street', sky: 'dusk' },
-  'nb-trang-an': { m: BoatKarst, ground: 'water', sky: 'dawn' },
-  'nb-tam-coc': { m: BoatKarst, props: { rice: true }, ground: 'water', sky: 'golden' },
-  'nb-hang-mua': { m: MountainStairs, ground: 'land', sky: 'day', scale: 0.84 },
-  'nb-hoa-lu': { m: GateTemple, props: { wall: C.wall, roof: C.jadeD }, ground: 'land', sky: 'mist' },
-  'nb-bai-dinh': { m: PagodaTall, ground: 'land', sky: 'day', scale: 0.78 },
-  'nb-de-nui': { m: Bowl, props: { kind: 'cracker' }, ground: 'table', sky: 'day' },
-  'nb-thung-nham': { m: BoatKarst, props: { egrets: true }, ground: 'water', sky: 'dawn' },
-  'hl-vinh': { m: JunkBay, ground: 'water', sky: 'golden' },
-  'hl-sung-sot': { m: Cave, ground: 'water', sky: 'mist', scale: 0.86 },
-  'hl-ti-top': { m: IslandBeach, ground: 'water', sky: 'day' },
-  'hl-sun-world': { m: Ferris, ground: 'land', sky: 'dusk', scale: 0.82 },
-  'hl-hai-san': { m: Seafood, ground: 'table', sky: 'day' },
-  'hl-cho-dem': { m: StreetNight, props: { stalls: true }, ground: 'street', sky: 'night' },
-  'hl-bai-chay': { m: BeachParasol, ground: 'sand', sky: 'golden' },
-  'hg-lung-cu': { m: Flagpole, ground: 'land', sky: 'day', scale: 0.8 },
-  'hg-ma-pi-leng': { m: PassRoad, ground: 'land', sky: 'dawn' },
-  'hg-sa-phin': { m: Mansion, ground: 'land', sky: 'mist' },
-  'hg-dong-van': { m: StreetNight, ground: 'street', sky: 'day' },
-  'hg-nho-que': { m: Canyon, ground: 'water', sky: 'day' },
-  'hg-quan-ba': { m: TwinHills, ground: 'land', sky: 'mist' },
-  'hg-thang-co': { m: Cauldron, ground: 'table', sky: 'day' },
-  'ha-pho-co': { m: StreetNight, ground: 'street', sky: 'golden' },
-  'ha-chua-cau': { m: CoveredBridge, ground: 'water', sky: 'dusk' },
-  'ha-tan-ky': { m: OldHouse, ground: 'street', sky: 'day' },
-  'ha-cao-lau': { m: Bowl, props: { kind: 'cao' }, ground: 'table', sky: 'day' },
-  'ha-banh-mi': { m: BanhMi, ground: 'table', sky: 'day' },
-  'ha-ca-phe': { m: Cup, props: { kind: 'cafe' }, ground: 'table', sky: 'day' },
-  'ha-tra-que': { m: VeggieGarden, ground: 'land', sky: 'day' },
-  'ha-an-bang': { m: BeachParasol, ground: 'sand', sky: 'golden' },
-  'ha-cho-dem': { m: StreetNight, props: { stalls: true }, ground: 'street', sky: 'night' },
   'sg-dinh-doc-lap': { m: Palace, ground: 'land', sky: 'day', scale: 0.82 },
   'sg-duc-ba': { m: Cathedral, ground: 'street', sky: 'golden', scale: 0.8 },
   'sg-chung-tich': { m: Museum, ground: 'street', sky: 'mist' },
@@ -85,22 +47,6 @@ const SPECS: Record<string, Spec> = {
   'sg-nguyen-hue': { m: Skyline, ground: 'street', sky: 'dusk', scale: 0.76 },
   'sg-landmark': { m: Skyline, props: { landmark: true }, ground: 'land', sky: 'night', scale: 0.62 },
   'sg-binh-tay': { m: MarketHall, props: { chinese: true }, ground: 'street', sky: 'day' },
-  'pq-bai-sao': { m: BeachParasol, ground: 'sand', sky: 'day' },
-  'pq-cap-treo': { m: CableCar, ground: 'water', sky: 'day' },
-  'pq-dinh-cau': { m: SeaTemple, ground: 'water', sky: 'golden', scale: 0.82 },
-  'pq-cho-dem': { m: StreetNight, props: { stalls: true }, ground: 'street', sky: 'night' },
-  'pq-nuoc-mam': { m: Barrels, ground: 'land', sky: 'day' },
-  'pq-suoi-tranh': { m: Waterfall, ground: 'land', sky: 'mist' },
-  'pq-ham-ninh': { m: FishingVillage, ground: 'water', sky: 'dawn' },
-  'pq-sunset-town': { m: SunsetTown, ground: 'sand', sky: 'dusk', scale: 0.8 },
-  'dl-ho-xuan-huong': { m: LakePines, ground: 'water', sky: 'mist' },
-  'dl-cho': { m: MarketHall, ground: 'street', sky: 'mist', scale: 0.82 },
-  'dl-ga': { m: TrainStation, ground: 'land', sky: 'day' },
-  'dl-cau-dat': { m: TeaHills, ground: 'land', sky: 'dawn' },
-  'dl-me-linh': { m: Cup, props: { kind: 'cafe' }, ground: 'table', sky: 'day' },
-  'dl-duong-ham': { m: ClayTunnel, ground: 'land', sky: 'day', scale: 0.86 },
-  'dl-tinh-yeu': { m: ValleyFlowers, ground: 'land', sky: 'golden' },
-  'dl-banh-trang': { m: GrilledSnack, ground: 'table', sky: 'dusk' },
 }
 
 const BY_CATEGORY: Record<CategoryId, Spec> = {
@@ -113,8 +59,6 @@ const BY_CATEGORY: Record<CategoryId, Spec> = {
   nightlife: { m: Skyline, ground: 'street', sky: 'night', scale: 0.76 },
   adventure: { m: MountainStairs, ground: 'land', sky: 'day', scale: 0.84 },
 }
-
-const KARST_CITIES: CityId[] = ['ninh-binh', 'ha-long', 'ha-giang']
 
 const farPeaks: Peak[] = [[40, 54, 36], [118, 86, 44], [200, 62, 40], [290, 96, 48], [370, 70, 38]]
 const nearPeaks: Peak[] = [[10, 40, 34], [92, 52, 38], [176, 36, 34], [262, 58, 40], [346, 44, 36], [410, 50, 34]]
@@ -178,14 +122,13 @@ function Celestial({ sky, seed }: { sky: Sky; seed: number }) {
 export function PlaceArt({ poi, className = '' }: { poi: Poi; className?: string }) {
   const spec = SPECS[poi.id] ?? BY_CATEGORY[poi.cat]
   const ids = useId()
-  return <ArtScene spec={spec} seed={hashString(poi.id)} karst={KARST_CITIES.includes(poi.city)} className={className} uid={ids} />
+  return <ArtScene spec={spec} seed={hashString(poi.id)} karst={false} className={className} uid={ids} />
 }
 
 /** Cover art for a city, used where there is no photograph. */
 export function CityArt({ city, className = '' }: { city: CityId; className?: string }) {
   const ids = useId()
-  const spec: Spec =
-    city === 'ha-noi' ? { m: TowerLake, ground: 'water', sky: 'dawn', scale: 0.82 } : city === 'da-lat' ? { m: LakePines, ground: 'water', sky: 'mist' } : { m: TwinHills, ground: 'land', sky: 'day' }
+  const spec: Spec = { m: TwinHills, ground: 'land', sky: 'day' }
   return <ArtScene spec={spec} seed={hashString(city)} karst={false} className={className} uid={ids} />
 }
 

@@ -1,5 +1,5 @@
 import { C, INK } from './palette'
-import { Ink, Lantern, Steam } from './parts'
+import { Ink, Steam } from './parts'
 
 /* Food, drink and little street scenes: the object is the landmark. Local origin: table top centre. */
 
@@ -96,24 +96,6 @@ export function Bowl({ kind = 'pho' }: { kind?: 'pho' | 'cao' | 'bunCha' | 'crac
   )
 }
 
-export function BanhMi() {
-  return (
-    <Ink>
-      <ellipse cx="0" cy="4" rx="74" ry="8" fill={C.stone} />
-      <path d="M-62 -4Q-76 -22 -48 -38Q0 -56 48 -38Q76 -22 62 -4Q0 8 -62 -4Z" fill={C.wall} />
-      <path d="M-52 -26Q-20 -42 20 -34Q40 -30 54 -22" fill="none" strokeOpacity="0.45" strokeWidth="1.8" />
-      <path d="M-40 -10Q-20 -26 4 -22Q28 -16 44 -10" fill={C.leaf} stroke="none" />
-      <path d="M-46 -12Q-30 -20 -10 -14Q8 -8 20 -14T50 -12" fill={C.terra} stroke="none" />
-      <path d="M-30 -16Q-12 -24 6 -16" fill={C.cream} stroke="none" />
-      {[-46, -18, 10, 38].map((x) => (
-        <path key={x} d={`M${x} -34q6 -6 12 0`} fill="none" strokeOpacity="0.4" strokeWidth="1.6" />
-      ))}
-      <Steam x={0} y={-52} s={0.8} />
-      <circle cx="-54" cy="-30" r="3" fill={C.sun} strokeWidth="1.4" />
-    </Ink>
-  )
-}
-
 export function Seafood() {
   return (
     <Ink>
@@ -139,51 +121,6 @@ export function Seafood() {
       ))}
       <path d="M40 -8l8 -5l4 8z" fill={C.leaf} strokeWidth="1.4" />
       <path d="M-62 -6l8 -8l8 8z" fill={C.sun} strokeWidth="1.6" />
-    </Ink>
-  )
-}
-
-export function Cauldron() {
-  return (
-    <Ink>
-      <path d="M-62 -18Q-66 6 -34 6H34Q66 6 62 -18Z" fill={C.cocoa} />
-      <ellipse cx="0" cy="-18" rx="62" ry="10" fill={C.stoneD} />
-      <ellipse cx="0" cy="-19" rx="52" ry="7" fill={C.terra} />
-      {[-30, -8, 16, 34].map((x, i) => (
-        <circle key={x} cx={x} cy={-20 + (i % 2) * 2} r="4.6" fill={i % 2 ? C.sun : C.cream} strokeWidth="1.6" />
-      ))}
-      <path d="M-62 -16H-76M62 -16H76" strokeWidth="4" />
-      <path d="M-44 6Q-40 -4 -30 6M-6 6Q0 -6 8 6M30 6Q38 -4 44 6" fill={C.sun} strokeWidth="1.8" />
-      <path d="M-32 6V12M0 6V12M32 6V12" strokeWidth="3" />
-      <Steam x={-18} y={-30} />
-      <Steam x={18} y={-30} s={1.1} />
-    </Ink>
-  )
-}
-
-export function GrilledSnack() {
-  return (
-    <Ink>
-      <ellipse cx="0" cy="4" rx="76" ry="8" fill={C.stone} />
-      <path d="M-56 -16H56L46 4H-46Z" fill={C.wood} />
-      <path d="M-46 -16V4M-30 -16V4M-14 -16V4M2 -16V4M18 -16V4M34 -16V4" strokeOpacity="0.4" strokeWidth="1.4" />
-      <circle cx="0" cy="-26" r="40" fill={C.cream} />
-      <circle cx="0" cy="-26" r="40" fill="none" />
-      <circle cx="0" cy="-26" r="32" fill={C.wall} stroke="none" opacity="0.8" />
-      {[
-        [-14, -34, C.terra],
-        [10, -40, C.leaf],
-        [16, -20, C.sun],
-        [-18, -16, C.leaf],
-        [2, -26, C.terra],
-        [26, -34, C.cocoa],
-        [-28, -28, C.sun],
-      ].map(([x, y, c]) => (
-        <circle key={`${x}${y}`} cx={x as number} cy={y as number} r="4.6" fill={c as string} strokeWidth="1.5" />
-      ))}
-      <path d="M-40 -40Q-52 -52 -64 -46" stroke={C.terraD} strokeWidth="3" fill="none" />
-      <Steam x={0} y={-68} s={0.9} />
-      <Lantern x={-70} y={-28} r={4.4} string={14} />
     </Ink>
   )
 }
