@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Landing page của Journie, nền tảng lập kế hoạch du lịch Việt Nam cá nhân hóa và thích ứng bằng AI.",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
