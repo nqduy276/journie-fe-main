@@ -1,28 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'motion/react'
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type Variants } from 'motion/react'
 import { ArrowLeft } from 'lucide-react'
+import { useMotionPrefs } from '../../hooks/useMotionPrefs'
+import { useHereWeather } from '../../hooks/useHereWeather'
 import { useTr } from '../../hooks/useTr'
 import { useSky, useWeatherStore, type Phase, type Weather } from '../../store/weatherStore'
 import { LangSwitch } from '../LangSwitch'
 import { MagicCursor } from '../MagicCursor'
 import { Di } from '../mascot/Di'
 import { MascotContext, useMascot, type FocusPoint, type MascotControl, type MascotMood } from '../mascot/mascot-context'
-import { Birds, Mist } from '../scenes/primitives'
-import { karstPath, type Peak } from '../scenes/shapes'
+import { Birds } from '../scenes/primitives'
+import { DrawnBackdrop } from '../DrawnBackdrop'
 import { WeatherChip } from '../weather/WeatherChip'
 import { WeatherLayer } from '../weather/WeatherLayer'
 import { LightContext, type LightControl } from './light-context'
 import { ChestSpot, CliffNoteSpot, ConstellationSpot, FirefliesSpot, FishSpot, FlockSpot, KiteSpot, LanternSpot, LotusSpot } from './LightSpots'
 import { useLit } from './use-lit'
+import { AuthEntryContext, formStagger, useAuthArrival, type AuthEntry } from './entry'
+import { EASE_OUT } from '../motion/variants'
 import { Logo } from '../Logo'
-import { formatCoords, heroPlace } from '../../content/heroPlaces'
+import { heroPlace } from '../../content/heroPlaces'
 
 const KEYS = (['day', 'night'] as const).flatMap((phase) => (['clear', 'cloudy', 'rain', 'storm'] as const).map((weather) => `${phase}-${weather}` as const))
-
-const farPeaks: Peak[] = [[90, 150, 62], [270, 230, 84], [470, 170, 70], [690, 265, 96], [900, 190, 76], [1110, 250, 92], [1330, 180, 72]]
-const midPeaks: Peak[] = [[180, 190, 78], [410, 130, 64], [610, 240, 90], [830, 150, 70], [1040, 220, 86], [1260, 160, 74], [1420, 200, 60]]
-const nearPeaks: Peak[] = [[40, 110, 60], [340, 160, 74], [560, 100, 58], [980, 140, 72], [1190, 120, 62], [1400, 170, 80]]
 
 const SUN_SHOW: Record<Weather, number> = { clear: 1, cloudy: 0.35, rain: 0, storm: 0 }
 const MOON_SHOW: Record<Weather, number> = { clear: 1, cloudy: 0.55, rain: 0.22, storm: 0 }
@@ -60,9 +60,10 @@ function Moon({ weather }: { weather: Weather }) {
   )
 }
 
-/** Karst ridges, mist, sun and moon: the landing page's scenery, tinted by the sky it is under. */
+/** Sun, moon and birds under the current sky, with the day's destination drawn faintly at the foot of the page. */
 function Backdrop({ phase, weather }: { phase: Phase; weather: Weather }) {
   const night = phase === 'night'
+  const place = useMemo(() => heroPlace(), [])
   const gloomy = weather === 'rain' || weather === 'storm'
   return (
     <div className="pointer-events-none absolute inset-0 -z-[2] overflow-hidden" aria-hidden="true">
@@ -77,21 +78,7 @@ function Backdrop({ phase, weather }: { phase: Phase; weather: Weather }) {
           <Birds />
         </div>
       )}
-      <svg className="ridge absolute inset-x-0 bottom-0 h-[58%] w-full" viewBox="0 0 1440 400" preserveAspectRatio="xMidYMax slice" fill="none">
-        <path d={karstPath(1440, 380, 420, farPeaks)} style={{ fill: 'var(--ridge-far)' }} />
-      </svg>
-      <div className="scene" data-live="true">
-        <Mist count={3} seed={4} color={night ? 'rgba(79,184,164,0.16)' : 'rgba(255,252,244,0.85)'} className="top-[40%] h-[40%]" />
-      </div>
-      <svg className="ridge absolute inset-x-0 bottom-0 h-[44%] w-full" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice" fill="none">
-        <path d={karstPath(1440, 290, 320, midPeaks)} style={{ fill: 'var(--ridge-mid)' }} />
-      </svg>
-      <div className="scene" data-live="true">
-        <Mist count={3} seed={9} color={night ? 'rgba(79,184,164,0.14)' : 'rgba(255,252,244,0.8)'} className="top-[62%] h-[34%]" />
-      </div>
-      <svg className="ridge absolute inset-x-0 bottom-0 h-[30%] w-full" viewBox="0 0 1440 220" preserveAspectRatio="xMidYMax slice" fill="none">
-        <path d={karstPath(1440, 215, 230, nearPeaks)} style={{ fill: 'var(--ridge-near)' }} />
-      </svg>
+      <DrawnBackdrop src={night ? place.drawingNight : place.drawing} night={night} wide className="absolute" />
     </div>
   )
 }
@@ -112,12 +99,37 @@ function BackdropSpots({ night }: { night: boolean }) {
 
 type Props = {
   children: ReactNode
-  /** What Di says for each mood on this page. */
+  /** What Journie says for each mood on this page. */
   lines: Partial<Record<MascotMood, string>>
 }
 
-/** Visual half of the auth card: the Tràng An arch with Di flying in it, and a few secrets in the photo. */
-function Visual({ lines }: { lines: Props['lines'] }) {
+/** The poster opens from its foot like a sunrise, then its contents arrive one after another. */
+const archVariants: Variants = {
+  hidden: { clipPath: 'circle(0% at 50% 100%)' },
+  show: { clipPath: 'circle(145% at 50% 100%)', transition: { duration: 1.15, ease: [0.65, 0, 0.35, 1], delay: 0.12 } },
+}
+
+const archText = (delay: number): Variants => ({
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT, delay } },
+})
+
+const taglineIn = archText(1.05)
+
+const diIn: Variants = {
+  hidden: { opacity: 0, y: 40, scale: 0.82 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 210, damping: 17, delay: 0.62 } },
+}
+
+const bubbleIn: Variants = {
+  hidden: { opacity: 0, y: 10, scale: 0.6 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 380, damping: 20, delay: 0.85 } },
+}
+
+/** Visual half of the auth card: the day's destination poster with Journie standing on its photograph, and a few secrets in the photo. */
+function Visual({ lines, entry }: { lines: Props['lines']; entry: AuthEntry }) {
+  const { reduced } = useMotionPrefs()
+  const arrive = entry === 'arrive'
   const { tr } = useTr()
   const place = useMemo(() => heroPlace(), [])
   const { mood, setMood } = useMascot()
@@ -125,7 +137,7 @@ function Visual({ lines }: { lines: Props['lines'] }) {
   const line = lines[mood] ?? lines.idle ?? ''
   const lastLit = useRef(false)
 
-  // Shining the torch on Di makes it wave, once per visit of the light.
+  // Shining the torch on Journie makes it wave, once per visit of the light.
   useEffect(() => {
     if (lit && !lastLit.current && mood === 'idle') {
       setMood('wave')
@@ -137,48 +149,58 @@ function Visual({ lines }: { lines: Props['lines'] }) {
   }, [lit, mood, setMood])
 
   return (
-    <div className="flex p-3 sm:p-4">
-      <div className="auth-visual flex w-full flex-col justify-end">
-        <img src={place.image} alt="" width="1280" height="853" decoding="async" style={{ objectPosition: place.focus }} />
-        <p className="absolute inset-x-0 top-[11%] text-center text-[0.62rem] font-semibold tracking-[0.22em] text-paper/80">{formatCoords(place)}</p>
+    <div className="flex items-center p-3 sm:p-4">
+      <motion.div className="auth-visual w-full" variants={archVariants} initial={arrive && !reduced ? 'hidden' : false} animate="show">
+        <motion.div
+          className="absolute inset-0 -z-[2]"
+          initial={arrive ? { scale: 1.2 } : false}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.7, ease: EASE_OUT, delay: 0.1 }}
+        >
+          <img src={place.poster} alt={tr(...place.alt)} width="1200" height="1600" decoding="async" />
+        </motion.div>
+        <motion.p variants={taglineIn} className="absolute inset-x-0 top-[5%] px-6 text-center text-[0.8rem] font-medium leading-snug text-paper/90">{tr('Đi Việt Nam, theo cách của riêng bạn.', 'See Vietnam your own way.')}</motion.p>
 
-        <CliffNoteSpot text={tr('Chào mừng trở lại!', 'Welcome back!')} style={{ left: '50%', top: '27%', transform: 'translateX(-50%) rotate(-4deg)' }} />
-        <FirefliesSpot style={{ left: '8%', top: '46%' }} />
-        {place.water && <FishSpot style={{ left: '10%', bottom: '17%' }} />}
+        {/* Everything laid over the poster stays on its photograph, so the drawing and its text below are never covered. */}
+        <CliffNoteSpot text={tr('Chào mừng trở lại!', 'Welcome back!')} style={{ left: '79%', top: '15%', transform: 'translateX(-50%) rotate(4deg)' }} />
+        <FirefliesSpot style={{ left: '7%', top: '21%' }} />
+        {place.water && <FishSpot style={{ left: '8%', top: '39%' }} />}
 
-        <div className="relative z-10 flex flex-col items-center px-5 pb-6 text-center">
-          <div className="di-bubble mb-3 max-w-[16.5rem]" data-tail="bottom" role="status" aria-live="polite">
+        <div className="absolute inset-x-0 bottom-1/2 z-10 flex flex-col items-center px-5 text-center">
+          <motion.div variants={bubbleIn} style={{ originY: 1 }} className="di-bubble mb-3 max-w-[16.5rem]" data-tail="bottom" role="status" aria-live="polite">
             <AnimatePresence mode="wait">
-              <motion.p key={line} initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>
+              <motion.p key={line} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
                 {line}
               </motion.p>
             </AnimatePresence>
-          </div>
-          <div ref={diRef}>
-            <Di className="aspect-square w-36 sm:w-40 md:w-48" />
-          </div>
-          <p className="h-display mt-1 text-[1.45rem] text-paper">{tr(...place.name)}</p>
-          <p className="mt-0.5 max-w-[17rem] text-[0.78rem] leading-snug text-paper/75">{tr('Đi Việt Nam, theo cách của riêng bạn.', 'See Vietnam your own way.')}</p>
+          </motion.div>
+          <motion.div ref={diRef} variants={diIn}>
+            <Di className="aspect-square w-28 sm:w-32 md:w-36" />
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
 
 /**
  * Full-screen auth page: landing-style scenery under the current sky (time of day and weather are
- * independent), and a split card with Di on the left and the form on the right. A torch (the lamp
+ * independent), and a split card with Journie on the left and the form on the right. A torch (the lamp
  * button in the password field) throws a soft light that follows the pointer and wakes hidden things.
  */
 export function AuthShell({ children, lines }: Props) {
   const { tr } = useTr()
   const sky = useSky()
+  // The weather where the visitor is (last known or already allowed position); the sign-in page never asks for it
+  useHereWeather({ ask: false })
   const effects = useWeatherStore((state) => state.effects)
   const [mood, setMoodState] = useState<MascotMood>('idle')
   const [focusPoint, setFocusPoint] = useState<FocusPoint | null>(null)
   const [errorTick, setErrorTick] = useState(0)
   const [lightOn, setLightOn] = useState(false)
   const originRef = useRef<HTMLDivElement | null>(null)
+  const entry = useAuthArrival()
+  const arrive = entry === 'arrive'
 
   const setMood = useCallback((next: MascotMood) => {
     if (next === 'error') setErrorTick((tick) => tick + 1)
@@ -190,8 +212,8 @@ export function AuthShell({ children, lines }: Props) {
   // The light drifts after the pointer a little late, like a lantern on a string.
   const px = useMotionValue(0)
   const py = useMotionValue(0)
-  const lx = useSpring(px, { stiffness: 70, damping: 16, mass: 0.9 })
-  const ly = useSpring(py, { stiffness: 70, damping: 16, mass: 0.9 })
+  const lx = useSpring(px, { stiffness: 70, damping: 24, mass: 0.9 })
+  const ly = useSpring(py, { stiffness: 70, damping: 24, mass: 0.9 })
   const lxPx = useTransform(lx, (v) => `${v}px`)
   const lyPx = useTransform(ly, (v) => `${v}px`)
 
@@ -230,7 +252,12 @@ export function AuthShell({ children, lines }: Props) {
           <motion.div className="light-dark" data-on={lightOn && night} style={{ ['--lx' as string]: lxPx, ['--ly' as string]: lyPx }} aria-hidden="true" />
           <WeatherLayer phase={sky.phase} weather={sky.weather} still={!effects} />
 
-          <header className="relative z-20 mx-auto flex w-[min(100%-2rem,72rem)] items-center justify-between py-4 sm:py-6">
+          <motion.header
+            className="relative z-20 mx-auto flex w-[min(100%-2rem,72rem)] items-center justify-between py-4 sm:py-6"
+            initial={arrive ? { opacity: 0, y: -16 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.2 }}
+          >
             <Link to="/" className="group flex items-center gap-2.5" aria-label={tr('Về trang chủ Journie', 'Back to Journie home')}>
               <Logo tone={night ? 'light' : 'dark'} height="clamp(2.6rem, 6vw, 3.4rem)" className="transition-transform duration-500 group-hover:-rotate-3" />
               <span className="sr-only">Journie</span>
@@ -243,15 +270,28 @@ export function AuthShell({ children, lines }: Props) {
               <WeatherChip tone={night ? 'dark' : 'light'} align="right" />
               <LangSwitch tone={night ? 'dark' : 'light'} />
             </div>
-          </header>
+          </motion.header>
 
           <main id="main-content" className="relative z-10 mx-auto flex w-[min(100%-1.5rem,72rem)] justify-center pb-16 pt-2 md:min-h-[calc(100dvh-8rem)] md:items-center md:pb-10">
-            <div className="auth-card">
-              <Visual lines={lines} />
-              <section className="relative flex flex-col justify-center px-6 pb-8 pt-3 sm:px-10 md:py-12" aria-live="polite">
-                {children}
-              </section>
-            </div>
+            <motion.div
+              className="auth-card"
+              initial={arrive ? { opacity: 0, y: 48, scale: 0.97 } : false}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.85, ease: EASE_OUT }}
+            >
+              <Visual lines={lines} entry={entry} />
+              <AuthEntryContext.Provider value={entry}>
+                <motion.section
+                  className="relative flex flex-col justify-center px-6 pb-8 pt-3 sm:px-10 md:py-12"
+                  aria-live="polite"
+                  variants={formStagger[entry]}
+                  initial="hidden"
+                  animate="show"
+                >
+                  {children}
+                </motion.section>
+              </AuthEntryContext.Provider>
+            </motion.div>
           </main>
 
           <motion.div className="light-glow" data-on={lightOn} style={{ ['--lx' as string]: lxPx, ['--ly' as string]: lyPx }} aria-hidden="true" />
