@@ -1,9 +1,11 @@
 # Photos of individual places
 
-Drop a photo here named after the place id and it replaces the city photo on that place's card and sheet:
+Where a place's picture comes from, best first:
 
-    src/assets/images/places/ha-chua-cau.jpg           (jpg, jpeg, png, webp or avif)
+1. A file here named after the place id, such as `src/assets/images/places/dinh-doc-lap-97d379.jpg` (jpg, jpeg, png, webp or avif).
+   Landscape, around 1200×600, under ~250 KB. Only add photos you own or that are licensed for reuse, and list them in `CREDITS.md`.
+2. `src/content/placePhotos.json`: an openly licensed photo from Wikimedia Commons, matched to the place by name and position by
+   journie-data `places_1000/pipeline/photos.py`. The page shows the author, licence and a link to the Commons page.
+3. A drawn illustration of the kind of place. The city's photograph is never used for a single place.
 
-Place ids are the first column of `src/domain/pois.ts`. Landscape, around 1200×600, under ~250 KB.
-Only add photos you own or that are licensed for reuse, and list them in `CREDITS.md` next to this file
-(photographer, source link, licence).
+To refresh the Commons photos, run the script in journie-data and copy `places_1000/place_photos.json` over `src/content/placePhotos.json`.
