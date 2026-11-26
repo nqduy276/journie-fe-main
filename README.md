@@ -230,10 +230,6 @@ Images are downloaded from Wikimedia Commons and stored locally. Each image reta
 
 When replacing an image, update the corresponding file in `src/assets/images`, the data in `src/content/site.ts`, the attribution in the footer, and this image source table
 
-## Agent Skills
-
-Frontend skills installed for this project live in `.claude/skills` (see `skills-lock.json`): `frontend-design`, `vercel-react-best-practices`, `vercel-composition-patterns`, `vercel-react-view-transitions`, `web-design-guidelines`, `webapp-testing`, `theme-factory`, `canvas-design`, `algorithmic-art`, `web-artifacts-builder` and `brand-guidelines`. Restore them with `npx skills experimental_install`.
-
 ## Before Deployment
 
 - Run `npm run lint` and `npm run build`.
